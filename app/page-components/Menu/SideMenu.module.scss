@@ -1,0 +1,35 @@
+@import './../../assets/variables.scss';
+
+$selected-padding: 10px;
+
+.side-menu-container {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: $container-padding;
+
+  .side-menu-item-header {
+    font-size: 1.1rem;
+    margin: 15px 0;
+  }
+
+  .side-menu-item {
+    display: block;
+    padding: 5px 0 5px $selected-padding;
+    margin: 5px 0 5px 0;
+    color: $nav-item;
+
+    &.side-menu-item-selected {
+      font-weight: 700;
+      color: $nav-item-hover;
+      border-left: 2px solid $primary-color;
+      padding-left: $selected-padding - 2;
+      background-color: $background-white-accent;
+    }
+
+    &:hover {
+      color: $nav-item-hover;
+    }
+  }
+}

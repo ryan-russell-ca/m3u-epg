@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "typeRoots": ["./node_modules/@types", "./shared/@types"],
+    "target": "es6",
+    "module": "commonjs",
+    "outDir": "dist",
+    "strict": true,
+    "baseUrl": "./",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "@/cli/*": ["src/cli/*"],
+      "@/entities/*": ["src/entities/*"],
+      "@/common/*": ["src/common/*"],
+      "@/shared/*": ["shared/*"],
+      "@/objects/*": ["src/objects/*"],
+      "@/server": ["src/Server"]
+    }
+  },
+  "include": ["src/**/*.ts", "spec/**/*.ts"],
+  "exclude": ["src/public/"]
+}

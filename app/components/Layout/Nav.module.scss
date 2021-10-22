@@ -1,0 +1,85 @@
+@import './../../assets/variables.scss';
+
+.container-nav {
+  height: $nav-height;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: $nav-z-index;
+  background-color: $primary-color;
+  color: $text-contrast-dark-color;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+
+  .container-nav-content {
+    padding-left: 20px;
+    padding-right: 20px;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .container-nav-popover {
+    top: 100%;
+    right: 0;
+    position: absolute;
+    z-index: $nav-z-index + 1;
+    background-color: $primary-color;
+  }
+}
+
+.wrapper {
+  height: 100%;
+}
+
+.logo {
+  font-weight: 800;
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+.user {
+  position: relative;
+}
+
+.trigger {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.menu {
+  background: var(--background);
+  color: var(--foreground);
+  box-shadow: var(--shadow-medium);
+  border-radius: 5px;
+  display: inline-block;
+  min-width: 220px;
+}
+
+.item {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--accents-5);
+  display: block;
+  width: 100%;
+  align-items: center;
+  text-decoration: none;
+  padding: 14px 20px;
+  font-size: 14px;
+  text-align: left;
+  transition: ease 0.2s;
+  transition-property: background color;
+  font-weight: medium;
+}
+
+.item:focus,
+.item:hover {
+  color: var(--foreground);
+  background: var(--accents-1);
+}

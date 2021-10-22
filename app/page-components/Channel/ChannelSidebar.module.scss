@@ -1,0 +1,84 @@
+@import './../../assets/mixins.scss';
+
+.channels-container {
+  position: relative;
+
+  .channels-controls {
+    display: flex;
+    width: 100%;
+    margin: 20px 0;
+    align-items: center;
+
+    .channels-container-input {
+      flex: 0 1 400px;
+    }
+
+    .container-pagination {
+      flex: 0 1 100%;
+      display: flex;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      gap: 10px;
+      justify-content: flex-end;
+
+      > li {
+        flex: 0 1 40px;
+        height: 40px;
+
+        > a {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+
+          &.container-pagination-link {
+            @include hoverable;
+          }
+
+          &.container-pagination-link-selected {
+            background-color: #000;
+            @include hoverable-selected;
+          }
+        }
+      }
+    }
+  }
+
+  .container {
+    position: relative;
+    color: $text-main-color;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-rows: 1fr;
+    gap: 5px 20px;
+    justify-content: center;
+    align-content: center;
+    justify-items: center;
+    align-items: center;
+    margin: 40px 0;
+
+    .container-item {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-evenly;
+      flex-wrap: nowrap;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 20px;
+      background-color: #fff;
+      padding: 10px;
+      @include hoverable;
+
+      &.container-item-selected {
+        @include hoverable-selected;
+      }
+    }
+  }
+}

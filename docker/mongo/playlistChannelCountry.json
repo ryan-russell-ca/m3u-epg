@@ -1,0 +1,19 @@
+[{
+  "_id": {
+    "$oid": "619d8ef929ffe269a5fea15b"
+  },
+  "name": "Canada",
+  "shortName": "ca"
+},{
+  "_id": {
+    "$oid": "619d8f1829ffe269a5fea15c"
+  },
+  "name": "United States",
+  "shortName": "us"
+},{
+  "_id": {
+    "$oid": "619d8f2229ffe269a5fea15d"
+  },
+  "name": "United Kingdom",
+  "shortName": "uk"
+}]
