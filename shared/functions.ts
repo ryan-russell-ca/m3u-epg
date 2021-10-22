@@ -1,0 +1,118 @@
+import fs from "fs/promises";
+import https from "https";
+import URL from "url";
+import XML from "XML";
+import logger from "./Logger";
+
+export const pErr = (err: Error) => {
+  if (err) {
+    logger.err(err);
+  }
+};
+
+export const parseXmlDate = (dateStr: string): XML.xmlDate => {
+  const matches = dateStr.match(
+    /(?<year>....)(?<month>..)(?<day>..)(?<hour>..)(?<minute>..)(?<second>..) (?<offsetHour>..)(?<offsetMinute>..)/
+  );
+
+  if (!matches) {
+    throw new Error("Bad XML date");
+  }
+
+  const { year, month, day, hour, minute, second, offsetHour, offsetMinute } =
+    matches.groups as XML.xmlDateStrings;
+
+  return {
+    year: parseInt(year),
+    month: parseInt(month) - 1,
+    day: parseInt(day),
+    hour: parseInt(hour),
+    minute: parseInt(minute),
+    second: parseInt(second),
+    offsetHour: parseInt(offsetHour),
+    offsetMinute: parseInt(offsetMinute),
+  };
+};
+
+export const getFromUrl = async (url: string): Promise<string> => {
+  const promise: Promise<string> = new Promise((resolve, reject) => {
+    let json = "";
+    const parsedUrl = URL.parse(url);
+
+    const options = {
+      hostname: parsedUrl.host,
+      port: 443,
+      path: parsedUrl.pathname,
+      method: "GET",
+    };
+
+    const req = https.request(options, (res) => {
+      res.on("data", (d) => {
+        json += d;
+      });
+
+      res.on("end", () => {
+        resolve(json);
+      });
+    });
+
+    req.on("error", (error) => {
+      reject(error);
+    });
+
+    req.end();
+  });
+
+  return promise;
+};
+
+// 24H allowed difference
+export const validateDateOrThrow = (
+  date: number,
+  message: string,
+  allowedDiff = 14400000
+) => {
+  const diff = Date.now() - date;
+
+  if (diff > allowedDiff) {
+    throw new Error(message);
+  }
+};
+
+export const parseChannelName = (
+  name: string,
+  prefixes = ["ca", "us", "uk"]
+) => {
+  const split = name.toLowerCase().split(":");
+
+  if (split.length > 1 && prefixes.includes(split[0].toLowerCase())) {
+    const current = split.pop();
+
+    if (current) {
+      return current
+        .split(/ |f?hd/)
+        .join("")
+        .trim();
+    }
+  }
+
+  return name.toLowerCase();
+};
+
+export const parseCountryFromChannelName = (name: string) => {
+  const split = name.toLowerCase().split(":");
+
+  if (split.length > 1) {
+    return split[0].trim().toLowerCase();
+  }
+
+  return null;
+};
+
+export const saveJson = async (filename: string, data: unknown) => {
+  return await fs.writeFile(filename, JSON.stringify(data, null, 2));
+};
+
+export const getJson = async (filename: string) => {
+  return await fs.readFile(filename, "utf8");
+};
