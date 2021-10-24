@@ -10,17 +10,6 @@ import EPG from "EPG";
 const CODES_JSON_FILE = process.env.CODES_JSON_FILE as string;
 const CODES_JSON_URL = process.env.CODES_JSON_URL as string;
 
-type MatchOptions = {
-  name?: string | string[];
-  id?: string | string[];
-  formatted?: boolean;
-};
-
-type MatchOptionsSingle = {
-  id?: string;
-  name?: string;
-};
-
 class IPTVOrgCode {
   private _loaded = false;
   private _json?: EPG.CodeBase;
@@ -35,7 +24,7 @@ class IPTVOrgCode {
       return this._json;
     }
 
-    this._json = this.filterJson(await this.getJson());
+    this._json = await this.getJson();
 
     this._loaded = true;
 
@@ -46,8 +35,8 @@ class IPTVOrgCode {
     return this._loaded;
   }
 
-  public match = (options: MatchOptions) => {
-    const { id, name, formatted } = options;
+  public match = (options: EPG.MatchOptions) => {
+    const { id, name, formatted, listAll } = options;
 
     if (!this._jsonNamesSet) {
       this.createSets();
@@ -63,8 +52,8 @@ class IPTVOrgCode {
             (acc, id) => [...acc, ...this.matches({ id })],
             []
           )
-          .sort(([a], [b]) => b - a)[0]
-      : this.matches({ id })[0];
+          .sort(([a], [b]) => b - a)
+      : this.matches({ id });
 
     const nameMatches = Array.isArray(name)
       ? name
@@ -72,20 +61,30 @@ class IPTVOrgCode {
             (acc, name) => [...acc, ...this.matches({ name })],
             []
           )
-          .sort(([a], [b]) => b - a)[0]
-      : this.matches({ name })[0];
+          .sort(([a], [b]) => b - a)
+      : this.matches({ name });
 
+    
+    const idMatchesList = listAll ? idMatches : idMatches.slice(0, 1);
+    const nameMatchesList = listAll ? nameMatches : nameMatches.slice(0, 1);
+  
     if (formatted) {
-      return [
-        ...this.matchFormatted([idMatches], "id"),
-        ...this.matchFormatted([nameMatches], "name"),
-      ].sort((a, b) => b.score - a.score)[0] as EPG.CodeMatch | null;
+      const matches = [
+        ...this.matchFormatted(idMatchesList, "id"),
+        ...this.matchFormatted(nameMatchesList, "name"),
+      ]
+        .filter((a) => a)
+        .sort((a, b) => b.score - a.score) as EPG.CodeMatch[];
+
+      return listAll ? matches : matches.slice(0, 1);
     }
 
-    return [idMatches, nameMatches].sort(([a], [b]) => b - a)[0];
+    const matches = [...idMatches, ...nameMatches].sort(([a], [b]) => b - a);
+
+    return listAll ? matches : matches.slice(0, 1);
   };
 
-  private matches = (options: MatchOptionsSingle) => {
+  private matches = (options: EPG.MatchOptionsSingle) => {
     if (options.id && options.name) {
       throw new Error(
         "[IPTVOrgCode]: Matching cannot contain both id and name"
@@ -110,11 +109,13 @@ class IPTVOrgCode {
       throw new Error("[IPTVOrgCode]: EPG has no sets");
     }
 
-    return matches.filter((match) => match).map(([score, match]) => ({
-      score,
-      match,
-      code: this.getCodeByAttr(match, type),
-    }));
+    return matches
+      .filter((match) => match)
+      .map(([score, match]) => ({
+        score,
+        match,
+        code: this.getCodeByAttr(match, type),
+      }));
   };
 
   private createSets = () => {
@@ -188,14 +189,15 @@ class IPTVOrgCode {
     }
   };
 
-  private filterJson = (
+  private filterJsonByCountry = (
     json: EPG.CodeBase,
     countries = ["ca", "us", "uk"]
   ): EPG.CodeBase => {
     if (!json) {
       throw new Error("[IPTVOrgCode]: EPG JSON is empty");
     }
-
+    console.log("[IPTVOrgCode.filterJson]", json.codes);
+    
     return {
       ...json,
       codes: json.codes.filter((code) => countries.includes(code.country)),

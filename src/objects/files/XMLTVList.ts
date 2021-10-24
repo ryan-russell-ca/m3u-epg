@@ -35,9 +35,9 @@ class XMLTVList {
 
     this._fullXmlTv = Object.entries(codes).reduce<EPG.Base>(
       (acc, [id, xmlListUrl]) => {
-        const { channel, programme } = xmlTvs[xmlListUrl].getByCode(id);
+        const { channel, programme } = xmlTvs[xmlListUrl].getByCode(id) || {};
 
-        if (channel) {
+        if (channel && programme) {
           acc.epg.channel.push(channel);
           acc.epg.programme.push(...programme);
         }

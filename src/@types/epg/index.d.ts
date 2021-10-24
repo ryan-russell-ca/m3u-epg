@@ -44,4 +44,17 @@ declare module "EPG" {
       programme: Programme[];
     };
   };
+
+  export type MatchOptions = {
+    name?: string | string[];
+    id?: string | string[];
+    formatted?: boolean;
+    listAll?: boolean;
+  };
+
+  export type MatchOptionsSingle = {
+    id?: string;
+    name?: string;
+  };
+
 }

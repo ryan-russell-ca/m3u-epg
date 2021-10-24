@@ -45,6 +45,10 @@ class ChannelManager {
     return this._xmlList.toString();
   };
 
+  public getInfo = (options: EPG.MatchOptions) => {
+    return this._iptvOrgCode.match(options);
+  }
+
   public get isLoaded() {
     return this._loaded;
   }
@@ -78,10 +82,10 @@ class ChannelManager {
           name: group.name,
           id: [group.id, ...(group.parsedIds || [])],
           formatted: true,
-        }) as EPG.CodeMatch | null;
+        }) as EPG.CodeMatch[];
 
-        if (match?.code && group.url) {
-          acc[group.url] = match.code;
+        if (match[0]?.code && group.url) {
+          acc[group.url] = match[0].code;
         }
 
         return acc;
