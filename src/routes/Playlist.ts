@@ -23,6 +23,16 @@ export const getEpg = async (req: Request, res: Response) => {
   return res.status(OK).send(channelManager.getEPG());
 };
 
+export const getChannelInfo = async (req: Request, res: Response) => {
+  await channelManager.load();
+  return res.status(OK).json(channelManager.getInfo({
+    name: req.query.name as string,
+    id: req.query.id as string,
+    formatted: req.query.formatted === 'true',
+    listAll: req.query.listAll === 'true',
+  }));
+};
+
 export const sandbox = async (req: Request, res: Response) => {
   await channelManager.load();
   return res.status(OK).send("<pre>" + channelManager.getEPG() + "</pre>");

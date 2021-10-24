@@ -46,21 +46,24 @@ class XMLTV {
     return this._json;
   };
 
-  public getByCode = (code: string) => {
+  public getByCode = (code: string): {
+    channel: EPG.Channel,
+    programme: EPG.Programme[];
+  } | null => {
     if (!this._json) {
       throw new Error("[XMLTV]: XMLTV is empty");
     }
-    
-    const channel = this._json.epg.channel.find(
-      (channel) => channel["@_id"] === code
-    );
 
-    const programme = this._json.epg.programme.filter(
-      (programme) => {
+    try {
+      const channel = this._json.epg.channel.find(
+        (channel) => channel["@_id"] === code
+      );
+
+      const programme = this._json.epg.programme.filter((programme) => {
         if (programme["@_channel"] !== code) {
           return false;
         }
-      
+
         const { year, month, day, hour, minute, second } = parseXmlDate(
           programme["@_start"]
         );
@@ -73,13 +76,16 @@ class XMLTV {
         }
 
         return true;
-      }
-    );
+      });
 
-    return {
-      channel,
-      programme,
-    };
+      return channel ? {
+        channel,
+        programme,
+      } : null;
+    } catch (err) {
+      console.log(`[XMLTV.getByCode]: '${code}' not found`);
+      return null;
+    }
   };
 
   public get isLoaded() {

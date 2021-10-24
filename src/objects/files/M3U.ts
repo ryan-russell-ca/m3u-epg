@@ -17,7 +17,7 @@ const CUSTOM_MAPPINGS_FILE = process.env.CUSTOM_MAPPINGS_FILE as string;
 const M3U_INFO_REGEX =
   /^#EXTINF:.?(?<extInf>\d) *group-title="(?<group>.*?)" *tvg-id="(?<id>.*?)" *tvg-logo="(?<logo>.*?)" *,(?<name>.*)/;
 const CHANNEL_MATCHING_REGEX =
-  /^.*?:( *)?(?<name>.*?)( *)?(?<definition>F?HD)?$/i;
+  /^.*?:?( *)?(?<name>.*?)( *)?(?<definition>F?HD)?$/i;
 
 class M3UFile {
   private _loaded = false;
