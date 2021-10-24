@@ -1,6 +1,10 @@
 declare module "M3U" {
+  export type Base = {
+    date: number;
+    m3u: Group[];
+  };
+
   export type Group = {
-    extInf: string;
     group: string;
     id: string;
     logo: string;
@@ -9,5 +13,18 @@ declare module "M3U" {
     parsedName: string;
     url?: string;
     country: string | null;
+    definition?: string;
+    parsedIds: string[] | null;
+  };
+
+  export type CustomMappings = {
+    [url: string]: {
+      originalName: string;
+      name: string | null;
+      id: string | null;
+      logo: string | null;
+      country: string | null;
+      confirmed: boolean;
+    };
   };
 }

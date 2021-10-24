@@ -109,6 +109,17 @@ export const parseCountryFromChannelName = (name: string) => {
   return null;
 };
 
+export const parseIdFromChannelName = (name: string) => {
+  const nameMatches = name.match(/(?<para>\(.*\))/g);
+
+  if (nameMatches) {
+    return nameMatches.map((m) => m.replace(/[\W_]+/g, "").toLowerCase());
+  }
+
+  return null;
+};
+
+
 export const saveJson = async (filename: string, data: unknown) => {
   return await fs.writeFile(filename, JSON.stringify(data, null, 2));
 };
