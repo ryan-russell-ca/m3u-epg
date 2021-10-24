@@ -56,7 +56,7 @@ const parseName = (name) => {
 const createOutput = (data) => {
   return '#EXTM3U\n' + data.map(
     (d) => `\
-#EXTINF:${d.extInf} group-title="${d.group}" tvg-id="${d.id}" tvg-logo="${d.logo}" ,${d.name}
+#EXTINF: -1 group-title="${d.group}" tvg-id="${d.id}" tvg-logo="${d.logo}" ,${d.name}
 #EXTGRP:${d.group}
 ${d.url}`
   ).join("\n");

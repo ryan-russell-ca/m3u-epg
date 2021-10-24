@@ -16,6 +16,12 @@ declare module "EPG" {
     [key: string]: Code;
   };
 
+  export type CodeMatch = {
+    score: number;
+    match: string;
+    code: Code | null;
+  };
+
   export type Channel = {
     "@_id": string;
     "display-name": string;
@@ -38,6 +44,4 @@ declare module "EPG" {
       programme: Programme[];
     };
   };
-
 }
-
