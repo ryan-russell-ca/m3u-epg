@@ -17,7 +17,7 @@ const CUSTOM_MAPPINGS_FILE = process.env.CUSTOM_MAPPINGS_FILE as string;
 const M3U_INFO_REGEX =
   /^#EXTINF:.?(?<extInf>\d) *group-title="(?<group>.*?)" *tvg-id="(?<id>.*?)" *tvg-logo="(?<logo>.*?)" *,(?<name>.*)/;
 const CHANNEL_MATCHING_REGEX =
-  /^.*?:?( *)?(?<name>.*?)( *)?(?<definition>F?HD)?$/i;
+  /^((.*?:( *)?)|([A-Z]{2} ?\((?<region>.*?)\) )?)?((?<nameCode>[A-Z]{4}) TV)?(?<name>.*?)( *)?(?<definition>F?HD)?$/i;
 
 class M3UFile {
   private _loaded = false;
@@ -69,7 +69,7 @@ class M3UFile {
           acc.m3u.push(channel);
 
           acc.ids[channel.url] = {
-            originalName: channel.originalName,
+            ...channel,
             name: null,
             confirmed: false,
             id: null,
@@ -103,9 +103,9 @@ class M3UFile {
         });
 
         acc.ids[channel.url] = {
-          originalName: channel.originalName,
+          ...channel,
           ...append,
-          confirmed: customMapping && customMapping.confirmed || false,
+          confirmed: (customMapping && customMapping.confirmed) || false,
         };
 
         return acc;
@@ -118,8 +118,8 @@ class M3UFile {
 
     this._json.m3u = m3u;
 
-    saveJson(CUSTOM_MAPPINGS_FILE, ids);
-    saveJson(M3U_FILE, this._json);
+    await saveJson(CUSTOM_MAPPINGS_FILE, ids);
+    await saveJson(M3U_FILE, this._json);
   };
 
   public get groups(): M3U.Group[] {
@@ -138,7 +138,7 @@ class M3UFile {
     if (!this._json) {
       throw new Error("[M3UFile]: M3U JSON is empty");
     }
-
+  console.log(this._json.m3u.filter((m) => m.region));
     return [
       "#EXTM3U ",
       ...this._json.m3u.map((d) => {
@@ -161,7 +161,7 @@ class M3UFile {
         if (!acc[info.name]) {
           acc[info.name] = {};
         }
-
+        
         acc[info.name][info.definition || "SD"] = {
           ...group,
           ...info,
@@ -191,7 +191,7 @@ class M3UFile {
 
       if (!matches?.groups) return acc;
 
-      const { group, id, logo, name } = matches.groups;
+      const { group, id, logo, name, nameCode } = matches.groups;
 
       acc.push({
         group,
@@ -199,9 +199,9 @@ class M3UFile {
         logo,
         name,
         country: parseCountryFromChannelName(name),
-        originalName: name,
+        originalName: name || nameCode,
         parsedName: parseChannelName(name),
-        parsedIds: parseIdFromChannelName(name),
+        parsedIds: [nameCode].concat(parseIdFromChannelName(name) || []).filter((n) => n),
       });
 
       return acc;

@@ -15,6 +15,7 @@ declare module "M3U" {
     country: string | null;
     definition?: string;
     parsedIds: string[] | null;
+    region?: string;
   };
 
   export type CustomMappings = {
