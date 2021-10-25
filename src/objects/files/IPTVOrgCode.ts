@@ -84,7 +84,7 @@ class IPTVOrgCode {
     return listAll ? matches : matches.slice(0, 1);
   };
 
-  private matches = (options: EPG.MatchOptionsSingle) => {
+  private matches = (options: EPG.MatchOptionsSingle, minScore = 0.5) => {
     if (options.id && options.name) {
       throw new Error(
         "[IPTVOrgCode]: Matching cannot contain both id and name"
@@ -94,11 +94,11 @@ class IPTVOrgCode {
     const { id, name } = options;
 
     if (id) {
-      return this._jsonIdsSet?.get(id) || [];
+      return this._jsonIdsSet?.get(id)?.filter(([score]) => score >= minScore) || [];
     }
 
     if (name) {
-      return this._jsonNamesSet?.get(name) || [];
+      return this._jsonNamesSet?.get(name)?.filter(([score]) => score >= minScore) || [];
     }
 
     return [];

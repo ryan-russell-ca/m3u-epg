@@ -79,7 +79,7 @@ class ChannelManager {
     return m3uFile.groups.reduce<{ [channelUrl: string]: EPG.Code }>(
       (acc, group) => {
         const match = iptvOrgCode.match({
-          name: group.name,
+          name: [group.name, group.parsedName],
           id: [group.id, ...(group.parsedIds || [])],
           formatted: true,
         }) as EPG.CodeMatch[];
