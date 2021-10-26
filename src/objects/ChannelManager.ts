@@ -1,8 +1,6 @@
 import IPTVOrgCode from "./files/IPTVOrgCode";
 import M3UFile from "./files/M3U";
 import XMLTVList from "./files/XMLTVList";
-import EPG from "EPG";
-import M3U from "M3U";
 
 class ChannelManager {
   private _loaded = false;
@@ -39,8 +37,8 @@ class ChannelManager {
     this._loaded = true;
   };
 
-  public getM3U = () => {
-    return this._m3uFile.toString();
+  public getM3U = async () => {
+    return await this._m3uFile.toString();
   };
 
   public getEPG = () => {

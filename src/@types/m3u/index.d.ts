@@ -1,10 +1,12 @@
-declare module "M3U" {
-  export type Base = {
-    date: number;
-    m3u: Group[];
-  };
+namespace M3U {
+  import { Document } from "mongoose";
 
-  export type Group = NameGroup & {
+  export interface Base {
+    date: Date;
+    m3u: Group[];
+  }
+
+  export interface Group extends NameGroup {
     group: string;
     id: string;
     logo: string;
@@ -17,7 +19,7 @@ declare module "M3U" {
     parsedIds: string[] | null;
   };
 
-  export type CustomMapping = {
+  export interface CustomMapping {
     originalName: string;
     name: string | null;
     id: string | null;
@@ -26,18 +28,27 @@ declare module "M3U" {
     confirmed: boolean;
   };
 
-  export type CustomMappings = {
+  export interface CustomMappings {
     [url: string]: CustomMapping;
   };
 
-  export type NameGroup = {
+  export interface NameGroup {
     region?: string;
     nameCode?: string;
     name?: string;
     definition?: string;
   };
 
-  export type NameGroupMatch = {
+  export interface NameGroupMatch {
     groups?: NameGroup;
   };
+
+  export type GroupDocument = Document<any, any, M3U.Group> & M3U.Group;
+
+  export type BaseModel = {
+    date: Date;
+    m3u: GroupDocument[];
+  };
+
+  export type BaseDocument = Document<any, any, BaseModel> & BaseModel;
 }

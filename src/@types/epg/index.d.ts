@@ -1,5 +1,5 @@
-declare module "EPG" {
-  export type Code = {
+namespace EPG {
+  export interface Code {
     tvg_id: string;
     display_name: string;
     logo: string;
@@ -7,22 +7,22 @@ declare module "EPG" {
     guides: string[];
   };
 
-  export type CodeBase = {
+  export interface CodeBase {
     date: number;
     codes: Code[];
   };
 
-  export type CodeBaseSorted = {
+  export interface CodeBaseSorted {
     [key: string]: Code;
   };
 
-  export type CodeMatch = {
+  export interface CodeMatch {
     score: number;
     match: string;
     code: Code | null;
   };
 
-  export type Channel = {
+  export interface Channel {
     "@_id": string;
     "display-name": string;
     icon: {
@@ -30,14 +30,14 @@ declare module "EPG" {
     };
   };
 
-  export type Programme = {
+  export interface Programme {
     "@_start": string;
     "@_stop": string;
     "@_channel": string;
     title: { "#text": string; "@_lang": string };
   };
 
-  export type Base = {
+  export interface Base {
     date: number;
     epg: {
       channel: Channel[];
@@ -45,14 +45,14 @@ declare module "EPG" {
     };
   };
 
-  export type MatchOptions = {
+  export interface MatchOptions {
     name?: string | string[];
     id?: string | string[];
     formatted?: boolean;
     listAll?: boolean;
   };
 
-  export type MatchOptionsSingle = {
+  export interface MatchOptionsSingle {
     id?: string;
     name?: string;
   };

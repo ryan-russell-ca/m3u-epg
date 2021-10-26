@@ -14,7 +14,7 @@ export const getPlaylist = async (req: Request, res: Response) => {
 
   res.contentType("text");
   await channelManager.load();
-  return res.status(OK).send(channelManager.getM3U());
+  return res.status(OK).send(await channelManager.getM3U());
 };
 
 export const getEpg = async (req: Request, res: Response) => {

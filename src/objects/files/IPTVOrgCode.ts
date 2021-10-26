@@ -5,8 +5,6 @@ import {
   saveJson,
   validateDateOrThrow,
 } from "@shared/functions";
-import EPG from "EPG";
-import M3U from "M3U";
 
 const CODES_JSON_FILE = process.env.CODES_JSON_FILE as string;
 const CODES_JSON_URL = process.env.CODES_JSON_URL as string;
@@ -89,7 +87,7 @@ class IPTVOrgCode {
   private matches = (options: EPG.MatchOptionsSingle, minScore = 0.5) => {
     if (options.id && options.name) {
       throw new Error(
-        "[IPTVOrgCode]: Matching cannot contain both id and name"
+        "[IPTVOrgCode.matches]: Matching cannot contain both id and name"
       );
     }
 
@@ -113,7 +111,7 @@ class IPTVOrgCode {
 
   private matchFormatted = (matches: [number, string][], type: string) => {
     if (!this._jsonIds || !this._jsonNames) {
-      throw new Error("[IPTVOrgCode]: EPG has no sets");
+      throw new Error("[IPTVOrgCode.matchFormatted]: EPG has no sets");
     }
 
     return matches
@@ -127,7 +125,7 @@ class IPTVOrgCode {
 
   private createSets = () => {
     if (!this._json) {
-      throw new Error("[IPTVOrgCode]: EPG JSON is empty");
+      throw new Error("[IPTVOrgCode.createSets]: EPG JSON is empty");
     }
 
     const { id, name } = this.filterJsonByCountry(this._json).codes.reduce<{
@@ -161,7 +159,7 @@ class IPTVOrgCode {
 
   private getCodeByAttr = (value: string, attr: string) => {
     if (!this._jsonIds || !this._jsonNames) {
-      throw new Error("[IPTVOrgCode]: EPG has no sets");
+      throw new Error("[IPTVOrgCode.getCodeByAttr]: EPG has no sets");
     }
 
     switch (attr) {
@@ -183,7 +181,7 @@ class IPTVOrgCode {
 
       return json;
     } catch (err) {
-      console.log(`Refreshing: [${CODES_JSON_URL}]`);
+      console.log(`[IPTVOrgCode.getJson]: Refreshing | ${CODES_JSON_URL}`);
 
       const fileJson = await getFromUrl(CODES_JSON_URL);
 
@@ -203,7 +201,7 @@ class IPTVOrgCode {
     countries = COUNTRIES_FILTER
   ): EPG.CodeBase => {
     if (!json) {
-      throw new Error("[IPTVOrgCode]: EPG JSON is empty");
+      throw new Error("[IPTVOrgCode.filterJsonByCountry]: EPG JSON is empty");
     }
 
     return {
