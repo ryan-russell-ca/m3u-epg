@@ -2,6 +2,7 @@ import IPTVOrgCode from "./files/IPTVOrgCode";
 import M3UFile from "./files/M3U";
 import XMLTVList from "./files/XMLTVList";
 import EPG from "EPG";
+import M3U from "M3U";
 
 class ChannelManager {
   private _loaded = false;
@@ -23,6 +24,7 @@ class ChannelManager {
     }
 
     const matchedCodes = this.getMatchedCodes(this._iptvOrgCode, this._m3uFile);
+    
     const { xmlTvUrls, codeGuides } = this.getXmlListUrls(
       Object.values(matchedCodes)
     );
@@ -47,23 +49,32 @@ class ChannelManager {
 
   public getInfo = (options: EPG.MatchOptions) => {
     return this._iptvOrgCode.match(options);
-  }
+  };
 
   public get isLoaded() {
     return this._loaded;
   }
 
-  private getXmlListUrls = (codes: EPG.Code[]) => {
+  private getXmlListUrls = (codes: (EPG.Code | M3U.CustomMapping)[]) => {
     const guides = codes.reduce<{
       xmlTvUrls: { [xmlTvUrl: string]: boolean };
       codeGuides: { [id: string]: string };
     }>(
       (acc, code) => {
-        const { guides, country } = code;
+        const currentCode = code as EPG.Code;
+
+        if (!currentCode.tvg_id || !currentCode.guides) {
+          return acc;
+        }
+
+        const xmlTvUrls = Object.keys(acc.xmlTvUrls);
         const guide =
-          guides.find((guide) => guide.includes(`/${country}`)) || guides[0];
+          currentCode.guides.find((guide) => xmlTvUrls.includes(guide)) ||
+          currentCode.guides[0];
+
         acc.xmlTvUrls[guide] = true;
-        acc.codeGuides[code.tvg_id] = guide;
+        acc.codeGuides[currentCode.tvg_id] = guide;
+
         return acc;
       },
       {
@@ -76,22 +87,28 @@ class ChannelManager {
   };
 
   private getMatchedCodes = (iptvOrgCode: IPTVOrgCode, m3uFile: M3UFile) => {
-    return m3uFile.groups.reduce<{ [channelUrl: string]: EPG.Code }>(
-      (acc, group) => {
-        const match = iptvOrgCode.match({
-          name: [group.name, group.parsedName],
-          id: [group.id, ...(group.parsedIds || [])],
-          formatted: true,
-        }) as EPG.CodeMatch[];
+    return m3uFile.groups.reduce<{
+      [channelUrl: string]: EPG.Code | M3U.CustomMapping;
+    }>((acc, group) => {
+      const customMapping = m3uFile.customMap(group);
 
-        if (match[0]?.code && group.url) {
-          acc[group.url] = match[0].code;
-        }
-
+      if (customMapping && group.url) {
+        acc[group.url] = customMapping;
         return acc;
-      },
-      {}
-    );
+      }
+
+      const match = iptvOrgCode.match({
+        name: [group.name, group.parsedName],
+        id: [group.id, ...(group.parsedIds || [])],
+        formatted: true,
+      }) as EPG.CodeMatch[];
+
+      if (match[0]?.code && group.url) {
+        acc[group.url] = match[0].code;
+      }
+
+      return acc;
+    }, {});
   };
 }
 

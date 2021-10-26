@@ -12,8 +12,9 @@ import EPG from "EPG";
 
 const M3U_URL = process.env.M3U_URL as string;
 const M3U_FILE = process.env.M3U_FILE as string;
-const CUSTOM_MAPPINGS_FILE = process.env.CUSTOM_MAPPINGS_FILE as string;
-
+const GENERATED_MAPPINGS_FILE = process.env.GENERATED_MAPPINGS_FILE as string;
+const CONFIRMED_MAPPINGS_FILE = process.env.CONFIRMED_MAPPINGS_FILE as string;
+;
 const M3U_INFO_REGEX =
   /^#EXTINF:.?(?<extInf>\d) *group-title="(?<group>.*?)" *tvg-id="(?<id>.*?)" *tvg-logo="(?<logo>.*?)" *,(?<name>.*)/;
 const CHANNEL_MATCHING_REGEX =
@@ -22,6 +23,7 @@ const CHANNEL_MATCHING_REGEX =
 class M3UFile {
   private _loaded = false;
   private _json?: M3U.Base;
+  private _mappings?: M3U.CustomMappings;
 
   public load = async (uniqueOnly: boolean = true): Promise<M3U.Base> => {
     if (this._json) {
@@ -31,8 +33,10 @@ class M3UFile {
 
     this._json = await this.getJson();
 
+    this._mappings = await this.getMappings();
+
     if (uniqueOnly) {
-      this._json.m3u = this.filterUnique(this._json.m3u);
+      this._json.m3u = this.filterRegion(this.filterUnique(this._json.m3u));
     }
 
     this._loaded = true;
@@ -40,18 +44,11 @@ class M3UFile {
     return this._json;
   };
 
-  public insertCodeInfo = async (codes: { [tvgId: string]: EPG.Code }) => {
+  public insertCodeInfo = async (codes: {
+    [tvgId: string]: EPG.Code | M3U.CustomMapping;
+  }) => {
     if (!this._json) {
       throw new Error("[M3UFile]: M3U JSON is empty");
-    }
-
-    let customMappings: M3U.CustomMappings;
-
-    try {
-      const json = await getJson(CUSTOM_MAPPINGS_FILE);
-      customMappings = JSON.parse(json);
-    } catch (err) {
-      console.log("[M3UFile]: Custom Mappings JSON is empty");
     }
 
     const { m3u, ids } = this._json?.m3u.reduce<{
@@ -63,7 +60,7 @@ class M3UFile {
           return acc;
         }
 
-        const code = codes[channel.url];
+        const code = codes[channel.url] as EPG.Code & M3U.CustomMapping;
 
         if (!code) {
           acc.m3u.push(channel);
@@ -80,33 +77,43 @@ class M3UFile {
           return acc;
         }
 
-        const customMapping =
-          customMappings &&
-          customMappings[channel.url]?.confirmed &&
-          customMappings[channel.url];
-
-        const append = customMapping ? {
-            id: customMapping.id || "",
-            name: customMapping.name || channel.name,
-            logo: customMapping.logo || channel.logo,
-            country: customMapping.country || channel.country,
-        } : {
+        if (code.tvg_id) {
+          const append = {
             id: code.tvg_id,
             name: code.display_name,
             logo: channel.logo || code.logo,
             country: channel.country || code.country,
-        }
-          
-        acc.m3u.push({
-          ...channel,
-          ...append,
-        });
+          };
 
-        acc.ids[channel.url] = {
-          ...channel,
-          ...append,
-          confirmed: (customMapping && customMapping.confirmed) || false,
-        };
+          acc.m3u.push({
+            ...channel,
+            ...append,
+          });
+
+          acc.ids[channel.url] = {
+            ...channel,
+            ...append,
+            confirmed: false,
+          };
+        } else {
+          const append = {
+            id: code.id || "",
+            name: code.name || channel.name,
+            logo: code.logo || channel.logo,
+            country: code.country || channel.country,
+          };
+
+          acc.m3u.push({
+            ...channel,
+            ...append,
+          });
+
+          acc.ids[channel.url] = {
+            ...channel,
+            ...append,
+            confirmed: code.confirmed,
+          };
+        }
 
         return acc;
       },
@@ -116,10 +123,21 @@ class M3UFile {
       }
     );
 
-    this._json.m3u = m3u;
+    await saveJson(GENERATED_MAPPINGS_FILE, ids);
+    await saveJson(M3U_FILE, {
+      date: Date.now(),
+      m3u,
+    });
 
-    await saveJson(CUSTOM_MAPPINGS_FILE, ids);
-    await saveJson(M3U_FILE, this._json);
+    this._json.m3u = m3u;
+  };
+
+  public customMap = (group: M3U.Group) => {
+    if (!this._mappings || !group.url) {
+      return null;
+    }
+
+    return this._mappings[group.url];
   };
 
   public get groups(): M3U.Group[] {
@@ -138,7 +156,7 @@ class M3UFile {
     if (!this._json) {
       throw new Error("[M3UFile]: M3U JSON is empty");
     }
-  console.log(this._json.m3u.filter((m) => m.region));
+
     return [
       "#EXTM3U ",
       ...this._json.m3u.map((d) => {
@@ -154,14 +172,17 @@ class M3UFile {
     const groupDictionary = groups.reduce<{
       [key: string]: { [key: string]: M3U.Group };
     }>((acc, group) => {
-      const matches = group.name.match(CHANNEL_MATCHING_REGEX);
+      const matches = group.name.match(
+        CHANNEL_MATCHING_REGEX
+      ) as M3U.NameGroupMatch;
 
       const info = matches?.groups;
+
       if (info?.name) {
         if (!acc[info.name]) {
           acc[info.name] = {};
         }
-        
+
         acc[info.name][info.definition || "SD"] = {
           ...group,
           ...info,
@@ -174,6 +195,10 @@ class M3UFile {
     return Object.values(groupDictionary).map(
       (list) => list["FHD"] || list["HD"] || list["SD"]
     );
+  };
+
+  private filterRegion = (groups: M3U.Group[]) => {
+    return groups.filter((group) => !group.region);
   };
 
   private parseJson = (m3u: string) => {
@@ -199,15 +224,29 @@ class M3UFile {
         logo,
         name,
         country: parseCountryFromChannelName(name),
-        originalName: name || nameCode,
+        originalName: name || line,
         parsedName: parseChannelName(name),
-        parsedIds: [nameCode].concat(parseIdFromChannelName(name) || []).filter((n) => n),
+        parsedIds: [nameCode]
+          .concat(parseIdFromChannelName(name) || [])
+          .filter((n) => n),
       });
 
       return acc;
     }, []);
 
     return json;
+  };
+
+  private getMappings = async () => {
+    try {
+      const mappingsFile = await getJson(CONFIRMED_MAPPINGS_FILE);
+      const json = JSON.parse(mappingsFile) as M3U.CustomMappings;
+
+      return json;
+    } catch (err) {
+      console.log("[M3UFile]: Custom Mappings JSON is empty");
+      return {};
+    }
   };
 
   private getJson = async (): Promise<M3U.Base> => {

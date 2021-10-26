@@ -79,25 +79,8 @@ export const validateDateOrThrow = (
   }
 };
 
-export const parseChannelName = (
-  name: string,
-  prefixes = ["ca", "us", "uk"]
-) => {
-  const split = name.toLowerCase().split(":");
-
-  if (split.length > 1 && prefixes.includes(split[0].toLowerCase())) {
-    const current = split.pop();
-
-    if (current) {
-      return current
-        .split(/ |f?hd/)
-        .join("")
-        .trim();
-    }
-  }
-
-  return name.toLowerCase();
-};
+export const parseChannelName = (name: string) =>
+  name.replace(" ", "").toLowerCase();
 
 export const parseCountryFromChannelName = (name: string) => {
   const split = name.toLowerCase().split(":");
@@ -118,7 +101,6 @@ export const parseIdFromChannelName = (name: string) => {
 
   return null;
 };
-
 
 export const saveJson = async (filename: string, data: unknown) => {
   return await fs.writeFile(filename, JSON.stringify(data, null, 2));

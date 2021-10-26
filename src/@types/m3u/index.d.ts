@@ -4,7 +4,7 @@ declare module "M3U" {
     m3u: Group[];
   };
 
-  export type Group = {
+  export type Group = NameGroup & {
     group: string;
     id: string;
     logo: string;
@@ -15,17 +15,29 @@ declare module "M3U" {
     country: string | null;
     definition?: string;
     parsedIds: string[] | null;
-    region?: string;
+  };
+
+  export type CustomMapping = {
+    originalName: string;
+    name: string | null;
+    id: string | null;
+    logo: string | null;
+    country: string | null;
+    confirmed: boolean;
   };
 
   export type CustomMappings = {
-    [url: string]: {
-      originalName: string;
-      name: string | null;
-      id: string | null;
-      logo: string | null;
-      country: string | null;
-      confirmed: boolean;
-    };
+    [url: string]: CustomMapping;
+  };
+
+  export type NameGroup = {
+    region?: string;
+    nameCode?: string;
+    name?: string;
+    definition?: string;
+  };
+
+  export type NameGroupMatch = {
+    groups?: NameGroup;
   };
 }

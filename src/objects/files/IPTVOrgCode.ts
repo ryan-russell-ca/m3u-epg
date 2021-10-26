@@ -6,9 +6,12 @@ import {
   validateDateOrThrow,
 } from "@shared/functions";
 import EPG from "EPG";
+import M3U from "M3U";
 
 const CODES_JSON_FILE = process.env.CODES_JSON_FILE as string;
 const CODES_JSON_URL = process.env.CODES_JSON_URL as string;
+const GENERATED_MAPPINGS_FILE = process.env.GENERATED_MAPPINGS_FILE as string;
+const COUNTRIES_FILTER = ["ca", "us", "uk"];
 
 class IPTVOrgCode {
   private _loaded = false;
@@ -64,10 +67,9 @@ class IPTVOrgCode {
           .sort(([a], [b]) => b - a)
       : this.matches({ name });
 
-    
     const idMatchesList = listAll ? idMatches : idMatches.slice(0, 1);
     const nameMatchesList = listAll ? nameMatches : nameMatches.slice(0, 1);
-  
+
     if (formatted) {
       const matches = [
         ...this.matchFormatted(idMatchesList, "id"),
@@ -94,11 +96,16 @@ class IPTVOrgCode {
     const { id, name } = options;
 
     if (id) {
-      return this._jsonIdsSet?.get(id)?.filter(([score]) => score >= minScore) || [];
+      return (
+        this._jsonIdsSet?.get(id)?.filter(([score]) => score >= minScore) || []
+      );
     }
 
     if (name) {
-      return this._jsonNamesSet?.get(name)?.filter(([score]) => score >= minScore) || [];
+      return (
+        this._jsonNamesSet?.get(name)?.filter(([score]) => score >= minScore) ||
+        []
+      );
     }
 
     return [];
@@ -123,7 +130,7 @@ class IPTVOrgCode {
       throw new Error("[IPTVOrgCode]: EPG JSON is empty");
     }
 
-    const { id, name } = this._json.codes.reduce<{
+    const { id, name } = this.filterJsonByCountry(this._json).codes.reduce<{
       id: EPG.CodeBaseSorted;
       name: EPG.CodeBaseSorted;
     }>(
@@ -132,7 +139,9 @@ class IPTVOrgCode {
           return acc;
         }
 
-        acc.id[code.tvg_id.toLowerCase()] = code;
+        const [idCode] = code.tvg_id.replace(".", "");
+
+        acc.id[idCode.toLowerCase()] = code;
         acc.name[code.display_name.toLowerCase()] = code;
 
         return acc;
@@ -191,13 +200,12 @@ class IPTVOrgCode {
 
   private filterJsonByCountry = (
     json: EPG.CodeBase,
-    countries = ["ca", "us", "uk"]
+    countries = COUNTRIES_FILTER
   ): EPG.CodeBase => {
     if (!json) {
       throw new Error("[IPTVOrgCode]: EPG JSON is empty");
     }
-    console.log("[IPTVOrgCode.filterJson]", json.codes);
-    
+
     return {
       ...json,
       codes: json.codes.filter((code) => countries.includes(code.country)),
