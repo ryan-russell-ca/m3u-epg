@@ -1,5 +1,5 @@
-declare module "XML" {
-  export type xmlDateStrings = {
+namespace XML {
+  export interface xmlDateStrings {
     year: string;
     month: string;
     day: string;
@@ -10,7 +10,7 @@ declare module "XML" {
     offsetMinute: string;
   };
 
-  export type xmlDate = {
+  export interface xmlDate {
     year: number;
     month: number;
     day: number;

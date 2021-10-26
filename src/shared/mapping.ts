@@ -1,29 +1,15 @@
-import M3U from "M3U";
-
 type GroupDictionary = {
-  [key: string]: {
-    name: string;
-    id: string;
-    parsedName: string;
-    originalName: string;
-    country: string | null;
-  }[];
+  [key: string]: M3U.Group[];
 };
 
 export const createIdDictionary = (groups: M3U.Group[]) => {
   return groups.reduce<GroupDictionary>(
-    (acc, { name, id, parsedName, originalName, country }) => {
-      if (!acc[name]) {
-        acc[name] = [];
+    (acc, group) => {
+      if (!acc[group.name]) {
+        acc[group.name] = [];
       }
 
-      acc[name].push({
-        name,
-        id,
-        parsedName,
-        originalName,
-        country,
-      });
+      acc[group.name].push(group);
 
       return acc;
     },

@@ -1,6 +1,5 @@
 import { j2xParser } from "fast-xml-parser";
 import XMLTV from "./XMLTV";
-import EPG from "EPG";
 
 const XML_PARSE_OPTIONS = {
   ignoreAttributes: false,
@@ -28,7 +27,7 @@ class XMLTVList {
 
   public mergeByCode = (codes: { [id: string]: string }) => {
     if (!this._xmlTvs) {
-      throw new Error("[XMLTVList]: XMLTV list is empty");
+      throw new Error("[XMLTVList.mergeByCode]: XMLTV list is empty");
     }
 
     const xmlTvs = this._xmlTvs;
@@ -60,7 +59,7 @@ class XMLTVList {
 
   public toString = () => {
     if (!this._xmlTvs) {
-      throw new Error("[XMLTVList]: XMLTVs is empty");
+      throw new Error("[XMLTVList.toString]: XMLTVs is empty");
     }
 
     const parser = new j2xParser(XML_PARSE_OPTIONS);

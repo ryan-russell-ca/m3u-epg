@@ -1,3 +1,4 @@
+import { Document } from "mongoose";
 import {
   getFromUrl,
   getJson,
@@ -7,14 +8,13 @@ import {
   saveJson,
   validateDateOrThrow,
 } from "@shared/functions";
-import M3U from "M3U";
-import EPG from "EPG";
+import M3UModel, { M3UGroupModel } from "@objects/database/M3USchema";
+import MongoConnector from "@objects/database/Mongo";
 
 const M3U_URL = process.env.M3U_URL as string;
 const M3U_FILE = process.env.M3U_FILE as string;
 const GENERATED_MAPPINGS_FILE = process.env.GENERATED_MAPPINGS_FILE as string;
 const CONFIRMED_MAPPINGS_FILE = process.env.CONFIRMED_MAPPINGS_FILE as string;
-;
 const M3U_INFO_REGEX =
   /^#EXTINF:.?(?<extInf>\d) *group-title="(?<group>.*?)" *tvg-id="(?<id>.*?)" *tvg-logo="(?<logo>.*?)" *,(?<name>.*)/;
 const CHANNEL_MATCHING_REGEX =
@@ -22,56 +22,52 @@ const CHANNEL_MATCHING_REGEX =
 
 class M3UFile {
   private _loaded = false;
-  private _json?: M3U.Base;
+  private _model?: M3U.BaseDocument;
   private _mappings?: M3U.CustomMappings;
 
-  public load = async (uniqueOnly: boolean = true): Promise<M3U.Base> => {
-    if (this._json) {
+  public load = async (uniqueOnly: boolean = true) => {
+    if (this._model) {
       this._loaded = true;
-      return this._json;
+      return this._model;
     }
 
-    this._json = await this.getJson();
+    if (!MongoConnector.connected) {
+      await MongoConnector.connect();
+    }
+
+    this._model = await this.getM3U(uniqueOnly);
 
     this._mappings = await this.getMappings();
 
-    if (uniqueOnly) {
-      this._json.m3u = this.filterRegion(this.filterUnique(this._json.m3u));
-    }
-
     this._loaded = true;
 
-    return this._json;
+    return this._model;
   };
 
   public insertCodeInfo = async (codes: {
     [tvgId: string]: EPG.Code | M3U.CustomMapping;
   }) => {
-    if (!this._json) {
+    if (!this._model) {
       throw new Error("[M3UFile]: M3U JSON is empty");
     }
 
-    const { m3u, ids } = this._json?.m3u.reduce<{
-      m3u: M3U.Group[];
-      ids: M3U.CustomMappings;
-    }>(
+    const ids = this._model?.m3u.reduce<M3U.CustomMappings>(
       (acc, channel) => {
-        if (!channel.url) {
+        const channelJson = channel.toJSON();
+
+        if (!channelJson.url) {
           return acc;
         }
 
-        const code = codes[channel.url] as EPG.Code & M3U.CustomMapping;
+        const code = codes[channelJson.url] as EPG.Code & M3U.CustomMapping;
 
         if (!code) {
-          acc.m3u.push(channel);
-
-          acc.ids[channel.url] = {
-            ...channel,
-            name: null,
+          acc[channelJson.url] = {
+            ...channelJson,
             confirmed: false,
             id: null,
             logo: null,
-            country: null,
+            country: "unpoplated",
           };
 
           return acc;
@@ -81,35 +77,33 @@ class M3UFile {
           const append = {
             id: code.tvg_id,
             name: code.display_name,
-            logo: channel.logo || code.logo,
-            country: channel.country || code.country,
+            logo: channelJson.logo || code.logo,
+            country: channelJson.country || code.country,
           };
 
-          acc.m3u.push({
-            ...channel,
+          channel.set({
             ...append,
           });
 
-          acc.ids[channel.url] = {
-            ...channel,
+          acc[channelJson.url] = {
+            ...channelJson,
             ...append,
             confirmed: false,
           };
         } else {
           const append = {
             id: code.id || "",
-            name: code.name || channel.name,
-            logo: code.logo || channel.logo,
-            country: code.country || channel.country,
+            name: code.name || channelJson.name,
+            logo: code.logo || channelJson.logo,
+            country: code.country || channelJson.country,
           };
 
-          acc.m3u.push({
-            ...channel,
+          channel.set({
             ...append,
           });
 
-          acc.ids[channel.url] = {
-            ...channel,
+          acc[channelJson.url] = {
+            ...channelJson,
             ...append,
             confirmed: code.confirmed,
           };
@@ -117,22 +111,13 @@ class M3UFile {
 
         return acc;
       },
-      {
-        m3u: [],
-        ids: {},
-      }
+      {}
     );
 
-    await saveJson(GENERATED_MAPPINGS_FILE, ids);
-    await saveJson(M3U_FILE, {
-      date: Date.now(),
-      m3u,
-    });
-
-    this._json.m3u = m3u;
+    saveJson(GENERATED_MAPPINGS_FILE, ids);
   };
 
-  public customMap = (group: M3U.Group) => {
+  public customMap = (group: M3U.GroupDocument) => {
     if (!this._mappings || !group.url) {
       return null;
     }
@@ -140,26 +125,28 @@ class M3UFile {
     return this._mappings[group.url];
   };
 
-  public get groups(): M3U.Group[] {
+  public get groups(): M3U.GroupDocument[] {
     if (!this.isLoaded) {
       throw new Error("[M3UFile]: M3U JSON is not loaded");
     }
 
-    return this._json?.m3u || [];
+    return this._model?.m3u || [];
   }
 
   public get isLoaded() {
     return this._loaded;
   }
 
-  public toString = () => {
-    if (!this._json) {
+  public toString = async () => {
+    if (!this._model) {
       throw new Error("[M3UFile]: M3U JSON is empty");
     }
 
+    await this._model.save();
+
     return [
       "#EXTM3U ",
-      ...this._json.m3u.map((d) => {
+      ...this._model.m3u.map((d) => {
         return [
           `#EXTINF: -1 group-title="${d.group}" tvg-id="${d.id}" tvg-logo="${d.logo}", ${d.name}`,
           d.url,
@@ -244,32 +231,46 @@ class M3UFile {
 
       return json;
     } catch (err) {
-      console.log("[M3UFile]: Custom Mappings JSON is empty");
+      console.log("[M3UFile.getMappings]: Custom Mappings JSON is empty");
       return {};
     }
   };
 
-  private getJson = async (): Promise<M3U.Base> => {
+  private getM3U = async (uniqueOnly: boolean): Promise<M3U.BaseDocument> => {
     try {
-      const m3uFile = await getJson(M3U_FILE);
+      const m3u = await M3UModel.findOne().sort({ date: -1 });
 
-      const json = JSON.parse(m3uFile) as M3U.Base;
+      if (!m3u) {
+        console.log("[M3UFile.getM3U]: No M3U entry found");
+        throw new Error();
+      }
 
-      validateDateOrThrow(json.date, `Outdated: [${M3U_FILE}]`);
+      return m3u;
+    } catch (error) {
+      console.log("[M3UFile.getM3U]: No M3U entry found");
+      const json = await this.getJson();
 
-      return json;
-    } catch (err) {
-      const fileJson = await getFromUrl(M3U_URL);
+      if (uniqueOnly) {
+        json.m3u = this.filterRegion(this.filterUnique(json.m3u)).map(
+          (item) => new M3UGroupModel(item)
+        );
+      }
 
-      const json = {
-        date: Date.now(),
-        m3u: this.parseJson(fileJson),
-      };
+      const m3u = new M3UModel(json);
 
-      await saveJson(M3U_FILE, json);
-
-      return json;
+      return m3u;
     }
+  };
+
+  private getJson = async (): Promise<M3U.Base> => {
+    const fileJson = await getFromUrl(M3U_URL);
+
+    const json = {
+      date: new Date(),
+      m3u: this.parseJson(fileJson),
+    };
+
+    return json;
   };
 }
 

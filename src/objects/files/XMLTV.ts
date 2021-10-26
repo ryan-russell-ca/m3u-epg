@@ -7,7 +7,6 @@ import {
   saveJson,
   validateDateOrThrow,
 } from "@shared/functions";
-import EPG from "EPG";
 
 const EPG_FILES_DIR = process.env.EPG_FILES_DIR as string;
 const EPG_TIME_AHEAD_MILLI =
@@ -51,7 +50,7 @@ class XMLTV {
     programme: EPG.Programme[];
   } | null => {
     if (!this._json) {
-      throw new Error("[XMLTV]: XMLTV is empty");
+      throw new Error("[XMLTV.getByCode]: XMLTV is empty");
     }
 
     try {
@@ -104,7 +103,7 @@ class XMLTV {
 
       return json;
     } catch (err: any) {
-      console.log(`Refreshing: [${this._url}]`);
+      console.log(`[XMLTV.getJson]: Refreshing | ${this._url}`);
 
       const fileXml = await getFromUrl(this._url);
 

@@ -1,7 +1,6 @@
 import fs from "fs/promises";
 import https from "https";
 import URL from "url";
-import XML from "XML";
 import logger from "./Logger";
 
 export const pErr = (err: Error) => {
@@ -15,12 +14,12 @@ export const parseXmlDate = (dateStr: string): XML.xmlDate => {
     /(?<year>....)(?<month>..)(?<day>..)(?<hour>..)(?<minute>..)(?<second>..) (?<offsetHour>..)(?<offsetMinute>..)/
   );
 
-  if (!matches) {
+  if (!matches?.groups) {
     throw new Error("Bad XML date");
   }
 
   const { year, month, day, hour, minute, second, offsetHour, offsetMinute } =
-    matches.groups as XML.xmlDateStrings;
+    matches.groups as unknown as XML.xmlDateStrings;
 
   return {
     year: parseInt(year),
@@ -80,16 +79,17 @@ export const validateDateOrThrow = (
 };
 
 export const parseChannelName = (name: string) =>
-  name.replace(" ", "").toLowerCase();
+  name.split(":").pop()?.replace(/ */, "").toLowerCase() || "";
 
 export const parseCountryFromChannelName = (name: string) => {
-  const split = name.toLowerCase().split(":");
+  const countryMatches = name.match(/^ *?(?<country>.*){2,2} *?:.*$/g);
+  const country = countryMatches?.groups?.country;
 
-  if (split.length > 1) {
-    return split[0].trim().toLowerCase();
+  if (country) {
+    return country.trim().toLowerCase();
   }
 
-  return null;
+  return "unpopulated";
 };
 
 export const parseIdFromChannelName = (name: string) => {
@@ -103,6 +103,11 @@ export const parseIdFromChannelName = (name: string) => {
 };
 
 export const saveJson = async (filename: string, data: unknown) => {
+  if (!data) {
+    console.log(`[saveJson]: ${filename} cannot save with empty data`);
+    return;
+  }
+
   return await fs.writeFile(filename, JSON.stringify(data, null, 2));
 };
 
