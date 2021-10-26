@@ -69,7 +69,7 @@ class XMLTV {
         );
         const date = new Date(Date.UTC(year, month, day, hour, minute, second));
 
-        const diff = date.getTime() - Date.now();
+        const diff = date.getTime() - new Date().getTime();
 
         if (diff < -3600001 || diff > EPG_TIME_AHEAD_MILLI) {
           return false;
