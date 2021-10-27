@@ -3,10 +3,20 @@ namespace M3U {
 
   export interface Base {
     date: Date;
-    m3u: Group[];
+    m3u: ChannelInfo[];
   }
 
-  export interface Group extends NameGroup {
+  export interface ChannelInfoFilters {
+    group?: string;
+    id?: string;
+    name?: string;
+    originalName?: string;
+    url?: string;
+    country?: string | null;
+    definition?: string;
+  }
+
+  export interface ChannelInfo extends NameChannelInfo {
     group: string;
     id: string;
     logo: string;
@@ -17,7 +27,7 @@ namespace M3U {
     country: string | null;
     definition?: string;
     parsedIds: string[] | null;
-  };
+  }
 
   export interface CustomMapping {
     originalName: string;
@@ -26,28 +36,29 @@ namespace M3U {
     logo: string | null;
     country: string | null;
     confirmed: boolean;
-  };
+  }
 
   export interface CustomMappings {
     [url: string]: CustomMapping;
-  };
+  }
 
-  export interface NameGroup {
+  export interface NameChannelInfo {
     region?: string;
     nameCode?: string;
     name?: string;
     definition?: string;
-  };
+  }
 
-  export interface NameGroupMatch {
-    groups?: NameGroup;
-  };
+  export interface NameChannelInfoMatch {
+    groups?: NameChannelInfo;
+  }
 
-  export type GroupDocument = Document<any, any, M3U.Group> & M3U.Group;
+  export type ChannelInfoDocument = Document<any, any, M3U.ChannelInfo> &
+    M3U.ChannelInfo;
 
   export type BaseModel = {
     date: Date;
-    m3u: GroupDocument[];
+    m3u: ChannelInfoDocument[];
   };
 
   export type BaseDocument = Document<any, any, BaseModel> & BaseModel;

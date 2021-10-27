@@ -11,6 +11,7 @@ import {
 import M3UModel, { M3UGroupModel } from "@objects/database/M3USchema";
 import MongoConnector from "@objects/database/Mongo";
 import Logger from "@shared/Logger";
+import ChannelManager from "@objects/ChannelManager";
 
 const M3U_URL = process.env.M3U_URL as string;
 const GENERATED_MAPPINGS_FILE = process.env.GENERATED_MAPPINGS_FILE as string;
@@ -114,15 +115,15 @@ class M3UFile {
     saveJson(GENERATED_MAPPINGS_FILE, ids);
   };
 
-  public customMap = (group: M3U.GroupDocument) => {
-    if (!this._mappings || !group.url) {
+  public customMap = (channel: M3U.ChannelInfoDocument) => {
+    if (!this._mappings || !channel.url) {
       return null;
     }
-    
-    return this._mappings[group.url];
+
+    return this._mappings[channel.url];
   };
 
-  public get groups(): M3U.GroupDocument[] {
+  public get channels(): M3U.ChannelInfoDocument[] {
     if (!this.isLoaded) {
       throw new Error("[M3UFile]: M3U JSON is not loaded");
     }
@@ -133,6 +134,19 @@ class M3UFile {
   public get isLoaded() {
     return this._loaded;
   }
+
+  public getChannelJSON = (filters: M3U.ChannelInfoFilters) => {
+    return this._model?.m3u.filter((channel) => {
+      return Object.entries(filters)
+        .filter(([_, value]) => value)
+        .every(([filter, value]) => {
+          const regex = new RegExp(`^.*?(${value}).*$`, "gi");
+
+          // @ts-ignore
+          return regex.test(channel[filter]);
+        });
+    });
+  };
 
   public toString = async () => {
     if (!this._model) {
@@ -152,13 +166,13 @@ class M3UFile {
     ].join("\n");
   };
 
-  private filterUnique = (groups: M3U.Group[]) => {
-    const groupDictionary = groups.reduce<{
-      [key: string]: { [key: string]: M3U.Group };
-    }>((acc, group) => {
-      const matches = group.name.match(
+  private filterUnique = (channels: M3U.ChannelInfo[]) => {
+    const channelDictionary = channels.reduce<{
+      [key: string]: { [key: string]: M3U.ChannelInfo };
+    }>((acc, channel) => {
+      const matches = channel.name.match(
         CHANNEL_MATCHING_REGEX
-      ) as M3U.NameGroupMatch;
+      ) as M3U.NameChannelInfoMatch;
 
       const info = matches?.groups;
 
@@ -168,7 +182,7 @@ class M3UFile {
         }
 
         acc[info.name][info.definition || "SD"] = {
-          ...group,
+          ...channel,
           ...info,
         };
       }
@@ -176,21 +190,21 @@ class M3UFile {
       return acc;
     }, {});
 
-    return Object.values(groupDictionary).map(
+    return Object.values(channelDictionary).map(
       (list) => list["FHD"] || list["HD"] || list["SD"]
     );
   };
 
-  private filterRegion = (groups: M3U.Group[]) => {
-    return groups.filter((group) => !group.region);
+  private filterRegion = (channels: M3U.ChannelInfo[]) => {
+    return channels.filter((channel) => !channel.region);
   };
 
   private parseJson = (m3u: string) => {
     const split = m3u.split("\n");
 
-    const json = split.reduce<M3U.Group[]>((acc, line) => {
+    const json = split.reduce<M3U.ChannelInfo[]>((acc, line) => {
       if (acc.length > 0 && line[0] && line[0] !== "#") {
-        const entry = acc.pop() as M3U.Group;
+        const entry = acc.pop() as M3U.ChannelInfo;
         entry.url = line;
         acc.push(entry);
         return acc;
@@ -243,7 +257,7 @@ class M3UFile {
         throw new Error();
       }
 
-      const m3u = await M3UModel.findOne().sort({ date: -1 });
+      const m3u = await M3UModel.findOne().sort({ date: 1 });
 
       if (!m3u) {
         Logger.info("[M3UFile.getM3U]: No M3U entry found");

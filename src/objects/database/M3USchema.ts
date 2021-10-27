@@ -23,7 +23,7 @@ export const M3UGroupSchema = new Schema(
   { collection: "playlistItem" }
 );
 
-export const M3UGroupModel = Mongoose.model<M3U.Group>(
+export const M3UGroupModel = Mongoose.model<M3U.ChannelInfo>(
   "M3UGroupModel",
   M3UGroupSchema
 );

@@ -18,7 +18,7 @@ class ChannelManager {
     await this._iptvOrgCode.load();
 
     const matchedCodes = this.getMatchedCodes(this._iptvOrgCode, this._m3uFile);
-    
+
     const { xmlTvUrls, codeGuides } = this.getXmlListUrls(
       Object.values(matchedCodes)
     );
@@ -44,6 +44,10 @@ class ChannelManager {
     return this._iptvOrgCode.match(options);
   };
 
+  public getChannelJSON = (filters: M3U.ChannelInfoFilters) => {
+    return this._m3uFile.getChannelJSON(filters);
+  };
+
   public get isLoaded() {
     return this._loaded;
   }
@@ -67,7 +71,8 @@ class ChannelManager {
         const xmlTvUrls = Object.keys(acc.xmlTvUrls);
         const guide =
           currentCode.guides.find(
-            (guide) => xmlTvUrls.includes(guide) || /\/(ca|us|uk).*?\//.test(guide)
+            (guide) =>
+              xmlTvUrls.includes(guide) || /\/(ca|us|uk).*?\//.test(guide)
           ) || currentCode.guides[0];
 
         acc.xmlTvUrls[guide] = true;
@@ -85,7 +90,7 @@ class ChannelManager {
   };
 
   private getMatchedCodes = (iptvOrgCode: IPTVOrgCode, m3uFile: M3UFile) => {
-    return m3uFile.groups.reduce<{
+    return m3uFile.channels.reduce<{
       [channelUrl: string]: EPG.Code | M3U.CustomMapping;
     }>((acc, group) => {
       const customMapping = m3uFile.customMap(group);
@@ -100,7 +105,7 @@ class ChannelManager {
         id: [group.id, ...(group.parsedIds || [])],
         formatted: true,
       }) as EPG.CodeMatch[];
-      
+
       if (match[0]?.code && group.url) {
         acc[group.url] = match[0].code;
       }

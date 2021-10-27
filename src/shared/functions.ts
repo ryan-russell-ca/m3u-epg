@@ -71,6 +71,10 @@ export const validateDateOrThrow = (
   message: string,
   allowedDiff = 14400000
 ) => {
+  if (date < 0) {
+    return;
+  }
+
   const diff = Date.now() - date;
 
   if (diff > allowedDiff) {
