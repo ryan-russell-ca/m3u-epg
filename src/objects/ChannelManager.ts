@@ -66,8 +66,9 @@ class ChannelManager {
 
         const xmlTvUrls = Object.keys(acc.xmlTvUrls);
         const guide =
-          currentCode.guides.find((guide) => xmlTvUrls.includes(guide)) ||
-          currentCode.guides[0];
+          currentCode.guides.find(
+            (guide) => xmlTvUrls.includes(guide) || /\/(ca|us|uk).*?\//.test(guide)
+          ) || currentCode.guides[0];
 
         acc.xmlTvUrls[guide] = true;
         acc.codeGuides[currentCode.tvg_id] = guide;
