@@ -8,18 +8,14 @@ class ChannelManager {
   private _m3uFile = new M3UFile();
   private _iptvOrgCode = new IPTVOrgCode();
 
-  public load = async (): Promise<void> => {
-    if (this.isLoaded) {
+  public load = async (refresh = false): Promise<void> => {
+    if (this.isLoaded && !refresh) {
       return;
     }
 
-    if (!this._m3uFile.isLoaded) {
-      await this._m3uFile.load();
-    }
+    await this._m3uFile.load(refresh);
 
-    if (!this._iptvOrgCode.isLoaded) {
-      await this._iptvOrgCode.load();
-    }
+    await this._iptvOrgCode.load();
 
     const matchedCodes = this.getMatchedCodes(this._iptvOrgCode, this._m3uFile);
     
@@ -27,12 +23,11 @@ class ChannelManager {
       Object.values(matchedCodes)
     );
 
-    if (!this._xmlList.isLoaded) {
-      await this._xmlList.load(Object.keys(xmlTvUrls));
-    }
+    await this._xmlList.load(Object.keys(xmlTvUrls));
+
+    this._xmlList.mergeByCode(codeGuides);
 
     await this._m3uFile.insertCodeInfo(matchedCodes);
-    this._xmlList.mergeByCode(codeGuides);
 
     this._loaded = true;
   };
@@ -53,15 +48,19 @@ class ChannelManager {
     return this._loaded;
   }
 
-  private getXmlListUrls = (codes: (EPG.Code | M3U.CustomMapping)[]) => {
-    const guides = codes.reduce<{
+  private getXmlListUrls = (channel: (EPG.Code | M3U.CustomMapping)[]) => {
+    const guides = channel.reduce<{
       xmlTvUrls: { [xmlTvUrl: string]: boolean };
       codeGuides: { [id: string]: string };
     }>(
       (acc, code) => {
-        const currentCode = code as EPG.Code;
+        const currentCode = code as EPG.Code & M3U.CustomMapping;
 
         if (!currentCode.tvg_id || !currentCode.guides) {
+          if (currentCode.id) {
+            acc.codeGuides[currentCode.id] = "custom";
+          }
+
           return acc;
         }
 
@@ -100,7 +99,7 @@ class ChannelManager {
         id: [group.id, ...(group.parsedIds || [])],
         formatted: true,
       }) as EPG.CodeMatch[];
-
+      
       if (match[0]?.code && group.url) {
         acc[group.url] = match[0].code;
       }

@@ -5,6 +5,9 @@ const XML_PARSE_OPTIONS = {
   ignoreAttributes: false,
 };
 
+const CUSTOM_XMLTV_MAPPINGS_FILE = process.env
+  .CUSTOM_XMLTV_MAPPINGS_FILE as string;
+
 class XMLTVList {
   private _loaded = false;
   private _xmlTvs?: { [xmlTvUrl: string]: XMLTV };
@@ -18,7 +21,14 @@ class XMLTVList {
       return this._xmlTvs;
     }
 
-    this._xmlTvs = await this.getJson(xmlTvUrls);
+    this._xmlTvs = {
+      ...(await this.getJson(xmlTvUrls)),
+      custom: await XMLTV.fromFile(
+        "custom",
+        CUSTOM_XMLTV_MAPPINGS_FILE,
+        XML_PARSE_OPTIONS
+      ),
+    };
 
     this._loaded = true;
 
@@ -73,10 +83,13 @@ class XMLTVList {
   private getJson = async (
     xmlTvUrls: string[]
   ): Promise<{ [xmlTvUrl: string]: XMLTV }> => {
-    const xmlTvs = xmlTvUrls.reduce<{ [key: string]: XMLTV }>((acc, url) => {
-      acc[url] = new XMLTV(url, XML_PARSE_OPTIONS);
-      return acc;
-    }, {});
+    const xmlTvs = xmlTvUrls.reduce<{ [xmlTvUrl: string]: XMLTV }>(
+      (acc, url) => {
+        acc[url] = new XMLTV(url, XML_PARSE_OPTIONS);
+        return acc;
+      },
+      {}
+    );
 
     await Promise.all(Object.values(xmlTvs).map((xmlTv) => xmlTv.load()));
 
