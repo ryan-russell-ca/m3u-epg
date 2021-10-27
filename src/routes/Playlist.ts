@@ -2,6 +2,7 @@ import StatusCodes from "http-status-codes";
 import { Request, Response } from "express";
 import ChannelManager from "@objects/ChannelManager";
 import { getJson } from "@shared/functions";
+import Logger from "@shared/Logger";
 
 const { OK } = StatusCodes;
 
@@ -52,7 +53,7 @@ export const sandbox = async (req: Request, res: Response) => {
       return acc;
     }, {}), null, 2) + "</pre>");
   } catch (err) {
-    console.log("[M3UFile]: Custom Mappings JSON is empty");
+    Logger.info("[M3UFile]: Custom Mappings JSON is empty");
   }
   return res.status(OK).send("<pre></pre>");
 };

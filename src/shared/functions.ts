@@ -1,11 +1,11 @@
 import fs from "fs/promises";
 import https from "https";
 import URL from "url";
-import logger from "./Logger";
+import Logger from "./Logger";
 
 export const pErr = (err: Error) => {
   if (err) {
-    logger.err(err);
+    Logger.err(err);
   }
 };
 
@@ -104,7 +104,7 @@ export const parseIdFromChannelName = (name: string) => {
 
 export const saveJson = async (filename: string, data: unknown) => {
   if (!data) {
-    console.log(`[saveJson]: ${filename} cannot save with empty data`);
+    Logger.info(`[saveJson]: ${filename} cannot save with empty data`);
     return;
   }
 
