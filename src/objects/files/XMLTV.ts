@@ -32,6 +32,20 @@ class XMLTV {
     this._parseOptions = parseOptions;
   }
 
+  public static fromFile = async (
+    name: string,
+    filename: string,
+    parseOptions: {
+      ignoreAttributes: boolean;
+    }
+  ) => {
+    const epgJson = await getJson(filename);
+    const json = JSON.parse(epgJson) as EPG.Base;
+    const xmlTv = new XMLTV(name, parseOptions);
+    xmlTv.loadFromJSON(json);
+    return xmlTv;
+  };
+
   public load = async (): Promise<EPG.Base> => {
     if (this._json) {
       this._loaded = true;
@@ -45,14 +59,16 @@ class XMLTV {
     return this._json;
   };
 
-  public getByCode = (code: string): {
-    channel: EPG.Channel,
+  public getByCode = (
+    code: string
+  ): {
+    channel: EPG.Channel;
     programme: EPG.Programme[];
   } | null => {
     if (!this._json) {
       throw new Error("[XMLTV.getByCode]: XMLTV is empty");
     }
-
+    
     try {
       const channel = this._json.epg.channel.find(
         (channel) => channel["@_id"] === code
@@ -66,6 +82,11 @@ class XMLTV {
         const { year, month, day, hour, minute, second } = parseXmlDate(
           programme["@_start"]
         );
+
+        if (year < 2011) {
+          return true;
+        }
+
         const date = new Date(Date.UTC(year, month, day, hour, minute, second));
 
         const diff = date.getTime() - new Date().getTime();
@@ -77,10 +98,12 @@ class XMLTV {
         return true;
       });
 
-      return channel ? {
-        channel,
-        programme,
-      } : null;
+      return channel
+        ? {
+            channel,
+            programme,
+          }
+        : null;
     } catch (err) {
       console.log(`[XMLTV.getByCode]: '${code}' not found`);
       return null;
@@ -90,6 +113,11 @@ class XMLTV {
   public get isLoaded() {
     return this._loaded;
   }
+
+  private loadFromJSON = (json: EPG.Base) => {
+    this._loaded = true;
+    this._json = json;
+  };
 
   private getJson = async (): Promise<EPG.Base> => {
     const filename = `${EPG_FILES_DIR}/${this.createFilename()}.json`;

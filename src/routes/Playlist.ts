@@ -12,8 +12,11 @@ export const getPlaylist = async (req: Request, res: Response) => {
   //   return res.status(OK).json(m3u.json());
   // }
 
+  const refresh = req.query.refresh === "true";
+
+  await channelManager.load(refresh);
+  
   res.contentType("text");
-  await channelManager.load();
   return res.status(OK).send(await channelManager.getM3U());
 };
 

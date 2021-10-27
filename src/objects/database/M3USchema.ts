@@ -13,7 +13,6 @@ export const M3UGroupSchema = new Schema(
     url: {
       type: String,
       required: true,
-      unique: true,
     },
     parsedName: String,
     parsedIds: [String],

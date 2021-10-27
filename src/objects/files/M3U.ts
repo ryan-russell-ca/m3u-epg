@@ -12,7 +12,6 @@ import M3UModel, { M3UGroupModel } from "@objects/database/M3USchema";
 import MongoConnector from "@objects/database/Mongo";
 
 const M3U_URL = process.env.M3U_URL as string;
-const M3U_FILE = process.env.M3U_FILE as string;
 const GENERATED_MAPPINGS_FILE = process.env.GENERATED_MAPPINGS_FILE as string;
 const CONFIRMED_MAPPINGS_FILE = process.env.CONFIRMED_MAPPINGS_FILE as string;
 const M3U_INFO_REGEX =
@@ -25,17 +24,16 @@ class M3UFile {
   private _model?: M3U.BaseDocument;
   private _mappings?: M3U.CustomMappings;
 
-  public load = async (uniqueOnly: boolean = true) => {
-    if (this._model) {
-      this._loaded = true;
-      return this._model;
+  public load = async (refresh = false, uniqueOnly = true) => {
+    if (this._model && !refresh) {
+      return;
     }
 
     if (!MongoConnector.connected) {
       await MongoConnector.connect();
     }
 
-    this._model = await this.getM3U(uniqueOnly);
+    this._model = await this.getM3U(uniqueOnly, refresh);
 
     this._mappings = await this.getMappings();
 
@@ -44,6 +42,7 @@ class M3UFile {
     return this._model;
   };
 
+  // TODO: Remove mutations to channels
   public insertCodeInfo = async (codes: {
     [tvgId: string]: EPG.Code | M3U.CustomMapping;
   }) => {
@@ -51,68 +50,65 @@ class M3UFile {
       throw new Error("[M3UFile]: M3U JSON is empty");
     }
 
-    const ids = this._model?.m3u.reduce<M3U.CustomMappings>(
-      (acc, channel) => {
-        const channelJson = channel.toJSON();
+    const ids = this._model?.m3u.reduce<M3U.CustomMappings>((acc, channel) => {
+      const channelJson = channel.toJSON();
 
-        if (!channelJson.url) {
-          return acc;
-        }
+      if (!channelJson.url) {
+        return acc;
+      }
 
-        const code = codes[channelJson.url] as EPG.Code & M3U.CustomMapping;
+      const code = codes[channelJson.url] as EPG.Code & M3U.CustomMapping;
 
-        if (!code) {
-          acc[channelJson.url] = {
-            ...channelJson,
-            confirmed: false,
-            id: null,
-            logo: null,
-            country: "unpoplated",
-          };
-
-          return acc;
-        }
-
-        if (code.tvg_id) {
-          const append = {
-            id: code.tvg_id,
-            name: code.display_name,
-            logo: channelJson.logo || code.logo,
-            country: channelJson.country || code.country,
-          };
-
-          channel.set({
-            ...append,
-          });
-
-          acc[channelJson.url] = {
-            ...channelJson,
-            ...append,
-            confirmed: false,
-          };
-        } else {
-          const append = {
-            id: code.id || "",
-            name: code.name || channelJson.name,
-            logo: code.logo || channelJson.logo,
-            country: code.country || channelJson.country,
-          };
-
-          channel.set({
-            ...append,
-          });
-
-          acc[channelJson.url] = {
-            ...channelJson,
-            ...append,
-            confirmed: code.confirmed,
-          };
-        }
+      if (!code) {
+        acc[channelJson.url] = {
+          ...channelJson,
+          confirmed: false,
+          id: null,
+          logo: null,
+          country: "unpoplated",
+        };
 
         return acc;
-      },
-      {}
-    );
+      }
+
+      if (code.tvg_id) {
+        const append = {
+          id: code.tvg_id,
+          name: code.display_name,
+          logo: channelJson.logo || code.logo,
+          country: channelJson.country || code.country,
+        };
+
+        channel.set({
+          ...append,
+        });
+
+        acc[channelJson.url] = {
+          ...channelJson,
+          ...append,
+          confirmed: false,
+        };
+      } else {
+        const append = {
+          id: code.id || "",
+          name: code.name || channelJson.name,
+          logo: code.logo || channelJson.logo,
+          country: code.country || channelJson.country,
+        };
+
+        channel.set({
+          ...append,
+        });
+
+        acc[channelJson.url] = {
+          ...channelJson,
+          ...append,
+          confirmed: code.confirmed,
+        };
+      }
+
+      return acc;
+    }, {});
 
     saveJson(GENERATED_MAPPINGS_FILE, ids);
   };
@@ -121,7 +117,7 @@ class M3UFile {
     if (!this._mappings || !group.url) {
       return null;
     }
-
+    
     return this._mappings[group.url];
   };
 
@@ -236,8 +232,16 @@ class M3UFile {
     }
   };
 
-  private getM3U = async (uniqueOnly: boolean): Promise<M3U.BaseDocument> => {
+  private getM3U = async (
+    uniqueOnly: boolean,
+    refresh = false
+  ): Promise<M3U.BaseDocument> => {
     try {
+      if (refresh) {
+        console.log("[M3UFile.getM3U]: Forcing refresh");
+        throw new Error();
+      }
+
       const m3u = await M3UModel.findOne().sort({ date: -1 });
 
       if (!m3u) {

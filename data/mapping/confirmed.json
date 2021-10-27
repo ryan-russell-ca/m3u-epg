@@ -131,7 +131,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/8000015258": {
     "group": "NBA League Pass",
-    "id": "",
+    "id": "gamesonl",
     "logo": "https://cdn-0.tvprofil.com/cdn/100x40/10/img/kanali-logo/Gametoon.png",
     "name": "NBA: TNT (Games Only)",
     "country": "us",
@@ -600,7 +600,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001702": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001702",
     "logo": "https://content.sportslogos.net/logos/6/238/full/phoenix_suns_logo_primary_20143696.png",
     "name": "NBA: Phoenix Suns",
     "country": "us",
@@ -612,7 +612,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001703": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001703",
     "logo": "https://content.sportslogos.net/logos/6/221/full/chicago_bulls_logo_primary_19672598.png",
     "name": "NBA: Chicago Bulls",
     "country": "us",
@@ -624,7 +624,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001704": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001704",
     "logo": "https://content.sportslogos.net/logos/6/222/full/cleveland_cavaliers_logo_primary_20187997.png",
     "name": "NBA: Cleveland Cavaliers",
     "country": "us",
@@ -636,9 +636,9 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001705": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001705",
     "logo": "https://content.sportslogos.net/logos/6/218/full/7034_philadelphia_76ers-primary-2016.png",
-    "name": "NBA: WBPH Philadelphia, PA",
+    "name": "NBA: Philadelphia 76ers",
     "country": "us",
     "originalName": "NBA: Philadelphia 76ers FHD",
     "parsedName": "nba:philadelphia 76ers fhd",
@@ -648,7 +648,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001706": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001706",
     "logo": "https://content.sportslogos.net/logos/6/229/full/8926_denver_nuggets-primary-2019.png",
     "name": "NBA: Denver Nuggets",
     "country": "us",
@@ -660,7 +660,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001707": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001707",
     "logo": "https://content.sportslogos.net/logos/6/235/full/3152_golden_state_warriors-primary-2020.png",
     "name": "NBA: Golden State Warriors",
     "country": "us",
@@ -672,7 +672,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001708": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001708",
     "logo": "https://content.sportslogos.net/logos/6/237/full/uig7aiht8jnpl1szbi57zzlsh.png",
     "name": "NBA: Los Angeles Lakers",
     "country": "us",
@@ -684,7 +684,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001709": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001709",
     "logo": "https://content.sportslogos.net/logos/6/232/full/9669_minnesota_timberwolves-primary-2018.png",
     "name": "NBA: Minnesota Timberwolves",
     "country": "us",
@@ -696,7 +696,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001710": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001710",
     "logo": "https://content.sportslogos.net/logos/6/3786/full/137_brooklyn-nets-primary-2013.png",
     "name": "NBA: Brooklyn Nets",
     "country": "us",
@@ -708,7 +708,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001712": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001712",
     "logo": "https://content.sportslogos.net/logos/6/224/full/3083.gif",
     "name": "NBA: Indiana Pacers",
     "country": "us",
@@ -720,7 +720,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001713": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001713",
     "logo": "https://content.sportslogos.net/logos/6/228/full/3463_dallas_mavericks-primary-2018.png",
     "name": "NBA: Dallas Mavericks",
     "country": "us",
@@ -732,7 +732,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001714": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001714",
     "logo": "https://content.sportslogos.net/logos/6/230/full/8xe4813lzybfhfl14axgzzqeq.gif",
     "name": "NBA: Houston Rockets",
     "country": "us",
@@ -744,7 +744,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001715": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001715",
     "logo": "https://content.sportslogos.net/logos/6/223/full/2164_detroit_pistons-primary-2018.png",
     "name": "NBA: Detroit Pistons",
     "country": "us",
@@ -756,7 +756,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001716": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001716",
     "logo": "https://content.sportslogos.net/logos/6/231/full/4373_memphis_grizzlies-primary-2019.png",
     "name": "NBA: Memphis Grizzlies",
     "country": "us",
@@ -768,7 +768,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001717": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001717",
     "logo": "https://content.sportslogos.net/logos/6/225/full/milwaukee_bucks_logo_primary_20165763.png",
     "name": "NBA: Milwaukee Bucks",
     "country": "us",
@@ -780,7 +780,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001718": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001718",
     "logo": "https://content.sportslogos.net/logos/6/216/full/2nn48xofg0hms8k326cqdmuis.gif",
     "name": "NBA: New York Knicks",
     "country": "us",
@@ -792,7 +792,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001719": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001719",
     "logo": "https://content.sportslogos.net/logos/6/236/full/los_angeles_clippers_logo_primary_2019_sportslogosnet-3776.png",
     "name": "NBA: Los Angeles Clippers",
     "country": "us",
@@ -804,7 +804,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001720": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001720",
     "logo": "https://content.sportslogos.net/logos/6/219/full/5671_washington_wizards-primary-2016.png",
     "name": "NBA: Washington Wizards",
     "country": "us",
@@ -816,7 +816,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001721": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001721",
     "logo": "https://content.sportslogos.net/logos/6/4962/full/6144_new_orleans_pelicans-secondary-2014.png",
     "name": "NBA: New Orleans Pelicans",
     "country": "us",
@@ -828,7 +828,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001722": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001722",
     "logo": "https://content.sportslogos.net/logos/6/220/full/8190_atlanta_hawks-primary-2021.png",
     "name": "NBA: Atlanta Hawks",
     "country": "us",
@@ -840,7 +840,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001723": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001723",
     "logo": "https://content.sportslogos.net/logos/6/5120/full/1926_charlotte__hornets_-primary-2015.png",
     "name": "NBA: Charlotte Hornets",
     "country": "us",
@@ -852,7 +852,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001724": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001724",
     "logo": "https://content.sportslogos.net/logos/6/227/full/7024_toronto_raptors-primary-2021.png",
     "name": "NBA: Toronto Raptors",
     "country": "us",
@@ -864,7 +864,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001725": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001725",
     "logo": "https://content.sportslogos.net/logos/6/2687/full/khmovcnezy06c3nm05ccn0oj2.png",
     "name": "NBA: Oklahoma City Thunder",
     "country": "us",
@@ -876,7 +876,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001726": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001726",
     "logo": "https://content.sportslogos.net/logos/6/240/full/4043_sacramento_kings-primary-2017.png",
     "name": "NBA: Sacramento Kings",
     "country": "us",
@@ -888,7 +888,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001727": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001727",
     "logo": "https://content.sportslogos.net/logos/6/214/full/burm5gh2wvjti3xhei5h16k8e.gif",
     "name": "NBA: Miami Heat",
     "country": "us",
@@ -900,7 +900,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001728": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001728",
     "logo": "https://content.sportslogos.net/logos/6/217/full/orlando_magic_logo_primary_20117178.png",
     "name": "NBA: Orlando Magic",
     "country": "us",
@@ -912,7 +912,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001729": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001729",
     "logo": "https://content.sportslogos.net/logos/6/233/full/2547_san_antonio_spurs-primary-2018.png",
     "name": "NBA: San Antonio Spurs",
     "country": "us",
@@ -924,7 +924,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001730": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001730",
     "logo": "https://content.sportslogos.net/logos/6/213/full/boston_celtics_logo_primary_19977628.png",
     "name": "NBA: Boston Celtics",
     "country": "us",
@@ -936,7 +936,7 @@
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001731": {
     "group": "NBA League Pass",
-    "id": null,
+    "id": "800001731",
     "logo": "https://content.sportslogos.net/logos/6/239/full/9725_portland_trail_blazers-primary-2018.png",
     "name": "NBA: Portland Trail Blazers",
     "country": "us",
@@ -944,6 +944,18 @@
     "parsedName": "nba:portland trail blazers fhd",
     "parsedIds": [],
     "url": "https://vipvikingz.com/900193662/eOBycPCXjM/800001731",
+    "confirmed": true
+  },
+  "https://vipvikingz.com/900193662/eOBycPCXjM/800001711": {
+    "group": "NBA League Pass",
+    "id": "800001711",
+    "logo": "https://content.sportslogos.net/logos/6/234/full/6749_utah_jazz-primary-2017.png",
+    "name": "NBA: Utah Jazz",
+    "country": "us",
+    "originalName": "NBA: Utah Jazz FHD",
+    "parsedName": "nba:utah jazz fhd",
+    "parsedIds": [],
+    "url": "https://vipvikingz.com/900193662/eOBycPCXjM/800001711",
     "confirmed": true
   }
 }
