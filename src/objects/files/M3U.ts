@@ -10,6 +10,7 @@ import {
 } from "@shared/functions";
 import M3UModel, { M3UGroupModel } from "@objects/database/M3USchema";
 import MongoConnector from "@objects/database/Mongo";
+import Logger from "@shared/Logger";
 
 const M3U_URL = process.env.M3U_URL as string;
 const GENERATED_MAPPINGS_FILE = process.env.GENERATED_MAPPINGS_FILE as string;
@@ -227,7 +228,7 @@ class M3UFile {
 
       return json;
     } catch (err) {
-      console.log("[M3UFile.getMappings]: Custom Mappings JSON is empty");
+      Logger.info("[M3UFile.getMappings]: Custom Mappings JSON is empty");
       return {};
     }
   };
@@ -238,20 +239,20 @@ class M3UFile {
   ): Promise<M3U.BaseDocument> => {
     try {
       if (refresh) {
-        console.log("[M3UFile.getM3U]: Forcing refresh");
+        Logger.info("[M3UFile.getM3U]: Forcing refresh");
         throw new Error();
       }
 
       const m3u = await M3UModel.findOne().sort({ date: -1 });
 
       if (!m3u) {
-        console.log("[M3UFile.getM3U]: No M3U entry found");
+        Logger.info("[M3UFile.getM3U]: No M3U entry found");
         throw new Error();
       }
 
       return m3u;
     } catch (error) {
-      console.log("[M3UFile.getM3U]: No M3U entry found");
+      Logger.info("[M3UFile.getM3U]: No M3U entry found");
       const json = await this.getJson();
 
       if (uniqueOnly) {

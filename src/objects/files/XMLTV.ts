@@ -7,6 +7,7 @@ import {
   saveJson,
   validateDateOrThrow,
 } from "@shared/functions";
+import Logger from "@shared/Logger";
 
 const EPG_FILES_DIR = process.env.EPG_FILES_DIR as string;
 const EPG_TIME_AHEAD_MILLI =
@@ -105,7 +106,7 @@ class XMLTV {
           }
         : null;
     } catch (err) {
-      console.log(`[XMLTV.getByCode]: '${code}' not found`);
+      Logger.info(`[XMLTV.getByCode]: '${code}' not found`);
       return null;
     }
   };
@@ -131,7 +132,7 @@ class XMLTV {
 
       return json;
     } catch (err: any) {
-      console.log(`[XMLTV.getJson]: Refreshing | ${this._url}`);
+      Logger.info(`[XMLTV.getJson]: Refreshing | ${this._url}`);
 
       const fileXml = await getFromUrl(this._url);
 

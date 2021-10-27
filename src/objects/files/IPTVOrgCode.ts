@@ -5,6 +5,7 @@ import {
   saveJson,
   validateDateOrThrow,
 } from "@shared/functions";
+import Logger from "@shared/Logger";
 
 const CODES_JSON_FILE = process.env.CODES_JSON_FILE as string;
 const CODES_JSON_URL = process.env.CODES_JSON_URL as string;
@@ -181,7 +182,7 @@ class IPTVOrgCode {
 
       return json;
     } catch (err) {
-      console.log(`[IPTVOrgCode.getJson]: Refreshing | ${CODES_JSON_URL}`);
+      Logger.info(`[IPTVOrgCode.getJson]: Refreshing | ${CODES_JSON_URL}`);
 
       const fileJson = await getFromUrl(CODES_JSON_URL);
 
