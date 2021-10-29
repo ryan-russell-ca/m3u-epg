@@ -53,8 +53,8 @@ namespace M3U {
     groups?: NameChannelInfo;
   }
 
-  export type ChannelInfoDocument = Document<any, any, M3U.ChannelInfo> &
-    M3U.ChannelInfo;
+  export type ChannelInfoDocument = Document<any, any, ChannelInfo> &
+    ChannelInfo;
 
   export type BaseModel = {
     date: Date;

@@ -47,15 +47,16 @@ class XMLTVList {
         const { channel, programme } = xmlTvs[xmlListUrl].getByCode(id) || {};
 
         if (channel && programme) {
-          acc.epg.channel.push(channel);
-          acc.epg.programme.push(...programme);
+          acc.xmlTv.channel.push(channel);
+          acc.xmlTv.programme.push(...programme);
         }
 
         return acc;
       },
       {
-        date: Date.now(),
-        epg: {
+        date: new Date(),
+        url: "full",
+        xmlTv: {
           channel: [],
           programme: [],
         },
@@ -76,7 +77,7 @@ class XMLTVList {
 
     return (
       '<?xml version="1.0" encoding="UTF-8" ?>' +
-      parser.parse({ tv: this._fullXmlTv?.epg }).toString()
+      parser.parse({ tv: this._fullXmlTv?.xmlTv }).toString()
     );
   };
 
