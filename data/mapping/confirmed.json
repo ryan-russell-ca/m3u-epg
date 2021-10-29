@@ -1281,5 +1281,57 @@
     "logo": null,
     "id": null,
     "definition": "HD"
+  },
+  "https://vipvikingz.com/900193662/eOBycPCXjM/6662351": {
+    "group": "United States",
+    "name": "Nicktoons",
+    "originalName": "US: Nicktoons HD",
+    "country": "unpopulated",
+    "url": "https://vipvikingz.com/900193662/eOBycPCXjM/6662351",
+    "parsedName": "nicktoons hd",
+    "parsedIds": [],
+    "logo": "https://cdn.tvpassport.com/image/station/100x100/nicktoons.png",
+    "id": "NicktoonsEast.us",
+    "definition": "HD",
+    "confirmed": true
+  },
+  "https://vipvikingz.com/900193662/eOBycPCXjM/666740": {
+    "group": "United Kingdom",
+    "name": "Nicktoons",
+    "originalName": "UK: NickToons HD",
+    "country": "unpopulated",
+    "url": "https://vipvikingz.com/900193662/eOBycPCXjM/666740",
+    "parsedName": "nicktoons hd",
+    "parsedIds": [],
+    "logo": "https://cdn.tvpassport.com/image/station/100x100/nicktoons.png",
+    "id": "NicktoonsEast.us",
+    "definition": "HD",
+    "confirmed": true
+  },
+  "https://vipvikingz.com/900193662/eOBycPCXjM/66666104": {
+    "group": "United States",
+    "name": "Kids Bop",
+    "originalName": "US: Kidz Bop HD",
+    "country": "unpopulated",
+    "url": "https://vipvikingz.com/900193662/eOBycPCXjM/66666104",
+    "parsedName": "kidz bop hd",
+    "parsedIds": [],
+    "logo": null,
+    "id": null,
+    "definition": "HD",
+    "confirmed": true
+  },
+  "https://vipvikingz.com/900193662/eOBycPCXjM/666282296": {
+    "group": "United States",
+    "name": "Front Row",
+    "originalName": "US: Front Row HD",
+    "country": "unpopulated",
+    "url": "https://vipvikingz.com/900193662/eOBycPCXjM/666282296",
+    "parsedName": "front row hd",
+    "parsedIds": [],
+    "logo": null,
+    "id": null,
+    "definition": "HD",
+    "confirmed": true
   }
 }
