@@ -1,6 +1,6 @@
-import Mongoose, { Schema, ObjectId } from "mongoose";
+import Mongoose, { Schema } from "mongoose";
 
-export const M3UChannelSchema = new Schema(
+const M3UChannelSchema = new Schema(
   {
     group: { type: String, required: true },
     name: { type: String, required: true },
@@ -21,7 +21,7 @@ export const M3UChannelSchema = new Schema(
     id: String,
     definition: String,
   },
-  { collection: "channel" }
+  { collection: "playlistChannel" }
 );
 
 export const M3UChannelModel = Mongoose.model<M3U.ChannelInfo>(

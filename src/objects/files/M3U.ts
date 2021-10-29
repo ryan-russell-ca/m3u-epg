@@ -1,4 +1,3 @@
-import { Document } from "mongoose";
 import {
   getFromUrl,
   getJson,
@@ -6,12 +5,10 @@ import {
   parseCountryFromChannelName,
   parseIdFromChannelName,
   saveJson,
-  validateDateOrThrow,
 } from "@shared/functions";
 import M3UModel, { M3UChannelModel } from "@objects/database/M3USchema";
 import MongoConnector from "@objects/database/Mongo";
 import Logger from "@shared/Logger";
-import ChannelManager from "@objects/ChannelManager";
 
 const M3U_URL = process.env.M3U_URL as string;
 const GENERATED_MAPPINGS_FILE = process.env.GENERATED_MAPPINGS_FILE as string;

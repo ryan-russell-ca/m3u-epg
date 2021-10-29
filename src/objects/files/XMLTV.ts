@@ -1,23 +1,24 @@
-import URL from "url";
 import xmlParser from "fast-xml-parser";
 import {
   getFromUrl,
   getJson,
   parseXmlDate,
-  saveJson,
-  validateDateOrThrow,
 } from "@shared/functions";
 import Logger from "@shared/Logger";
+import {
+  XMLTVChannelModel,
+  XMLTVModel,
+  XMLTVProgrammeModel,
+} from "@objects/database/XMLTVSchema";
+import MongoConnector from "@objects/database/Mongo";
 
-const EPG_FILES_DIR = process.env.EPG_FILES_DIR as string;
 const EPG_TIME_AHEAD_MILLI =
   parseInt(process.env.EPG_TIME_AHEAD_SECONDS as string) * 1000;
 
 class XMLTV {
   private _loaded = false;
-  private _json?: EPG.Base;
+  private _json?: EPG.BaseDocument;
   private _url: string;
-  private _urlObj: URL.UrlWithStringQuery;
   private _parseOptions: {
     ignoreAttributes: boolean;
   };
@@ -29,7 +30,6 @@ class XMLTV {
     }
   ) {
     this._url = url;
-    this._urlObj = URL.parse(url);
     this._parseOptions = parseOptions;
   }
 
@@ -40,20 +40,24 @@ class XMLTV {
       ignoreAttributes: boolean;
     }
   ) => {
-    const epgJson = await getJson(filename);
-    const json = JSON.parse(epgJson) as EPG.Base;
+    const xmlTvJson = await getJson(filename);
+    const json = JSON.parse(xmlTvJson) as EPG.Base;
     const xmlTv = new XMLTV(name, parseOptions);
     xmlTv.loadFromJSON(json);
     return xmlTv;
   };
 
-  public load = async (): Promise<EPG.Base> => {
+  public load = async (): Promise<EPG.BaseDocument> => {
     if (this._json) {
       this._loaded = true;
       return this._json;
     }
 
-    this._json = await this.getJson();
+    if (!MongoConnector.connected) {
+      await MongoConnector.connect();
+    }
+
+    this._json = await this.getXMLTV();
 
     this._loaded = true;
 
@@ -63,19 +67,19 @@ class XMLTV {
   public getByCode = (
     code: string
   ): {
-    channel: EPG.Channel;
-    programme: EPG.Programme[];
+    channel: EPG.ChannelDocument;
+    programme: EPG.ProgrammeDocument[];
   } | null => {
     if (!this._json) {
       throw new Error("[XMLTV.getByCode]: XMLTV is empty");
     }
 
     try {
-      const channel = this._json.epg.channel.find(
+      const channel = this._json.xmlTv.channel.find(
         (channel) => channel["@_id"] === code
       );
 
-      const programme = this._json.epg.programme.filter((programme) => {
+      const programme = this._json.xmlTv.programme.filter((programme) => {
         if (programme["@_channel"] !== code) {
           return false;
         }
@@ -117,50 +121,100 @@ class XMLTV {
 
   private loadFromJSON = (json: EPG.Base) => {
     this._loaded = true;
-    this._json = json;
+    this._json = new XMLTVModel(json);
+  };
+
+  private getXMLTV = async (refresh = false): Promise<EPG.BaseDocument> => {
+    try {
+      if (refresh) {
+        Logger.info("[XMLTV.getXMLTV]: Forcing refresh");
+        throw new Error();
+      }
+
+      const xmlTv = await XMLTVModel.findOne()
+        .sort({ date: 1, url: this._url })
+        .populate("xmlTv.channel")
+        .populate("xmlTv.programme");
+
+      if (!xmlTv) {
+        Logger.info("[XMLTV.getXMLTV]: No XMLTV entry found");
+        throw new Error();
+      }
+
+      return xmlTv;
+    } catch (error) {
+      Logger.info("[XMLTV.getXMLTV]: No XMLTV entry found");
+      const json = await this.getJson();
+
+      const channels = await XMLTVChannelModel.find({
+        "@_id": json.xmlTv.channel.map((channel) => channel["@_id"]),
+      });
+
+      const xmlTvChannels = json.xmlTv.channel.map(
+        (channel) =>
+          channels.find(
+            (p) =>
+              p["@_id"] === channel["@_id"]
+          ) || new XMLTVChannelModel(channel)
+      );
+
+      const programmes = await XMLTVProgrammeModel.find({
+        $or: json.xmlTv.programme.map((programme) => ({
+          "@_channel": programme["@_channel"],
+          "@_start": programme["@_start"],
+        })),
+      });
+
+      const xmlTvProgrammes = json.xmlTv.programme.map(
+        (programme) =>
+          programmes.find(
+            (p) =>
+              p["@_channel"] === programme["@_channel"] &&
+              p["@_start"] === programme["@_start"]
+          ) || new XMLTVProgrammeModel(programme)
+      );
+
+      const xmlTv = new XMLTVModel({
+        ...json,
+        xmlTv: {
+          channel: xmlTvChannels,
+          programme: xmlTvProgrammes,
+        },
+      });
+
+      await Promise.all(xmlTvChannels.map((o) => o.save()));
+      await Promise.all(xmlTvProgrammes.map((o) => o.save()));
+      await xmlTv.save();
+
+      return xmlTv;
+    }
   };
 
   private getJson = async (): Promise<EPG.Base> => {
-    const filename = `${EPG_FILES_DIR}/${this.createFilename()}.json`;
+    Logger.info(`[XMLTV.getJson]: Refreshing | ${this._url}`);
 
-    try {
-      const xmlTvFile = await getJson(filename);
+    const fileXml = await getFromUrl(this._url);
 
-      const json = JSON.parse(xmlTvFile) as EPG.Base;
+    if (xmlParser.validate(fileXml) === true) {
+      const json = xmlParser.parse(fileXml, this._parseOptions);
 
-      validateDateOrThrow(json.date, `Outdated: [${filename}]`);
+      const xmlTvJson = {
+        date: new Date(),
+        url: this._url,
+        xmlTv: json.tv,
+      };
 
-      return json;
-    } catch (err: any) {
-      Logger.info(`[XMLTV.getJson]: Refreshing | ${this._url}`);
-
-      const fileXml = await getFromUrl(this._url);
-
-      if (xmlParser.validate(fileXml) === true) {
-        const json = xmlParser.parse(fileXml, this._parseOptions);
-
-        const xmlTvJson = {
-          date: Date.now(),
-          epg: json.tv,
-        };
-
-        saveJson(filename, xmlTvJson);
-
-        return xmlTvJson;
-      }
+      return xmlTvJson;
     }
 
     return {
-      date: Date.now(),
-      epg: {
+      date: new Date(),
+      url: this._url,
+      xmlTv: {
         channel: [],
         programme: [],
       },
     };
-  };
-
-  private createFilename = () => {
-    return this._urlObj?.pathname?.split("/").slice(-2).join("-");
   };
 }
 
