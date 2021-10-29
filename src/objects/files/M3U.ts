@@ -8,7 +8,7 @@ import {
   saveJson,
   validateDateOrThrow,
 } from "@shared/functions";
-import M3UModel, { M3UGroupModel } from "@objects/database/M3USchema";
+import M3UModel, { M3UChannelModel } from "@objects/database/M3USchema";
 import MongoConnector from "@objects/database/Mongo";
 import Logger from "@shared/Logger";
 import ChannelManager from "@objects/ChannelManager";
@@ -153,6 +153,7 @@ class M3UFile {
       throw new Error("[M3UFile]: M3U JSON is empty");
     }
 
+    await Promise.all(this._model.m3u.map((channel) => channel.save()));
     await this._model.save();
 
     return [
@@ -227,6 +228,7 @@ class M3UFile {
         parsedIds: [nameCode]
           .concat(parseIdFromChannelName(name) || [])
           .filter((n) => n),
+        url: "",
       });
 
       return acc;
@@ -257,7 +259,7 @@ class M3UFile {
         throw new Error();
       }
 
-      const m3u = await M3UModel.findOne().sort({ date: 1 });
+      const m3u = await M3UModel.findOne().sort({ date: 1 }).populate("m3u");
 
       if (!m3u) {
         Logger.info("[M3UFile.getM3U]: No M3U entry found");
@@ -270,12 +272,22 @@ class M3UFile {
       const json = await this.getJson();
 
       if (uniqueOnly) {
-        json.m3u = this.filterRegion(this.filterUnique(json.m3u)).map(
-          (item) => new M3UGroupModel(item)
-        );
+        json.m3u = this.filterRegion(this.filterUnique(json.m3u));
       }
 
-      const m3u = new M3UModel(json);
+      const channels = await M3UChannelModel.find({
+        url: json.m3u.map((channel) => channel.url),
+      });
+
+      const m3u = new M3UModel({
+        ...json,
+        m3u: json.m3u.map((channel) => {
+          return (
+            channels.find((c) => c.url === channel.url) ||
+            new M3UChannelModel(channel)
+          );
+        }),
+      });
 
       return m3u;
     }

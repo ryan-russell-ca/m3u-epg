@@ -1,6 +1,6 @@
-import Mongoose, { Schema } from "mongoose";
+import Mongoose, { Schema, ObjectId } from "mongoose";
 
-export const M3UGroupSchema = new Schema(
+export const M3UChannelSchema = new Schema(
   {
     group: { type: String, required: true },
     name: { type: String, required: true },
@@ -13,6 +13,7 @@ export const M3UGroupSchema = new Schema(
     url: {
       type: String,
       required: true,
+      unique: true,
     },
     parsedName: String,
     parsedIds: [String],
@@ -20,19 +21,19 @@ export const M3UGroupSchema = new Schema(
     id: String,
     definition: String,
   },
-  { collection: "playlistItem" }
+  { collection: "channel" }
 );
 
-export const M3UGroupModel = Mongoose.model<M3U.ChannelInfo>(
-  "M3UGroupModel",
-  M3UGroupSchema
+export const M3UChannelModel = Mongoose.model<M3U.ChannelInfo>(
+  "M3UChannelModel",
+  M3UChannelSchema
 );
 
 const M3USchema = new Schema(
   {
     date: { type: Date, default: Date.now() },
     m3u: {
-      type: [M3UGroupSchema],
+      type: [{ type: Schema.Types.ObjectId, ref: "M3UChannelModel" }],
       required: true,
     },
   },

@@ -23,7 +23,7 @@ namespace M3U {
     name: string;
     originalName: string;
     parsedName: string;
-    url?: string;
+    url: string;
     country: string | null;
     definition?: string;
     parsedIds: string[] | null;
