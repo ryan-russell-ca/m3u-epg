@@ -69,7 +69,7 @@ class XMLTV {
     if (!this._json) {
       throw new Error("[XMLTV.getByCode]: XMLTV is empty");
     }
-    
+
     try {
       const channel = this._json.epg.channel.find(
         (channel) => channel["@_id"] === code
