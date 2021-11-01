@@ -1,3 +1,4 @@
+import { XMLTVModel } from "@objects/database/XMLTVSchema";
 import { j2xParser } from "fast-xml-parser";
 import XMLTV from "./XMLTV";
 
@@ -10,24 +11,28 @@ const CUSTOM_XMLTV_MAPPINGS_FILE = process.env
 
 class XMLTVList {
   private _loaded = false;
-  private _xmlTvs?: { [xmlTvUrl: string]: XMLTV };
+  private _xmlTvs?: { [xmlTvUrl: string]: XMLTV } = {};
   private _fullXmlTv?: EPG.Base;
 
   public load = async (
-    xmlTvUrls: string[]
+    xmlTvUrls: string[],
+    filterIds?: string[]
   ): Promise<{ [key: string]: XMLTV }> => {
-    if (this._xmlTvs) {
+    if (this._xmlTvs && Object.keys(this._xmlTvs).length) {
       this._loaded = true;
       return this._xmlTvs;
     }
 
+    const xmlTvs = await this.getJson(xmlTvUrls, filterIds);
+    const custom = await XMLTV.fromFile(
+      "custom",
+      CUSTOM_XMLTV_MAPPINGS_FILE,
+      XML_PARSE_OPTIONS
+    );
+
     this._xmlTvs = {
-      ...(await this.getJson(xmlTvUrls)),
-      custom: await XMLTV.fromFile(
-        "custom",
-        CUSTOM_XMLTV_MAPPINGS_FILE,
-        XML_PARSE_OPTIONS
-      ),
+      ...xmlTvs,
+      custom,
     };
 
     this._loaded = true;
@@ -44,6 +49,11 @@ class XMLTVList {
 
     this._fullXmlTv = Object.entries(codes).reduce<EPG.Base>(
       (acc, [id, xmlListUrl]) => {
+        if (!xmlTvs[xmlListUrl]) {
+          console.log(xmlTvs);
+          return acc;
+        }
+
         const { channel, programme } = xmlTvs[xmlListUrl].getByCode(id) || {};
 
         if (channel && programme) {
@@ -82,9 +92,10 @@ class XMLTVList {
   };
 
   private getJson = async (
-    xmlTvUrls: string[]
+    xmlTvUrls: string[],
+    filterIds?: string[]
   ): Promise<{ [xmlTvUrl: string]: XMLTV }> => {
-    const xmlTvs = xmlTvUrls.reduce<{ [xmlTvUrl: string]: XMLTV }>(
+    const xmlTvsDictionary = xmlTvUrls.reduce<{ [xmlTvUrl: string]: XMLTV }>(
       (acc, url) => {
         acc[url] = new XMLTV(url, XML_PARSE_OPTIONS);
         return acc;
@@ -92,7 +103,17 @@ class XMLTVList {
       {}
     );
 
-    await Promise.all(Object.values(xmlTvs).map((xmlTv) => xmlTv.load()));
+    const xmlTvValues = Object.values(xmlTvsDictionary);
+    const xmlTvs = {} as { [xmlTvUrl: string]: XMLTV };
+
+    for (let i = 0; i < xmlTvValues.length; i++) {
+      const xmlTv = xmlTvValues[i] as XMLTV;
+      await xmlTv.load(filterIds);
+
+      if (xmlTv.isValid) {
+        xmlTvs[xmlTv.url];
+      }
+    }
 
     return xmlTvs;
   };

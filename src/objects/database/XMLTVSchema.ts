@@ -42,6 +42,7 @@ export const XMLTVProgrammeModel = Mongoose.model<EPG.ProgrammeModel>(
 const XMLTVSchema = new Schema(
   {
     date: { type: Date, default: Date.now() },
+    url: { type: String, required: true, unique: true },
     xmlTv: {
       channel: {
         type: [{ type: Schema.Types.ObjectId, ref: "M3UChannelModel" }],
