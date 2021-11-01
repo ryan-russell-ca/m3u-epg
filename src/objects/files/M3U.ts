@@ -11,6 +11,7 @@ import MongoConnector from "@objects/database/Mongo";
 import Logger from "@shared/Logger";
 
 const M3U_URL = process.env.M3U_URL as string;
+const M3U_FILENAME = process.env.M3U_FILENAME as string;
 const GENERATED_MAPPINGS_FILE = process.env.GENERATED_MAPPINGS_FILE as string;
 const CONFIRMED_MAPPINGS_FILE = process.env.CONFIRMED_MAPPINGS_FILE as string;
 const M3U_INFO_REGEX =
@@ -150,7 +151,7 @@ class M3UFile {
       throw new Error("[M3UFile]: M3U JSON is empty");
     }
 
-    await Promise.all(this._model.m3u.map((channel) => channel.save()));
+    await M3UChannelModel.bulkSave(this._model.m3u.map((channel) => channel));
     await this._model.save();
 
     return [
@@ -263,9 +264,10 @@ class M3UFile {
         throw new Error();
       }
 
+      m3u.m3u = m3u.m3u.slice(0, 5);
+
       return m3u;
     } catch (error) {
-      Logger.info("[M3UFile.getM3U]: No M3U entry found");
       const json = await this.getJson();
 
       if (uniqueOnly) {
@@ -278,12 +280,14 @@ class M3UFile {
 
       const m3u = new M3UModel({
         ...json,
-        m3u: json.m3u.map((channel) => {
-          return (
-            channels.find((c) => c.url === channel.url) ||
-            new M3UChannelModel(channel)
-          );
-        }),
+        m3u: json.m3u
+          .map((channel) => {
+            return (
+              channels.find((c) => c.url === channel.url) ||
+              new M3UChannelModel(channel)
+            );
+          })
+          .slice(0, 5),
       });
 
       return m3u;
@@ -291,14 +295,25 @@ class M3UFile {
   };
 
   private getJson = async (): Promise<M3U.Base> => {
-    const fileJson = await getFromUrl(M3U_URL);
+    try {
+      const fileJson = await getFromUrl(M3U_URL);
 
-    const json = {
-      date: new Date(),
-      m3u: this.parseJson(fileJson),
-    };
+      const json = {
+        date: new Date(),
+        m3u: this.parseJson(fileJson),
+      };
 
-    return json;
+      return json;
+    } catch (err) {
+      const fileJson = await getJson(M3U_FILENAME);
+
+      const json = {
+        date: new Date(),
+        m3u: this.parseJson(fileJson),
+      };
+
+      return json;
+    }
   };
 }
 

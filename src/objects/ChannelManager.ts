@@ -23,7 +23,10 @@ class ChannelManager {
       Object.values(matchedCodes)
     );
 
-    await this._xmlList.load(Object.keys(xmlTvUrls));
+    await this._xmlList.load(
+      Object.keys(xmlTvUrls),
+      Object.values(matchedCodes).map((mc: any) => mc.id || mc.tvg_id).filter((mc) => mc)
+    );
 
     this._xmlList.mergeByCode(codeGuides);
 
