@@ -1,4 +1,3 @@
-import { XMLTVModel } from "@objects/database/XMLTVSchema";
 import { j2xParser } from "fast-xml-parser";
 import XMLTV from "./XMLTV";
 
@@ -24,6 +23,7 @@ class XMLTVList {
     }
 
     const xmlTvs = await this.getJson(xmlTvUrls, filterIds);
+
     const custom = await XMLTV.fromFile(
       "custom",
       CUSTOM_XMLTV_MAPPINGS_FILE,
@@ -50,7 +50,6 @@ class XMLTVList {
     this._fullXmlTv = Object.entries(codes).reduce<EPG.Base>(
       (acc, [id, xmlListUrl]) => {
         if (!xmlTvs[xmlListUrl]) {
-          console.log(xmlTvs);
           return acc;
         }
 
@@ -84,7 +83,7 @@ class XMLTVList {
     }
 
     const parser = new j2xParser(XML_PARSE_OPTIONS);
-
+    
     return (
       '<?xml version="1.0" encoding="UTF-8" ?>' +
       parser.parse({ tv: this._fullXmlTv?.xmlTv }).toString()
@@ -109,9 +108,9 @@ class XMLTVList {
     for (let i = 0; i < xmlTvValues.length; i++) {
       const xmlTv = xmlTvValues[i] as XMLTV;
       await xmlTv.load(filterIds);
-
+      
       if (xmlTv.isValid) {
-        xmlTvs[xmlTv.url];
+        xmlTvs[xmlTv.url] = xmlTv;
       }
     }
 

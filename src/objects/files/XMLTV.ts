@@ -117,8 +117,6 @@ class XMLTV {
           }
         : null;
     } catch (err) {
-      console.log(err);
-      
       Logger.info(`[XMLTV.getByCode]: '${code}' not found`);
       return null;
     }
@@ -139,11 +137,11 @@ class XMLTV {
   private loadFromJSON = async (json: EPG.Base) => {
     this._loaded = true;
 
-    const { xmlTv, xmlTvChannels, xmlTvProgrammes  } = await this.populateModels(
+    const { xmlTv, xmlTvChannels, xmlTvProgrammes } = await this.populateModels(
       json
     );
 
-    await this.saveModels(xmlTv, xmlTvChannels, xmlTvProgrammes);
+    this.saveModels(xmlTv, xmlTvChannels, xmlTvProgrammes);
 
     this._valid = true;
 
@@ -156,9 +154,8 @@ class XMLTV {
         Logger.info("[XMLTV.getXMLTV]: Forcing refresh");
         throw new Error();
       }
-      
-      const xmlTv = await XMLTVModel.findOne()
-        .sort({ date: 1, url: this._url })
+
+      const xmlTv = await XMLTVModel.findOne({ url: this._url })
         .populate("xmlTv.channel")
         .populate("xmlTv.programme");
 
@@ -166,14 +163,10 @@ class XMLTV {
         throw new Error();
       }
 
-      const xmlTvChannels = xmlTv.xmlTv.channel;
-      const xmlTvProgrammes = xmlTv.xmlTv.programme;
-
       if (filterIds) {
-        xmlTv.xmlTv = this.filterIds(xmlTv, filterIds);
+        xmlTv.xmlTv = this.filterDocumentIds(xmlTv, filterIds);
+        await xmlTv.save();
       }
-
-      await this.saveModels(xmlTv, xmlTvChannels, xmlTvProgrammes);
 
       this._valid = true;
 
@@ -188,12 +181,12 @@ class XMLTV {
         throw new Error();
       }
 
+      if (filterIds) {
+        json.xmlTv = this.filterModelIds(json, filterIds);
+      }
+
       const { xmlTv, xmlTvChannels, xmlTvProgrammes } =
         await this.populateModels(json);
-
-      if (filterIds) {
-        xmlTv.xmlTv = this.filterIds(xmlTv, filterIds);
-      }
 
       await this.saveModels(xmlTv, xmlTvChannels, xmlTvProgrammes);
 
@@ -203,7 +196,10 @@ class XMLTV {
     }
   };
 
-  private filterIds = (xmlTv: EPG.BaseDocument, filterIds: string[]) => {
+  private filterDocumentIds = (
+    xmlTv: EPG.BaseDocument,
+    filterIds: string[]
+  ) => {
     return {
       channel: xmlTv.xmlTv.channel.filter((channel) =>
         filterIds.includes(channel["@_id"])
@@ -214,7 +210,22 @@ class XMLTV {
     };
   };
 
-  private saveModels = async (xmlTv: EPG.BaseDocument, xmlTvChannels: EPG.ChannelDocument[], xmlTvProgrammes: EPG.ProgrammeDocument[]) => {
+  private filterModelIds = (xmlTv: EPG.Base, filterIds: string[]) => {
+    return {
+      channel: xmlTv.xmlTv.channel.filter((channel) =>
+        filterIds.includes(channel["@_id"])
+      ),
+      programme: xmlTv.xmlTv.programme.filter((programme) =>
+        filterIds.includes(programme["@_channel"])
+      ),
+    };
+  };
+
+  private saveModels = async (
+    xmlTv: EPG.BaseDocument,
+    xmlTvChannels: EPG.ChannelDocument[],
+    xmlTvProgrammes: EPG.ProgrammeDocument[]
+  ) => {
     await XMLTVChannelModel.bulkSave(xmlTvChannels);
     await XMLTVProgrammeModel.bulkSave(xmlTvProgrammes);
     await xmlTv.save();
@@ -276,10 +287,28 @@ class XMLTV {
     if (xmlParser.validate(fileXml) === true) {
       const json = xmlParser.parse(fileXml, this._parseOptions);
 
+      const channel = (json.tv.channel as EPG.ChannelModel[]).filter(
+        (c, i, channels) =>
+          i === channels.findIndex((cc) => cc["@_id"] === c["@_id"])
+      );
+
+      const programme = (json.tv.programme as EPG.ProgrammeModel[]).filter(
+        (p, i, programmes) =>
+          i ===
+          programmes.findIndex(
+            (pp) =>
+              pp["@_channel"] === p["@_channel"] &&
+              pp["@_start"] === p["@_start"]
+          )
+      );
+
       const xmlTvJson = {
         date: new Date(),
         url: this._url,
-        xmlTv: json.tv,
+        xmlTv: {
+          channel,
+          programme,
+        },
       };
 
       return xmlTvJson;

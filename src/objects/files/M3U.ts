@@ -264,7 +264,7 @@ class M3UFile {
         throw new Error();
       }
 
-      m3u.m3u = m3u.m3u.slice(0, 5);
+      m3u.m3u = m3u.m3u;
 
       return m3u;
     } catch (error) {
@@ -286,8 +286,7 @@ class M3UFile {
               channels.find((c) => c.url === channel.url) ||
               new M3UChannelModel(channel)
             );
-          })
-          .slice(0, 5),
+          }),
       });
 
       return m3u;
