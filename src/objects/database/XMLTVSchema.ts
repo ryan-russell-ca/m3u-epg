@@ -45,10 +45,10 @@ const XMLTVSchema = new Schema(
     url: { type: String, required: true, unique: true },
     xmlTv: {
       channel: {
-        type: [{ type: Schema.Types.ObjectId, ref: "M3UChannelModel" }],
+        type: [{ type: Schema.Types.ObjectId, ref: "XMLTVChannelModel" }],
       },
       programme: {
-        type: [{ type: Schema.Types.ObjectId, ref: "M3UProgrammeModel" }],
+        type: [{ type: Schema.Types.ObjectId, ref: "XMLTVProgrammeModel" }],
       },
     },
   },
