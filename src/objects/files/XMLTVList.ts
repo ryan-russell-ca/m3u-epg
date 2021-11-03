@@ -11,7 +11,7 @@ const CUSTOM_XMLTV_MAPPINGS_FILE = process.env
 class XMLTVList {
   private _loaded = false;
   private _xmlTvs?: { [xmlTvUrl: string]: XMLTV } = {};
-  private _fullXmlTv?: EPG.Base;
+  private _fullXmlTv?: XMLTV.Base;
 
   public load = async (
     xmlTvUrls: string[],
@@ -47,7 +47,7 @@ class XMLTVList {
 
     const xmlTvs = this._xmlTvs;
 
-    this._fullXmlTv = Object.entries(codes).reduce<EPG.Base>(
+    this._fullXmlTv = Object.entries(codes).reduce<XMLTV.Base>(
       (acc, [id, xmlListUrl]) => {
         if (!xmlTvs[xmlListUrl]) {
           return acc;
@@ -63,7 +63,7 @@ class XMLTVList {
         return acc;
       },
       {
-        date: new Date(),
+        
         url: "full",
         xmlTv: {
           channel: [],

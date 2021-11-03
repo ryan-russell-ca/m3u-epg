@@ -25,7 +25,7 @@ class ChannelManager {
 
     await this._xmlList.load(
       Object.keys(xmlTvUrls),
-      Object.values(matchedCodes).map((mc: any) => mc.id || mc.tvg_id).filter((mc) => mc)
+      Object.values(matchedCodes).map((mc) => mc.tvgId || '').filter((mc) => mc)
     );
 
     this._xmlList.mergeByCode(codeGuides);
@@ -39,11 +39,11 @@ class ChannelManager {
     return await this._m3uFile.toString();
   };
 
-  public getEPG = () => {
+  public getXMLTV = () => {
     return this._xmlList.toString();
   };
 
-  public getInfo = (options: EPG.MatchOptions) => {
+  public getInfo = (options: XMLTV.MatchOptions) => {
     return this._iptvOrgCode.match(options);
   };
 
@@ -55,15 +55,15 @@ class ChannelManager {
     return this._loaded;
   }
 
-  private getXmlListUrls = (channel: (EPG.Code | M3U.CustomMapping)[]) => {
+  private getXmlListUrls = (channel: (XMLTV.CodeDocument | M3U.CustomMapping)[]) => {
     const guides = channel.reduce<{
       xmlTvUrls: { [xmlTvUrl: string]: boolean };
       codeGuides: { [id: string]: string };
     }>(
       (acc, code) => {
-        const currentCode = code as EPG.Code & M3U.CustomMapping;
+        const currentCode = code as XMLTV.CodeDocument & M3U.CustomMapping;
 
-        if (!currentCode.tvg_id || !currentCode.guides) {
+        if (!currentCode.tvgId || !currentCode.guides) {
           if (currentCode.id) {
             acc.codeGuides[currentCode.id] = "custom";
           }
@@ -79,7 +79,7 @@ class ChannelManager {
           ) || currentCode.guides[0];
 
         acc.xmlTvUrls[guide] = true;
-        acc.codeGuides[currentCode.tvg_id] = guide;
+        acc.codeGuides[currentCode.tvgId] = guide;
 
         return acc;
       },
@@ -94,7 +94,7 @@ class ChannelManager {
 
   private getMatchedCodes = (iptvOrgCode: IPTVOrgCode, m3uFile: M3UFile) => {
     return m3uFile.channels.reduce<{
-      [channelUrl: string]: EPG.Code | M3U.CustomMapping;
+      [channelUrl: string]: XMLTV.CodeDocument | M3U.CustomMapping;
     }>((acc, group) => {
       const customMapping = m3uFile.customMap(group);
 
@@ -107,7 +107,7 @@ class ChannelManager {
         name: [group.name, group.parsedName],
         id: [group.id, ...(group.parsedIds || [])],
         formatted: true,
-      }) as EPG.CodeMatch[];
+      }) as XMLTV.CodeMatch[];
 
       if (match[0]?.code && group.url) {
         acc[group.url] = match[0].code;

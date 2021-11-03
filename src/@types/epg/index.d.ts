@@ -1,7 +1,7 @@
-namespace EPG {
+namespace XMLTV {
   import { Document } from "mongoose";
   
-  export interface Code {
+  export interface CodeRaw {
     tvg_id: string;
     display_name: string;
     logo: string;
@@ -9,10 +9,22 @@ namespace EPG {
     guides: string[];
   }
 
-  export interface CodeBase {
-    date: number;
-    codes: Code[];
+  export interface CodeModel {
+    tvgId: string;
+    displayName: string;
+    logo: string;
+    country: string;
+    guides: string[];
   }
+
+  export interface CodeBaseModel {
+    date?: Date;
+    codes: CodeModel[];
+  }
+
+  export type CodeDocument = Document<any, any, CodeModel> & CodeModel;
+
+  export type CodeBaseDocument = Document<any, any, CodeBaseModel> & CodeBaseModel;
 
   export interface CodeBaseSorted {
     [key: string]: Code;
@@ -40,7 +52,7 @@ namespace EPG {
   }
 
   export interface Base {
-    date: Date;
+    date?: Date;
     url: string;
     xmlTv: {
       channel: ChannelModel[];
@@ -66,7 +78,7 @@ namespace EPG {
     ProgrammeModel;
 
   export interface BaseModel {
-    date: number;
+    date?: Date;
     xmlTv: {
       channel: ChannelDocument[];
       programme: ProgrammeDocument[];

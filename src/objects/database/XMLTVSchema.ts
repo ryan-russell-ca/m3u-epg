@@ -11,7 +11,7 @@ const XMLTVChannelSchema = new Schema(
   { collection: "xmltvChannel" }
 );
 
-export const XMLTVChannelModel = Mongoose.model<EPG.ChannelModel>(
+export const XMLTVChannelModel = Mongoose.model<XMLTV.ChannelModel>(
   "XMLTVChannelModel",
   XMLTVChannelSchema
 );
@@ -34,7 +34,7 @@ XMLTVProgrammeSchema.index(
   },
 );
 
-export const XMLTVProgrammeModel = Mongoose.model<EPG.ProgrammeModel>(
+export const XMLTVProgrammeModel = Mongoose.model<XMLTV.ProgrammeModel>(
   "XMLTVProgrammeModel",
   XMLTVProgrammeSchema
 );
@@ -55,7 +55,7 @@ const XMLTVSchema = new Schema(
   { collection: "xmltv" }
 );
 
-export const XMLTVModel = Mongoose.model<EPG.BaseModel>(
+export const XMLTVModel = Mongoose.model<XMLTV.BaseModel>(
   "XMLTVModel",
   XMLTVSchema
 );

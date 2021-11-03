@@ -4,7 +4,6 @@ import {
   parseChannelName,
   parseCountryFromChannelName,
   parseIdFromChannelName,
-  saveJson,
 } from "@shared/functions";
 import M3UModel, { M3UChannelModel } from "@objects/database/M3USchema";
 import MongoConnector from "@objects/database/Mongo";
@@ -12,10 +11,9 @@ import Logger from "@shared/Logger";
 
 const M3U_URL = process.env.M3U_URL as string;
 const M3U_FILENAME = process.env.M3U_FILENAME as string;
-const GENERATED_MAPPINGS_FILE = process.env.GENERATED_MAPPINGS_FILE as string;
 const CONFIRMED_MAPPINGS_FILE = process.env.CONFIRMED_MAPPINGS_FILE as string;
 const M3U_INFO_REGEX =
-  /^#EXTINF:.?(?<extInf>\d) *group-title="(?<group>.*?)" *tvg-id="(?<id>.*?)" *tvg-logo="(?<logo>.*?)" *,(?<name>.*)/;
+  /^#EXTINF:.?(?<extInf>\d) *group-title="(?<group>.*?)" *tvg-id="(?<tvgId>.*?)" *tvg-logo="(?<logo>.*?)" *,(?<name>.*)/;
 const CHANNEL_MATCHING_REGEX =
   /^((.*?:( *)?)|([A-Z]{2} ?\((?<region>.*?)\) )?)?((?<nameCode>[A-Z]{4}) TV)?(?<name>.*?)( *)?(?<definition>F?HD)?$/i;
 
@@ -44,26 +42,27 @@ class M3UFile {
 
   // TODO: Remove mutations to channels
   public insertCodeInfo = async (codes: {
-    [tvgId: string]: EPG.Code | M3U.CustomMapping;
+    [tvgId: string]: XMLTV.CodeDocument | M3U.CustomMapping;
   }) => {
     if (!this._model) {
       throw new Error("[M3UFile]: M3U JSON is empty");
     }
 
-    const ids = this._model?.m3u.reduce<M3U.CustomMappings>((acc, channel) => {
+    const tvgIds = this._model?.m3u.reduce<M3U.CustomMappings>((acc, channel) => {
       const channelJson = channel.toJSON();
 
       if (!channelJson.url) {
         return acc;
       }
 
-      const code = codes[channelJson.url] as EPG.Code & M3U.CustomMapping;
+      const code = codes[channelJson.url] as XMLTV.CodeDocument &
+        M3U.CustomMapping;
 
       if (!code) {
         acc[channelJson.url] = {
           ...channelJson,
           confirmed: false,
-          id: null,
+          tvgId: null,
           logo: null,
           country: "unpoplated",
         };
@@ -71,46 +70,25 @@ class M3UFile {
         return acc;
       }
 
-      if (code.tvg_id) {
-        const append = {
-          id: code.tvg_id,
-          name: code.display_name,
-          logo: channelJson.logo || code.logo,
-          country: channelJson.country || code.country,
-        };
+      const append = {
+        tvgId: code.tvgId || "",
+        name: code.displayName || code.name || channelJson.name,
+        logo: channelJson.logo || code.logo,
+        country: channelJson.country || code.country,
+      };
 
-        channel.set({
-          ...append,
-        });
+      channel.set({
+        ...append,
+      });
 
-        acc[channelJson.url] = {
-          ...channelJson,
-          ...append,
-          confirmed: false,
-        };
-      } else {
-        const append = {
-          id: code.id || "",
-          name: code.name || channelJson.name,
-          logo: code.logo || channelJson.logo,
-          country: code.country || channelJson.country,
-        };
-
-        channel.set({
-          ...append,
-        });
-
-        acc[channelJson.url] = {
-          ...channelJson,
-          ...append,
-          confirmed: code.confirmed,
-        };
-      }
+      acc[channelJson.url] = {
+        ...channelJson,
+        ...append,
+        confirmed: false,
+      };
 
       return acc;
     }, {});
-
-    saveJson(GENERATED_MAPPINGS_FILE, ids);
   };
 
   public customMap = (channel: M3U.ChannelInfoDocument) => {
@@ -150,7 +128,7 @@ class M3UFile {
     if (!this._model) {
       throw new Error("[M3UFile]: M3U JSON is empty");
     }
-
+    
     await M3UChannelModel.bulkSave(this._model.m3u.map((channel) => channel));
     await this._model.save();
 
@@ -158,7 +136,7 @@ class M3UFile {
       "#EXTM3U ",
       ...this._model.m3u.map((d) => {
         return [
-          `#EXTINF: -1 group-title="${d.group}" tvg-id="${d.id}" tvg-logo="${d.logo}", ${d.name}`,
+          `#EXTINF: -1 group-title="${d.group}" tvg-id="${d.tvgId}" tvg-logo="${d.logo}", ${d.name}`,
           d.url,
         ].join("\n");
       }),
@@ -213,11 +191,11 @@ class M3UFile {
 
       if (!matches?.groups) return acc;
 
-      const { group, id, logo, name, nameCode } = matches.groups;
+      const { group, tvgId, logo, name, nameCode } = matches.groups;
 
       acc.push({
         group,
-        id,
+        tvgId,
         logo,
         name,
         country: parseCountryFromChannelName(name),
@@ -264,8 +242,6 @@ class M3UFile {
         throw new Error();
       }
 
-      m3u.m3u = m3u.m3u;
-
       return m3u;
     } catch (error) {
       const json = await this.getJson();
@@ -280,13 +256,12 @@ class M3UFile {
 
       const m3u = new M3UModel({
         ...json,
-        m3u: json.m3u
-          .map((channel) => {
-            return (
-              channels.find((c) => c.url === channel.url) ||
-              new M3UChannelModel(channel)
-            );
-          }),
+        m3u: json.m3u.map((channel) => {
+          return (
+            channels.find((c) => c.url === channel.url) ||
+            new M3UChannelModel(channel)
+          );
+        }),
       });
 
       return m3u;
@@ -298,7 +273,6 @@ class M3UFile {
       const fileJson = await getFromUrl(M3U_URL);
 
       const json = {
-        date: new Date(),
         m3u: this.parseJson(fileJson),
       };
 
@@ -307,7 +281,6 @@ class M3UFile {
       const fileJson = await getJson(M3U_FILENAME);
 
       const json = {
-        date: new Date(),
         m3u: this.parseJson(fileJson),
       };
 
