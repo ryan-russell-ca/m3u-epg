@@ -2,13 +2,13 @@ namespace M3U {
   import { Document } from "mongoose";
 
   export interface Base {
-    date: Date;
+    date?: Date;
     m3u: ChannelInfo[];
   }
 
   export interface ChannelInfoFilters {
     group?: string;
-    id?: string;
+    tvgId?: string;
     name?: string;
     originalName?: string;
     url?: string;
@@ -18,7 +18,7 @@ namespace M3U {
 
   export interface ChannelInfo extends NameChannelInfo {
     group: string;
-    id: string;
+    tvgId: string;
     logo: string;
     name: string;
     originalName: string;
@@ -32,7 +32,7 @@ namespace M3U {
   export interface CustomMapping {
     originalName: string;
     name: string | null;
-    id: string | null;
+    tvgId: string | null;
     logo: string | null;
     country: string | null;
     confirmed: boolean;
@@ -57,7 +57,7 @@ namespace M3U {
     ChannelInfo;
 
   export type BaseModel = {
-    date: Date;
+    date?: Date;
     m3u: ChannelInfoDocument[];
   };
 

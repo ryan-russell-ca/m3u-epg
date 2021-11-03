@@ -65,23 +65,6 @@ export const getFromUrl = async (url: string): Promise<string> => {
   return promise;
 };
 
-// 24H allowed difference
-export const validateDateOrThrow = (
-  date: number,
-  message: string,
-  allowedDiff = 14400000
-) => {
-  if (date < 0) {
-    return;
-  }
-
-  const diff = Date.now() - date;
-
-  if (diff > allowedDiff) {
-    throw new Error(message);
-  }
-};
-
 export const parseChannelName = (name: string) =>
   name.split(":").pop()?.replace(/ */, "").toLowerCase() || "";
 

@@ -25,7 +25,7 @@ export const getEpg = async (req: Request, res: Response) => {
   await channelManager.load();
 
   res.contentType("xml");
-  return res.status(OK).send(channelManager.getEPG());
+  return res.status(OK).send(channelManager.getXMLTV());
 };
 
 export const getChannelInfo = async (req: Request, res: Response) => {
@@ -33,13 +33,13 @@ export const getChannelInfo = async (req: Request, res: Response) => {
   
   const filters: M3U.ChannelInfoFilters = {
     group: req.query.group?.toString(),
-    id: req.query.id?.toString(),
+    tvgId: req.query.tvgId?.toString(),
     name: req.query.name?.toString(),
     originalName: req.query.originalName?.toString(),
     url: req.query.url?.toString(),
     country: req.query.country?.toString(),
     definition: req.query.definition?.toString(),
-  }
+  };
 
   return res.status(OK).json(channelManager.getChannelJSON(filters));
 };

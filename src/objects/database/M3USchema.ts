@@ -18,7 +18,7 @@ const M3UChannelSchema = new Schema(
     parsedName: String,
     parsedIds: [String],
     logo: String,
-    id: String,
+    tvgId: String,
     definition: String,
   },
   { collection: "playlistChannel" }
