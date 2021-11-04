@@ -1,9 +1,26 @@
 namespace M3U {
   import { Document } from "mongoose";
 
-  export interface Base {
+  export interface MatchOptions {
+    name?: string | string[];
+    id?: string | string[];
+    formatted?: boolean;
+    listAll?: boolean;
+  }
+
+  export interface MatchOptionsSingle {
+    id?: string;
+    name?: string;
+  }
+
+
+  export interface Matcher {
+    match: (options: MatchOptions) => XMLTV.CodeMatch[] | [number, string][];
+  }
+
+  export interface BaseModel {
     date?: Date;
-    m3u: ChannelInfo[];
+    channels: ChannelInfoDocument[];
   }
 
   export interface ChannelInfoFilters {
@@ -16,7 +33,7 @@ namespace M3U {
     definition?: string;
   }
 
-  export interface ChannelInfo extends NameChannelInfo {
+  export interface ChannelInfoModel extends NameChannelInfo {
     group: string;
     tvgId: string;
     logo: string;
@@ -27,19 +44,11 @@ namespace M3U {
     country: string | null;
     definition?: string;
     parsedIds: string[] | null;
-  }
-
-  export interface CustomMapping {
-    originalName: string;
-    name: string | null;
-    tvgId: string | null;
-    logo: string | null;
-    country: string | null;
     confirmed: boolean;
   }
 
-  export interface CustomMappings {
-    [url: string]: CustomMapping;
+  export interface ChannelInfoMapping {
+    [url: string]: ChannelInfoModel;
   }
 
   export interface NameChannelInfo {
@@ -53,13 +62,8 @@ namespace M3U {
     groups?: NameChannelInfo;
   }
 
-  export type ChannelInfoDocument = Document<any, any, ChannelInfo> &
-    ChannelInfo;
-
-  export type BaseModel = {
-    date?: Date;
-    m3u: ChannelInfoDocument[];
-  };
+  export type ChannelInfoDocument = Document<any, any, ChannelInfoModel> &
+    ChannelInfoModel;
 
   export type BaseDocument = Document<any, any, BaseModel> & BaseModel;
 }

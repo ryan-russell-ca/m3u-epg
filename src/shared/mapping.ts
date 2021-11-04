@@ -1,8 +1,8 @@
 type GroupDictionary = {
-  [key: string]: M3U.ChannelInfo[];
+  [key: string]: M3U.ChannelInfoModel[];
 };
 
-export const createIdDictionary = (groups: M3U.ChannelInfo[]) => {
+export const createIdDictionary = (groups: M3U.ChannelInfoModel[]) => {
   return groups.reduce<GroupDictionary>(
     (acc, group) => {
       if (!acc[group.name]) {

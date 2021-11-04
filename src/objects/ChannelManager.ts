@@ -1,6 +1,7 @@
 import IPTVOrgCode from "./files/IPTVOrgCode";
 import M3UFile from "./files/M3U";
 import XMLTVList from "./files/XMLTVList";
+import Matcher from "./helpers/Matcher";
 
 class ChannelManager {
   private _loaded = false;
@@ -13,24 +14,26 @@ class ChannelManager {
       return;
     }
 
-    await this._m3uFile.load(refresh);
+    await this._iptvOrgCode.load(refresh);
 
-    await this._iptvOrgCode.load();
+    const matcher = new Matcher(this._iptvOrgCode.codeList);
 
-    const matchedCodes = this.getMatchedCodes(this._iptvOrgCode, this._m3uFile);
+    await this._m3uFile.load(matcher, refresh);
 
-    const { xmlTvUrls, codeGuides } = this.getXmlListUrls(
-      Object.values(matchedCodes)
-    );
+    const tvgIds = this._m3uFile.tvgIds;
+    const channelCodes = this._iptvOrgCode.getCodesByTvgIds(tvgIds);
 
-    await this._xmlList.load(
-      Object.keys(xmlTvUrls),
-      Object.values(matchedCodes).map((mc) => mc.tvgId || '').filter((mc) => mc)
-    );
+    const { xmlTvUrls, codeGuides } = this.getXmlListUrls(channelCodes);
 
-    this._xmlList.mergeByCode(codeGuides);
+    await this._xmlList.load(Array.from(xmlTvUrls), tvgIds);
 
-    await this._m3uFile.insertCodeInfo(matchedCodes);
+    // this._xmlList.mergeByCode(codeGuides);
+
+    // await this._m3uFile.insertCodeInfo(matchedCodes);
+
+    await this._iptvOrgCode.save();
+    await this._m3uFile.save();
+    await this._xmlList.save();
 
     this._loaded = true;
   };
@@ -43,78 +46,42 @@ class ChannelManager {
     return this._xmlList.toString();
   };
 
-  public getInfo = (options: XMLTV.MatchOptions) => {
-    return this._iptvOrgCode.match(options);
-  };
+  // public getInfo = (options: XMLTV.MatchOptions) => {
+  //   return this._iptvOrgCode.match(options);
+  // };
 
-  public getChannelJSON = (filters: M3U.ChannelInfoFilters) => {
-    return this._m3uFile.getChannelJSON(filters);
-  };
+  // public getChannelJSON = (filters: M3U.ChannelInfoFilters) => {
+  //   return this._m3uFile.getChannelJSON(filters);
+  // };
 
   public get isLoaded() {
     return this._loaded;
   }
 
-  private getXmlListUrls = (channel: (XMLTV.CodeDocument | M3U.CustomMapping)[]) => {
-    const guides = channel.reduce<{
-      xmlTvUrls: { [xmlTvUrl: string]: boolean };
-      codeGuides: { [id: string]: string };
+  private getXmlListUrls = (channel: XMLTV.CodeModel[]) => {
+    return channel.reduce<{
+      xmlTvUrls: Set<string>;
+      codeGuides: Map<string, string>;
     }>(
-      (acc, code) => {
-        const currentCode = code as XMLTV.CodeDocument & M3U.CustomMapping;
-
-        if (!currentCode.tvgId || !currentCode.guides) {
-          if (currentCode.id) {
-            acc.codeGuides[currentCode.id] = "custom";
-          }
-
-          return acc;
-        }
+      (acc, channel) => {
+        const cuurrentChannel = channel as XMLTV.CodeDocument &
+          M3U.ChannelInfoModel;
 
         const xmlTvUrls = Object.keys(acc.xmlTvUrls);
         const guide =
-          currentCode.guides.find(
-            (guide) =>
-              xmlTvUrls.includes(guide) || /\/(ca|us|uk).*?\//.test(guide)
-          ) || currentCode.guides[0];
+          cuurrentChannel.guides.find((guide) => xmlTvUrls.includes(guide)) ||
+          cuurrentChannel.guides[0];
 
-        acc.xmlTvUrls[guide] = true;
-        acc.codeGuides[currentCode.tvgId] = guide;
+        acc.xmlTvUrls.add(guide);
+        acc.codeGuides.set(cuurrentChannel.tvgId, guide);
 
         return acc;
       },
       {
-        xmlTvUrls: {},
-        codeGuides: {},
+        xmlTvUrls: new Set<string>(),
+        codeGuides: new Map<string, string>(),
       }
     );
-
-    return guides;
-  };
-
-  private getMatchedCodes = (iptvOrgCode: IPTVOrgCode, m3uFile: M3UFile) => {
-    return m3uFile.channels.reduce<{
-      [channelUrl: string]: XMLTV.CodeDocument | M3U.CustomMapping;
-    }>((acc, group) => {
-      const customMapping = m3uFile.customMap(group);
-
-      if (customMapping && group.url) {
-        acc[group.url] = customMapping;
-        return acc;
-      }
-
-      const match = iptvOrgCode.match({
-        name: [group.name, group.parsedName],
-        id: [group.id, ...(group.parsedIds || [])],
-        formatted: true,
-      }) as XMLTV.CodeMatch[];
-
-      if (match[0]?.code && group.url) {
-        acc[group.url] = match[0].code;
-      }
-
-      return acc;
-    }, {});
   };
 }
 

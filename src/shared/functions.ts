@@ -86,7 +86,7 @@ export const parseIdFromChannelName = (name: string) => {
     return nameMatches.map((m) => m.replace(/[\W_]+/g, "").toLowerCase());
   }
 
-  return null;
+  return [];
 };
 
 export const saveJson = async (filename: string, data: unknown) => {

@@ -19,7 +19,7 @@ namespace XMLTV {
 
   export interface CodeBaseModel {
     date?: Date;
-    codes: CodeModel[];
+    codes: CodeDocument[];
   }
 
   export type CodeDocument = Document<any, any, CodeModel> & CodeModel;
@@ -27,13 +27,13 @@ namespace XMLTV {
   export type CodeBaseDocument = Document<any, any, CodeBaseModel> & CodeBaseModel;
 
   export interface CodeBaseSorted {
-    [key: string]: Code;
+    [key: string]: CodeModel;
   }
 
   export interface CodeMatch {
     score: number;
     match: string;
-    code: Code | null;
+    code: CodeModel | null;
   }
 
   export interface ChannelModel {
@@ -58,18 +58,6 @@ namespace XMLTV {
       channel: ChannelModel[];
       programme: ProgrammeModel[];
     };
-  }
-
-  export interface MatchOptions {
-    name?: string | string[];
-    id?: string | string[];
-    formatted?: boolean;
-    listAll?: boolean;
-  }
-
-  export interface MatchOptionsSingle {
-    id?: string;
-    name?: string;
   }
 
   export type ChannelDocument = Document<any, any, ChannelModel> & ChannelModel;
