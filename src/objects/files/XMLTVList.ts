@@ -1,5 +1,6 @@
 import { j2xParser } from "fast-xml-parser";
 import XMLTV from "./XMLTV";
+import Logger from "@shared/Logger";
 
 const XML_PARSE_OPTIONS = {
   ignoreAttributes: false,
@@ -10,16 +11,17 @@ const CUSTOM_XMLTV_MAPPINGS_FILE = process.env
 
 class XMLTVList {
   private _loaded = false;
-  private _xmlTvs?: { [xmlTvUrl: string]: XMLTV } = {};
-  private _fullXmlTv?: XMLTV.Base;
+  private _model?: { [xmlTvUrl: string]: XMLTV } = {};
 
   public load = async (
     xmlTvUrls: string[],
     filterIds?: string[]
   ): Promise<{ [key: string]: XMLTV }> => {
-    if (this._xmlTvs && Object.keys(this._xmlTvs).length) {
+    console.log('filterIds', filterIds);
+    
+    if (this._model && Object.keys(this._model).length) {
       this._loaded = true;
-      return this._xmlTvs;
+      return this._model;
     }
 
     const xmlTvs = await this.getJson(xmlTvUrls, filterIds);
@@ -30,47 +32,30 @@ class XMLTVList {
       XML_PARSE_OPTIONS
     );
 
-    this._xmlTvs = {
+    this._model = {
       ...xmlTvs,
       custom,
     };
-
+    console.log(this._model);
+    
     this._loaded = true;
 
-    return this._xmlTvs;
+    return this._model;
   };
 
-  public mergeByCode = (codes: { [id: string]: string }) => {
-    if (!this._xmlTvs) {
-      throw new Error("[XMLTVList.mergeByCode]: XMLTV list is empty");
+  public save = async () => {
+    if (!this._model) {
+      throw new Error("[XMLTVList.save]: XMLTV JSON is empty");
     }
 
-    const xmlTvs = this._xmlTvs;
+    const xmlTvs = Object.values(this._model);
 
-    this._fullXmlTv = Object.entries(codes).reduce<XMLTV.Base>(
-      (acc, [id, xmlListUrl]) => {
-        if (!xmlTvs[xmlListUrl]) {
-          return acc;
-        }
+    Logger.info("[XMLTVList.save]: Saving XMLTVListl files");
+    for (const xmlTv of xmlTvs) {
+      await xmlTv.save();
+    }
 
-        const { channel, programme } = xmlTvs[xmlListUrl].getByCode(id) || {};
-
-        if (channel && programme) {
-          acc.xmlTv.channel.push(channel);
-          acc.xmlTv.programme.push(...programme);
-        }
-
-        return acc;
-      },
-      {
-        
-        url: "full",
-        xmlTv: {
-          channel: [],
-          programme: [],
-        },
-      }
-    );
+    return true;
   };
 
   public get isLoaded() {
@@ -78,7 +63,7 @@ class XMLTVList {
   }
 
   public toString = () => {
-    if (!this._xmlTvs) {
+    if (!this._model) {
       throw new Error("[XMLTVList.toString]: XMLTVs is empty");
     }
 
@@ -86,7 +71,31 @@ class XMLTVList {
     
     return (
       '<?xml version="1.0" encoding="UTF-8" ?>' +
-      parser.parse({ tv: this._fullXmlTv?.xmlTv }).toString()
+      parser.parse({ tv: this.merge(this._model) }).toString()
+    );
+  };
+
+  private merge = (xmlTvs: { [xmlTvUrl: string]: XMLTV }) => {
+    if (!xmlTvs) {
+      throw new Error("[XMLTVList.mergeByCode]: XMLTV list is empty");
+    }
+    // console.log('start merge');
+    // console.log(Object.values(xmlTvs).map((x) => x.getChannel()));
+    
+    return Object.values(xmlTvs).reduce<{
+      channel: XMLTV.ChannelModel[];
+      programme: XMLTV.ProgrammeModel[];
+    }>(
+      (acc, xmlTv) => {
+        acc.channel = acc.channel.concat(xmlTv.getChannel());
+        acc.programme = acc.programme.concat(xmlTv.getProgramme());
+
+        return acc;
+      },
+      {
+        channel: [],
+        programme: [],
+      }
     );
   };
 
@@ -108,7 +117,7 @@ class XMLTVList {
     for (let i = 0; i < xmlTvValues.length; i++) {
       const xmlTv = xmlTvValues[i] as XMLTV;
       await xmlTv.load(filterIds);
-      
+
       if (xmlTv.isValid) {
         xmlTvs[xmlTv.url] = xmlTv;
       }

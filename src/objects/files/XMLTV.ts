@@ -16,7 +16,7 @@ const XMLTV_TIME_BEHIND_MILLI =
 class XMLTV {
   private _loaded = false;
   private _valid = false;
-  private _json?: XMLTV.BaseDocument;
+  private _model?: XMLTV.BaseDocument;
   private _url: string;
   private _parseOptions: {
     ignoreAttributes: boolean;
@@ -42,7 +42,7 @@ class XMLTV {
     const xmlTvJson = await getJson(filename);
 
     const json = JSON.parse(xmlTvJson) as XMLTV.Base;
-
+    
     const xmlTv = new XMLTV(name, parseOptions);
 
     await xmlTv.loadFromJSON(json);
@@ -53,24 +53,20 @@ class XMLTV {
   public load = async (
     filterIds?: string[]
   ): Promise<XMLTV.BaseDocument | null> => {
-    if (this._json) {
+    if (this._model) {
       this._loaded = true;
-      return this._json;
+      return this._model;
     }
 
-    try {
-      if (!MongoConnector.connected) {
-        await MongoConnector.connect();
-      }
-
-      this._json = await this.getXMLTV(this._url, filterIds);
-
-      this._loaded = true;
-
-      return this._json;
-    } catch (err) {
-      return null;
+    if (!MongoConnector.connected) {
+      await MongoConnector.connect();
     }
+
+    this._model = await this.getXMLTV(this._url, filterIds);
+
+    this._loaded = true;
+
+    return this._model;
   };
 
   public getByCode = (
@@ -80,15 +76,15 @@ class XMLTV {
     programme: XMLTV.ProgrammeModel[];
   } | null => {
     try {
-      if (!this._json) {
+      if (!this._model) {
         throw new Error("[XMLTV.getByCode]: XMLTV is empty");
       }
 
-      const channel = this._json.xmlTv.channel.find(
+      const channel = this._model.xmlTv.channel.find(
         (channel) => channel["@_id"] === code
       );
 
-      const programme = this._json.xmlTv.programme.filter((programme) => {
+      const programme = this._model.xmlTv.programme.filter((programme) => {
         if (programme["@_channel"] !== code) {
           return false;
         }
@@ -127,10 +123,35 @@ class XMLTV {
             })),
           }
         : null;
-    } catch (err) {
+    } catch (error) {
       Logger.info(`[XMLTV.getByCode]: '${code}' not found`);
       return null;
     }
+  };
+
+  public getChannel = () => {    
+    if (!this._model) {
+      throw new Error("[XMLTV.getChannel]: XMLTV JSON is empty");
+    }
+
+    return this._model.xmlTv.channel.map((c) => ({
+      "@_id": c["@_id"],
+      "display-name": c["display-name"],
+      icon: c.icon,
+    }));
+  };
+
+  public getProgramme = () => {
+    if (!this._model) {
+      throw new Error("[XMLTV.getProgramme]: XMLTV JSON is empty");
+    }
+
+    return this._model.xmlTv.programme.map((p) => ({
+      "@_start": p["@_start"],
+      "@_stop": p["@_stop"],
+      "@_channel": p["@_channel"],
+      title: p.title,
+    }));
   };
 
   public get isLoaded() {
@@ -152,7 +173,7 @@ class XMLTV {
       json
     );
 
-    this.saveModels(xmlTv, xmlTvChannels, xmlTvProgrammes);
+    this._model = xmlTv;
 
     this._valid = true;
 
@@ -180,7 +201,6 @@ class XMLTV {
 
       if (filterIds) {
         xmlTv.xmlTv = this.filterDocumentIds(xmlTv, filterIds);
-        await xmlTv.save();
       }
 
       this._valid = true;
@@ -198,9 +218,7 @@ class XMLTV {
 
       const { xmlTv, xmlTvChannels, xmlTvProgrammes } =
         await this.populateModels(json);
-
-      await this.saveModels(xmlTv, xmlTvChannels, xmlTvProgrammes);
-
+      
       this._valid = true;
 
       return xmlTv;
@@ -266,14 +284,24 @@ class XMLTV {
     };
   };
 
-  private saveModels = async (
-    xmlTv: XMLTV.BaseDocument,
-    xmlTvChannels: XMLTV.ChannelDocument[],
-    xmlTvProgrammes: XMLTV.ProgrammeDocument[]
-  ) => {
-    await XMLTVChannelModel.bulkSave(xmlTvChannels);
-    await XMLTVProgrammeModel.bulkSave(xmlTvProgrammes);
-    await xmlTv.save();
+  public save = async () => {
+    if (this._url === "custom") {
+      Logger.info("[XMLTV.save]: Skipping save XMLTV custom channel files");
+      return true;
+    }
+
+    if (!this._model) {
+      throw new Error("[XMLTV.save]: XMLTV JSON is empty");
+    }
+
+    Logger.info("[XMLTV.save]: Saving XMLTV channel files");
+    await XMLTVChannelModel.bulkSave(this._model?.xmlTv.channel);
+
+    Logger.info("[XMLTV.save]: Saving XMLTV programme files");
+    await XMLTVProgrammeModel.bulkSave(this._model?.xmlTv.programme);
+
+    Logger.info("[XMLTV.save]: Saving XMLTV file");
+    await this._model.save();
 
     return true;
   };

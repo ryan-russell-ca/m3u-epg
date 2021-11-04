@@ -41,19 +41,19 @@ export const getChannelInfo = async (req: Request, res: Response) => {
     definition: req.query.definition?.toString(),
   };
 
-  return res.status(OK).json(channelManager.getChannelJSON(filters));
+  // return res.status(OK).json(channelManager.getChannelJSON(filters));
 };
 
 export const getMatches = async (req: Request, res: Response) => {
   await channelManager.load();
-  return res.status(OK).json(
-    channelManager.getInfo({
-      name: req.query.name as string,
-      id: req.query.id as string,
-      formatted: req.query.formatted === "true",
-      listAll: req.query.listAll === "true",
-    })
-  );
+  // return res.status(OK).json(
+  //   channelManager.getInfo({
+  //     name: req.query.name as string,
+  //     id: req.query.id as string,
+  //     formatted: req.query.formatted === "true",
+  //     listAll: req.query.listAll === "true",
+  //   })
+  // );
 };
 
 export const sandbox = async (req: Request, res: Response) => {
@@ -76,7 +76,7 @@ export const sandbox = async (req: Request, res: Response) => {
         ) +
         "</pre>"
     );
-  } catch (err) {
+  } catch (error) {
     Logger.info("[M3UFile]: Custom Mappings JSON is empty");
   }
   return res.status(OK).send("<pre></pre>");

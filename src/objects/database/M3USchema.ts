@@ -1,5 +1,7 @@
 import Mongoose, { Schema } from "mongoose";
 
+const COUNTRY_WHITELIST = JSON.parse(process.env.COUNTRY_WHITELIST as string);
+
 const M3UChannelSchema = new Schema(
   {
     group: { type: String, required: true },
@@ -7,7 +9,7 @@ const M3UChannelSchema = new Schema(
     originalName: { type: String, required: true },
     country: {
       type: String,
-      enum: ["ca", "us", "uk", "unpopulated"],
+      enum: COUNTRY_WHITELIST,
       required: true,
     },
     url: {
@@ -20,11 +22,12 @@ const M3UChannelSchema = new Schema(
     logo: String,
     tvgId: String,
     definition: String,
+    confirmed: { type: Boolean, default: false },
   },
   { collection: "playlistChannel" }
 );
 
-export const M3UChannelModel = Mongoose.model<M3U.ChannelInfo>(
+export const M3UChannelModel = Mongoose.model<M3U.ChannelInfoModel>(
   "M3UChannelModel",
   M3UChannelSchema
 );
@@ -32,7 +35,7 @@ export const M3UChannelModel = Mongoose.model<M3U.ChannelInfo>(
 const M3USchema = new Schema(
   {
     date: { type: Date, default: Date.now() },
-    m3u: {
+    channels: {
       type: [{ type: Schema.Types.ObjectId, ref: "M3UChannelModel" }],
       required: true,
     },
