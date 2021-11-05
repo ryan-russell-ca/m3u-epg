@@ -1,6 +1,7 @@
 import Mongoose, { Schema } from "mongoose";
+import { MongoCollection } from "./Mongo";
 
-const XMLTVCodeSchema = new Schema(
+const xmltvCodeSchema = new Schema(
   {
     tvgId: { type: String, unique: true },
     displayName: String,
@@ -8,27 +9,27 @@ const XMLTVCodeSchema = new Schema(
     country: String,
     guides: [String],
   },
-  { collection: "XMLTVCode" }
+  { collection: MongoCollection.XMLTvCode }
 );
 
-export const XMLTVCodeModel = Mongoose.model<XMLTV.CodeModel>(
-  "XMLTVCodeModel",
-  XMLTVCodeSchema
+export const xmltvCodeModel = Mongoose.model<XMLTV.CodeModel>(
+  "xmltvCodeModel",
+  xmltvCodeSchema
 );
 
-const XMLTVCodesSchema = new Schema(
+const xmltvCodesSchema = new Schema(
   {
-    date: { type: Date, default: Date.now() },
+    date: { type: Date, default: () => Date.now() },
     codes: {
-      type: [{ type: Schema.Types.ObjectId, ref: "XMLTVCodeModel" }],
+      type: [{ type: Schema.Types.ObjectId, ref: "xmltvCodeModel" }],
     },
   },
-  { collection: "XMLTVCodes" }
+  { collection: MongoCollection.XMLTvCodes }
 );
 
-export const XMLTVCodesModel = Mongoose.model<XMLTV.CodeBaseModel>(
-  "XMLTVCodesModel",
-  XMLTVCodesSchema
+export const xmltvCodesModel = Mongoose.model<XMLTV.CodeBaseModel>(
+  "xmltvCodesModel",
+  xmltvCodesSchema
 );
 
-export default XMLTVCodesModel;
+export default xmltvCodesModel;
