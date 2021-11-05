@@ -17,6 +17,8 @@ class XMLTVList {
     xmlTvUrls: string[],
     filterIds?: string[]
   ): Promise<{ [key: string]: XMLTV }> => {
+    console.log('filterIds', filterIds);
+    
     if (this._model && Object.keys(this._model).length) {
       this._loaded = true;
       return this._model;
@@ -34,6 +36,7 @@ class XMLTVList {
       ...xmlTvs,
       custom,
     };
+    console.log(this._model);
     
     this._loaded = true;
 

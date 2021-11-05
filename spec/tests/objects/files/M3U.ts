@@ -46,6 +46,7 @@ class M3UFile {
     }
 
     this._model = await this.getM3U(uniqueOnly, refresh);
+    console.log(this._model);
     
     this._loaded = true;
 

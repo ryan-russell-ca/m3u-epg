@@ -1,8 +1,8 @@
-import { getFromUrl } from "@shared/functions";
+import { getFromUrl, getJson } from "@shared/functions";
 import Logger from "@shared/Logger";
 import MongoConnector from "@objects/database/Mongo";
-import XMLTVCodesModel, {
-  XMLTVCodeModel,
+import xmltvCodesModel, {
+  xmltvCodeModel,
 } from "@objects/database/XMLTVCodeSchema";
 
 const CODES_JSON_URL = process.env.CODES_JSON_URL as string;
@@ -12,13 +12,17 @@ const CODES_EXPIRATION_MILLI =
 
 class IPTVOrgCode {
   private _loaded = false;
+  private _expired = false;
   private _model?: XMLTV.CodeBaseDocument;
 
-  public load = async (refresh = false): Promise<XMLTV.CodeBaseDocument> => {
-    if (this._model && !refresh) {
+  public load = async (refresh = false): Promise<boolean> => {
+    if (this.model && !refresh && !this.expired) {
       this._loaded = true;
-      return this._model;
+      Logger.info("[IPTVOrgCode.load]: IPTVOrgCode already loaded");
+      return false;
     }
+
+    Logger.info("[IPTVOrgCode.load]: Loading IPTVOrgCode...");
 
     if (!MongoConnector.connected) {
       await MongoConnector.connect();
@@ -26,22 +30,16 @@ class IPTVOrgCode {
 
     this._model = await this.getCodes(refresh);
 
+    await this.save();
+
     this._loaded = true;
 
-    return this._model;
+    return true;
   };
-
-  public get isLoaded() {
-    return this._loaded;
-  }
-
-  public get codeList() {
-    return this._model?.codes.map((code) => code.toJSON()) || [];
-  }
 
   public getCodesByTvgIds = (tvgIds: string[]) => {
     return (
-      this._model?.codes
+      this.model?.codes
         .filter((code) => tvgIds.includes(code.tvgId))
         .map((code) => code.toJSON()) || []
     );
@@ -54,10 +52,38 @@ class IPTVOrgCode {
 
     Logger.info("[IPTVOrgCode.save]: Saving code file");
 
-    await XMLTVCodeModel.bulkSave(this._model.codes);
+    await xmltvCodeModel.bulkSave(this._model.codes);
     await this._model.save();
 
     return true;
+  };
+
+  public get isLoaded() {
+    return this._loaded;
+  }
+
+  public get codeList() {
+    return this.model?.codes.map((code) => code.toJSON()) || [];
+  }
+
+  public get expired() {
+    return this._expired;
+  }
+
+  public get id() {
+    return this.model?.id;
+  }
+
+  private get model() {
+    if (this.checkExpired()) {
+      this._expired = true;
+    }
+
+    return this._model;
+  }
+
+  private checkExpired = (model = this._model) => {
+    return (model?.date?.getTime() || 0) + CODES_EXPIRATION_MILLI < Date.now();
   };
 
   private getCodes = async (
@@ -65,12 +91,12 @@ class IPTVOrgCode {
   ): Promise<XMLTV.CodeBaseDocument> => {
     try {
       if (refresh) {
-        Logger.info("[IPTVOrgCode.getCodes]: Forcing refresh");
+        Logger.info("[IPTVOrgCode.getCodes]: Forcing refresh...");
         return this.createCodes();
       }
 
-      const model = await XMLTVCodesModel.findOne()
-        .sort({ date: 1 })
+      const model = await xmltvCodesModel
+        .findOne({}, {}, { sort: { date: -1 } })
         .populate("codes");
 
       if (!model) {
@@ -78,10 +104,7 @@ class IPTVOrgCode {
         return this.createCodes();
       }
 
-      if (
-        (model.date?.getTime() || 0) + CODES_EXPIRATION_MILLI <
-        new Date().getTime()
-      ) {
+      if (this.checkExpired(model)) {
         Logger.info("[IPTVOrgCode.getCodes]: XMLTV codes entry expired");
         return this.createCodes();
       }
@@ -98,36 +121,57 @@ class IPTVOrgCode {
   };
 
   private createCodes = async (): Promise<XMLTV.CodeBaseDocument> => {
+    Logger.info("[IPTVOrgCode.createCodes]: Creating XMLTV codes...");
+
     const base = await this.getJson();
+
     const baseFiltered = base.filter(({ country }) =>
       COUNTRY_WHITELIST.includes(country)
     );
 
-    const codeModels = await XMLTVCodeModel.find({
+    const codeModels = await xmltvCodeModel.find({
       tvgId: baseFiltered.map((code) => code.tvg_id),
     });
 
-    const codes = baseFiltered.map(
-      (code) =>
-        codeModels.find((c) => c.tvgId === code.tvg_id) ||
-        new XMLTVCodeModel({
+    const codes = baseFiltered.map((code) => {
+      const codeModel = codeModels.find((c) => c.tvgId === code.tvg_id);
+
+      if (codeModel) {
+        codeModel.set({
           ...code,
           tvgId: code.tvg_id,
           displayName: code.display_name,
-        })
-    );
+        });
 
-    const baseModel = new XMLTVCodesModel({ codes });
+        return codeModel;
+      }
+
+      return new xmltvCodeModel({
+        ...code,
+        tvgId: code.tvg_id,
+        displayName: code.display_name,
+      });
+    });
+
+    const baseModel = new xmltvCodesModel({ codes });
 
     Logger.info(
-      `[IPTVOrgCode.createCodes]: Created ${baseModel.codes.length} XMLTV codes `
+      `[IPTVOrgCode.createCodes]: Created ${baseModel.codes.length} XMLTV codes`
     );
+
+    this._expired = false;
 
     return baseModel;
   };
 
   private getJson = async (): Promise<XMLTV.CodeRaw[]> => {
     try {
+      if (process.env.CODES_JSON_STATIC_DATA_FILE) {
+        return JSON.parse(
+          await getJson(process.env.CODES_JSON_STATIC_DATA_FILE)
+        );
+      }
+
       return JSON.parse(await getFromUrl(CODES_JSON_URL));
     } catch (error) {
       Logger.err(error);

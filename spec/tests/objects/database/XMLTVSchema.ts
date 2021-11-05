@@ -1,5 +1,4 @@
 import Mongoose, { Schema } from "mongoose";
-import { MongoCollection } from "./Mongo";
 
 const XMLTVChannelSchema = new Schema(
   {
@@ -9,7 +8,7 @@ const XMLTVChannelSchema = new Schema(
       "@_src": String,
     },
   },
-  { collection: MongoCollection.XMLTvChannel }
+  { collection: "xmltvChannel" }
 );
 
 export const XMLTVChannelModel = Mongoose.model<XMLTV.ChannelModel>(
@@ -24,7 +23,7 @@ const XMLTVProgrammeSchema = new Schema(
     "@_channel": String,
     title: { "#text": String, "@_lang": String },
   },
-  { collection: MongoCollection.XMLTvProgramme }
+  { collection: "xmltvProgramme" }
 );
 
 XMLTVProgrammeSchema.index(
@@ -42,7 +41,7 @@ export const XMLTVProgrammeModel = Mongoose.model<XMLTV.ProgrammeModel>(
 
 const XMLTVSchema = new Schema(
   {
-    date: { type: Date, default: () => Date.now() },
+    date: { type: Date, default: Date.now() },
     url: { type: String, required: true, unique: true },
     xmlTv: {
       channel: {
@@ -53,7 +52,7 @@ const XMLTVSchema = new Schema(
       },
     },
   },
-  { collection: MongoCollection.XMLTv }
+  { collection: "xmltv" }
 );
 
 export const XMLTVModel = Mongoose.model<XMLTV.BaseModel>(
