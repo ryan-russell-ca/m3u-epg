@@ -31,15 +31,15 @@ class ChannelManager {
 
     // await this._m3uFile.insertCodeInfo(matchedCodes);
 
-    await this._iptvOrgCode.save();
-    await this._m3uFile.save();
-    await this._xmlList.save();
+    // await this._iptvOrgCode.save();
+    // await this._m3uFile.save();
+    // await this._xmlList.save();
 
     this._loaded = true;
   };
 
-  public getM3U = async () => {
-    return await this._m3uFile.toString();
+  public getM3U = () => {
+    return this._m3uFile.toString();
   };
 
   public getXMLTV = () => {

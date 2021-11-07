@@ -7,15 +7,14 @@ import {
   XMLTVProgrammeModel,
 } from "@objects/database/XMLTVSchema";
 import MongoConnector from "@objects/database/Mongo";
+import BaseFile from "./BaseFile";
 
 const XMLTV_EXPIRATION_MILLI =
   parseInt(process.env.XMLTV_EXPIRATION_SECONDS as string) * 1000;
 
-class XMLTV {
-  private _expired = false;
-  private _loaded = false;
+class XMLTV extends BaseFile<XMLTV.BaseDocument> {
+  protected _expirationMilli = XMLTV_EXPIRATION_MILLI;
   private _valid = false;
-  private _model?: XMLTV.BaseDocument;
   private _url: string;
   private _parseOptions: {
     ignoreAttributes: boolean;
@@ -27,6 +26,7 @@ class XMLTV {
       ignoreAttributes: boolean;
     }
   ) {
+    super();
     this._url = url;
     this._parseOptions = parseOptions;
   }
@@ -136,14 +136,6 @@ class XMLTV {
     }));
   };
 
-  public get id() {
-    return this.model?.id;
-  }
-
-  public get isLoaded() {
-    return this._loaded;
-  }
-
   public get url() {
     return this._url;
   }
@@ -151,22 +143,6 @@ class XMLTV {
   public get isValid() {
     return this._valid;
   }
-
-  private get expired() {
-    return this._expired;
-  }
-
-  private get model() {
-    if (this._model && this.checkExpired(this._model)) {
-      this._expired = true;
-    }
-
-    return this._model;
-  }
-
-  private checkExpired = (model: XMLTV.BaseDocument) => {
-    return (model?.date?.getTime() || 0) + XMLTV_EXPIRATION_MILLI - 1 < Date.now();
-  };
 
   private loadFromJSON = async (base: XMLTV.Base) => {
     this._loaded = true;
@@ -276,7 +252,9 @@ class XMLTV {
     return true;
   };
 
-  private populateModels = async (model: XMLTV.Base): Promise<XMLTV.BaseDocument> => {
+  private populateModels = async (
+    model: XMLTV.Base
+  ): Promise<XMLTV.BaseDocument> => {
     const channels = await XMLTVChannelModel.find({
       "@_id": model.xmlTv.channel.map((channel) => channel["@_id"]),
     });
@@ -366,15 +344,13 @@ class XMLTV {
 
       this._expired = false;
 
-      return await this.populateModels(
-        {
-          url: url,
-          xmlTv: {
-            channel: filteredChannel,
-            programme: filteredProgramme,
-          },
-        }
-      );
+      return await this.populateModels({
+        url: url,
+        xmlTv: {
+          channel: filteredChannel,
+          programme: filteredProgramme,
+        },
+      });
     }
 
     throw validation;

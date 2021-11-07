@@ -35,8 +35,8 @@ namespace M3U {
 
   export interface ChannelInfoModel extends NameChannelInfo {
     group: string;
-    tvgId: string;
-    logo: string;
+    tvgId: string | null;
+    logo: string | null;
     name: string;
     originalName: string;
     parsedName: string;

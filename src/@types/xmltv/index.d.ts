@@ -12,7 +12,7 @@ namespace XMLTV {
   export interface CodeModel {
     tvgId: string;
     displayName: string;
-    logo: string;
+    logo?: string;
     country: string;
     guides: string[];
   }
