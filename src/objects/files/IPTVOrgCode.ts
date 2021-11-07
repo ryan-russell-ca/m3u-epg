@@ -4,17 +4,15 @@ import MongoConnector from "@objects/database/Mongo";
 import xmltvCodesModel, {
   xmltvCodeModel,
 } from "@objects/database/XMLTVCodeSchema";
-import XMLTV from "./XMLTV";
+import BaseFile from "./BaseFile";
 
 const CODES_JSON_URL = process.env.CODES_JSON_URL as string;
 const COUNTRY_WHITELIST = JSON.parse(process.env.COUNTRY_WHITELIST as string);
 const CODES_EXPIRATION_MILLI =
   parseInt(process.env.CODES_EXPIRATION_SECONDS as string) * 1000;
 
-class IPTVOrgCode {
-  private _loaded = false;
-  private _expired = false;
-  private _model?: XMLTV.CodeBaseDocument;
+class IPTVOrgCode extends BaseFile<XMLTV.CodeBaseDocument> {
+  protected _expirationMilli = CODES_EXPIRATION_MILLI;
 
   public load = async (refresh = false): Promise<boolean> => {
     if (this.model && !refresh && !this.expired) {
@@ -59,33 +57,9 @@ class IPTVOrgCode {
     return true;
   };
 
-  public get isLoaded() {
-    return this._loaded;
-  }
-
   public get codeList() {
     return this.model?.codes.map((code) => code.toJSON()) || [];
   }
-
-  public get id() {
-    return this.model?.id;
-  }
-
-  private get expired() {
-    return this._expired;
-  }
-
-  private get model() {
-    if (this._model && this.checkExpired(this._model)) {
-      this._expired = true;
-    }
-
-    return this._model;
-  }
-
-  private checkExpired = (model: XMLTV.CodeBaseModel) => {
-    return (model?.date?.getTime() || 0) + CODES_EXPIRATION_MILLI - 1 < Date.now();
-  };
 
   private getCodes = async (
     refresh = false

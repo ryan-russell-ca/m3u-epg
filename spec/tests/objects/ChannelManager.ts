@@ -17,7 +17,7 @@ class ChannelManager {
     await this._iptvOrgCode.load(refresh);
 
     const matcher = new Matcher(this._iptvOrgCode.codeList);
-
+    
     await this._m3uFile.load(matcher, refresh);
 
     const tvgIds = this._m3uFile.tvgIds;

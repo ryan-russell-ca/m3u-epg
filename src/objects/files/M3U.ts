@@ -1,22 +1,20 @@
 import {
   getFromUrl,
   getJson,
-  parseChannelName,
-  parseCountryFromChannelName,
-  parseIdFromChannelName,
+  parseJson,
+  filterUnique,
+  filterRegion,
 } from "@shared/functions";
 import M3UModel, { M3UChannelModel } from "@objects/database/M3USchema";
 import MongoConnector from "@objects/database/Mongo";
 import Logger from "@shared/Logger";
-import { Schema } from "mongoose";
+import BaseFile from "./BaseFile";
 
 const M3U_URL = process.env.M3U_URL as string;
 const M3U_FILENAME = process.env.M3U_FILENAME as string;
 const CONFIRMED_MAPPINGS_FILE = process.env.CONFIRMED_MAPPINGS_FILE as string;
-const M3U_INFO_REGEX =
-  /^#EXTINF:.?(?<extInf>\d) *group-title="(?<group>.*?)" *tvg-id="(?<tvgId>.*?)" *tvg-logo="(?<logo>.*?)" *,(?<name>.*)/;
-const CHANNEL_MATCHING_REGEX =
-  /^((.*?:( *)?)|([A-Z]{2} ?\((?<region>.*?)\) )?)?((?<nameCode>[A-Z]{4}) TV)?(?<name>.*?)( *)?(?<definition>F?HD)?$/i;
+const M3U_EXPIRATION_MILLI =
+  parseInt(process.env.M3U_EXPIRATION_SECONDS as string) * 1000;
 
 export enum Definition {
   FullHighDef = "FHD",
@@ -25,9 +23,8 @@ export enum Definition {
   Unknown = "UNKNOWN",
 }
 
-class M3UFile {
-  private _loaded = false;
-  private _model?: M3U.BaseDocument;
+class M3UFile extends BaseFile<M3U.BaseDocument> {
+  protected _expirationMilli = M3U_EXPIRATION_MILLI;
   private _matcher?: M3U.Matcher;
 
   public load = async (
@@ -35,8 +32,8 @@ class M3UFile {
     refresh = false,
     uniqueOnly = true
   ) => {
-    if (this._model && !refresh) {
-      return;
+    if (this.model && !refresh && !this.expired) {
+      return false;
     }
 
     this._matcher = matcher;
@@ -46,10 +43,12 @@ class M3UFile {
     }
 
     this._model = await this.getM3U(uniqueOnly, refresh);
-    
+
+    await this.save();
+
     this._loaded = true;
 
-    return this._model;
+    return true;
   };
 
   // // TODO: Remove mutations to channels
@@ -119,12 +118,9 @@ class M3UFile {
   //   return this._model?.channels || [];
   // }
 
-  public get isLoaded() {
-    return this._loaded;
-  }
-
   public get tvgIds() {
-    return this._model?.channels.map((channel) => channel.tvgId) || [];
+    const tvgIds = this._model?.channels.map((channel) => channel.tvgId).filter((c) => c);
+    return (tvgIds || []) as string[];
   }
 
   // public getChannelJSON = (filters: M3U.ChannelInfoFilters) => {
@@ -180,96 +176,35 @@ class M3UFile {
     ].join("\n");
   };
 
-  private filterUnique = (channels: M3U.ChannelInfoModel[]) => {
-    const channelDictionary = channels.reduce<
-      Record<string, Record<string, M3U.ChannelInfoModel>>
-    >((acc, channel) => {
-      const matches = channel.name.match(
-        CHANNEL_MATCHING_REGEX
-      ) as M3U.NameChannelInfoMatch;
-
-      const info = matches?.groups;
-
-      if (info?.name) {
-        if (!acc[info.name]) {
-          acc[info.name] = {};
-        }
-
-        acc[info.name][info.definition || Definition.Unknown] = {
-          ...channel,
-          ...info,
-        };
-      }
-
-      return acc;
-    }, {});
-
-    return Object.values(channelDictionary).map(
-      (list) =>
-        list[Definition.FullHighDef] ||
-        list[Definition.HighDef] ||
-        list[Definition.StandardDef] ||
-        list[Definition.Unknown]
-    );
-  };
-
-  private filterRegion = (channels: M3U.ChannelInfoModel[]) => {
-    return channels.filter((channel) => !channel.region);
-  };
-
-  private parseJson = (m3uFileString: string) => {
-    const split = m3uFileString.split("\n");
-
-    const channels = split.reduce<M3U.ChannelInfoModel[]>((acc, line) => {
-      if (acc.length > 0 && line[0] && line[0] !== "#") {
-        acc[acc.length - 1].url = line;
-        return acc;
-      }
-
-      const matches = line.match(M3U_INFO_REGEX);
-
-      if (!matches?.groups) return acc;
-
-      const { group, tvgId, logo, name, nameCode } = matches.groups;
-
-      acc.push({
-        group,
-        tvgId,
-        logo,
-        name,
-        country: parseCountryFromChannelName(name),
-        originalName: name || line,
-        parsedName: parseChannelName(name),
-        parsedIds: [nameCode, ...parseIdFromChannelName(name)].filter((n) => n),
-        url: "",
-        confirmed: false,
-      });
-
-      return acc;
-    }, []);
-    
-    return channels;
-  };
-
   private getM3U = async (
     uniqueOnly: boolean,
-    refresh = false
+    refresh?: boolean,
   ): Promise<M3U.BaseDocument> => {
     try {
       if (refresh) {
         Logger.info("[M3UFile.getM3U]: Forcing refresh");
+        return this.createM3U(uniqueOnly);
       }
 
-      const base = await M3UModel.findOne()
-        .sort({ date: 1 })
+      const model = await M3UModel
+        .findOne({}, {}, { sort: { date: -1 } })
         .populate("channels");
-
-      if (!base) {
+      
+      if (!model) {
         Logger.info("[M3UFile.getM3U]: No M3U entry found");
         return this.createM3U(uniqueOnly);
       }
 
-      return base;
+      if (this.checkExpired(model)) {
+        Logger.info("[M3UFile.getM3U]: M3U entry expired");
+        return this.createM3U(uniqueOnly);
+      }
+
+      Logger.info(
+        `[IPTVOrgCode.getCodes]: Found ${model.channels.length} M3U channels `
+      );
+
+      return model;
     } catch (error) {
       Logger.err(error);
       throw error;
@@ -279,14 +214,21 @@ class M3UFile {
   private createM3U = async (
     uniqueOnly: boolean
   ): Promise<M3U.BaseDocument> => {
-    const channels = await this.getJson(uniqueOnly);
+    const m3uFileString = await this.getJson();
+    const m3uFileJson = parseJson(m3uFileString);
+
+    const channels = uniqueOnly
+      ? filterRegion(filterUnique(m3uFileJson))
+      : m3uFileJson;
 
     const channelDocuments = await M3UChannelModel.find({
       url: channels.map((channel) => channel.url),
     });
-
+    
     const confirmedMappings = await this.getConfirmedMatches();
 
+    this._expired = false;
+   
     return new M3UModel({
       channels: channels.map((channel) => {
         return (
@@ -317,15 +259,19 @@ class M3UFile {
     }
   };
 
-  private getMatch = (channel: M3U.ChannelInfoModel) => {
+  private getMatch = (channel: M3U.ChannelInfoModel) => {    
     if (!this._matcher) {
       Logger.info("[M3UFile.getMatch]: No matcher set");
       return {};
     }
 
+    const id = [channel.tvgId, ...(channel.parsedIds || [])].filter(
+      (c) => c
+    ) as string[];
+
     const match = this._matcher.match({
       name: [channel.name, channel.parsedName],
-      id: [channel.tvgId, ...(channel.parsedIds || [])],
+      id,
       formatted: true,
     }) as XMLTV.CodeMatch[];
 
@@ -336,28 +282,16 @@ class M3UFile {
     return {};
   };
 
-  private getJson = async (
-    uniqueOnly: boolean
-  ): Promise<M3U.ChannelInfoModel[]> => {
+  private getJson = async (): Promise<string> => {
     try {
-      const m3uFileString = await getFromUrl(M3U_URL);
-      const channels = this.parseJson(m3uFileString);
-
-      if (uniqueOnly) {
-        return this.filterRegion(this.filterUnique(channels));
+      if (process.env.M3U_STATIC_DATA_FILE) {
+        return await getJson(process.env.M3U_STATIC_DATA_FILE);
       }
 
-      return channels;
+      return await getFromUrl(M3U_URL);
     } catch (error) {
       try {
-        const m3uFileString = await getJson(M3U_FILENAME);
-        const channels = this.parseJson(m3uFileString);
-
-        if (uniqueOnly) {
-          return this.filterRegion(this.filterUnique(channels));
-        }
-
-        return channels;
+        return await getJson(M3U_FILENAME);
       } catch (error) {
         Logger.err(error);
         throw error;
