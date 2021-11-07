@@ -4,6 +4,7 @@ import MongoConnector from "@objects/database/Mongo";
 import xmltvCodesModel, {
   xmltvCodeModel,
 } from "@objects/database/XMLTVCodeSchema";
+import XMLTV from "./XMLTV";
 
 const CODES_JSON_URL = process.env.CODES_JSON_URL as string;
 const COUNTRY_WHITELIST = JSON.parse(process.env.COUNTRY_WHITELIST as string);
@@ -50,7 +51,7 @@ class IPTVOrgCode {
       throw new Error("[IPTVOrgCode.save]: IPTVOrgCode JSON is empty");
     }
 
-    Logger.info("[IPTVOrgCode.save]: Saving code file");
+    Logger.info("[IPTVOrgCode.save]: Saving code file...");
 
     await xmltvCodeModel.bulkSave(this._model.codes);
     await this._model.save();
@@ -66,24 +67,24 @@ class IPTVOrgCode {
     return this.model?.codes.map((code) => code.toJSON()) || [];
   }
 
-  public get expired() {
-    return this._expired;
-  }
-
   public get id() {
     return this.model?.id;
   }
 
+  private get expired() {
+    return this._expired;
+  }
+
   private get model() {
-    if (this.checkExpired()) {
+    if (this._model && this.checkExpired(this._model)) {
       this._expired = true;
     }
 
     return this._model;
   }
 
-  private checkExpired = (model = this._model) => {
-    return (model?.date?.getTime() || 0) + CODES_EXPIRATION_MILLI < Date.now();
+  private checkExpired = (model: XMLTV.CodeBaseModel) => {
+    return (model?.date?.getTime() || 0) + CODES_EXPIRATION_MILLI - 1 < Date.now();
   };
 
   private getCodes = async (
@@ -165,6 +166,8 @@ class IPTVOrgCode {
   };
 
   private getJson = async (): Promise<XMLTV.CodeRaw[]> => {
+    Logger.info("[IPTVOrgCode.getJson]: Downloading codes");
+
     try {
       if (process.env.CODES_JSON_STATIC_DATA_FILE) {
         return JSON.parse(

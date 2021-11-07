@@ -49,6 +49,8 @@ namespace XMLTV {
     "@_stop": string;
     "@_channel": string;
     title: { "#text": string; "@_lang": string };
+    desc?: { "#text": string, "@_lang": string; };
+    category?: { "#text": string, "@_lang": string; };
   }
 
   export interface Base {

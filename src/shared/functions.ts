@@ -101,3 +101,28 @@ export const saveJson = async (filename: string, data: unknown) => {
 export const getJson = async (filename: string) => {
   return await fs.readFile(filename, "utf8");
 };
+
+const XMLTV_TIME_AHEAD_MILLI =
+  parseInt(process.env.XMLTV_TIME_AHEAD_SECONDS as string) * 1000;
+const XMLTV_TIME_BEHIND_MILLI =
+  parseInt(process.env.XMLTV_TIME_BEHIND_SECONDS as string) * 1000;
+
+export const filterProgrammeByDate = (programme: { "@_start": string; }) => {
+  const { year, month, day, hour, minute, second } = parseXmlDate(
+    programme["@_start"]
+  );
+
+  if (year < 2011) {
+    return true;
+  }
+
+  const date = new Date(Date.UTC(year, month, day, hour, minute, second));
+
+  const diff = date.getTime() - new Date().getTime();
+
+  if (diff < -XMLTV_TIME_BEHIND_MILLI || diff > XMLTV_TIME_AHEAD_MILLI) {
+    return false;
+  }
+
+  return true;
+};
