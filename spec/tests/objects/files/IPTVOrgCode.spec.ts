@@ -16,7 +16,6 @@ describe("IPTVOrgCode Tests", () => {
   let codesList: XMLTV.CodeRaw[] = [];
   let codesListShort: XMLTV.CodeRaw[] = [];
   let iptvOrgCode: IPTVOrgCode;
-  let iptvOrgTestUpdateCode: XMLTV.CodeModel[];
   let getJsonSpy: jasmine.Spy<(url: string) => Promise<string>>;
 
   beforeAll(async () => {
@@ -65,7 +64,7 @@ describe("IPTVOrgCode Tests", () => {
       return;
     });
 
-    it("Should match codeList to filtered original by country", async () => {
+    it("Should match list selected ids", async () => {
       const iptvOrgCodesList = iptvOrgCode.codeList;
 
       const codes = [
@@ -85,8 +84,6 @@ describe("IPTVOrgCode Tests", () => {
     it("Should save Mongo collections", async () => {
       const saved = await iptvOrgCode.save();
 
-      iptvOrgTestUpdateCode = iptvOrgCode.getCodesByTvgIds(["K11LCD.us"]);
-
       expect(saved).toBeTrue();
     });
 
@@ -97,40 +94,41 @@ describe("IPTVOrgCode Tests", () => {
     });
 
     it("Should reload with reload flag `true`", async () => {
-      process.env.CODES_JSON_STATIC_DATA_FILE =
-        originalEnvs.CODES_JSON_SHORT_STATIC_DATA_FILE;
-
+      const id = iptvOrgCode.id;
       const didLoad = await iptvOrgCode.load(true);
 
       expect(didLoad).toBeTrue();
       expect(getJsonSpy).toHaveBeenCalledTimes(2);
       expect(iptvOrgCode.isLoaded).toBeTrue;
+      expect(id).not.toEqual(iptvOrgCode.id);
     });
 
     it("Should match codeList to filtered original by country after reload", async () => {
-      const codeListIds = codesListShort
+      const codeListIds = codesList
         .filter((code) => COUNTRY_WHITELIST.includes(code.country))
         .map((code) => code.tvg_id);
-      const iptvOrgCodeListIds = iptvOrgCode.codeList.map(
-        (code) => code.tvgId
-      );
+      const iptvOrgCodeListIds = iptvOrgCode.codeList.map((code) => code.tvgId);
 
       expect(iptvOrgCodeListIds).toEqual(codeListIds);
       return;
     });
 
     it("Should reload when expired time is reached", async () => {
+      process.env.CODES_JSON_STATIC_DATA_FILE =
+        originalEnvs.CODES_JSON_SHORT_STATIC_DATA_FILE;
+
       jasmine.clock().mockDate(new Date());
       jasmine.clock().tick(CODES_EXPIRATION_MILLI);
 
+      const id = iptvOrgCode.id;
       const didLoad = await iptvOrgCode.load();
-      
-      expect(iptvOrgTestUpdateCode[0].displayName).not.toEqual(
-        iptvOrgCode.getCodesByTvgIds(["K11LCD.us"])[0].displayName
-      );
+
+      // Time has been increase, so the same
       expect(didLoad).toBeTrue();
       expect(getJsonSpy).toHaveBeenCalledTimes(3);
       expect(iptvOrgCode.isLoaded).toBeTrue;
+      expect(iptvOrgCode.isLoaded).toBeTrue;
+      expect(id).not.toEqual(iptvOrgCode.id);
     });
 
     it("Should select most recent Document", async () => {

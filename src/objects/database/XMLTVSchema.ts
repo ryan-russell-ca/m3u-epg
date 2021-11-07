@@ -23,6 +23,8 @@ const XMLTVProgrammeSchema = new Schema(
     "@_stop": String,
     "@_channel": String,
     title: { "#text": String, "@_lang": String },
+    desc: { "#text": String, "@_lang": String },
+    category: { "#text": String, "@_lang": String },
   },
   { collection: MongoCollection.XMLTvProgramme }
 );

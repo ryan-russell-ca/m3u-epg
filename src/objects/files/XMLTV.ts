@@ -1,5 +1,5 @@
 import xmlParser from "fast-xml-parser";
-import { getFromUrl, getJson, parseXmlDate } from "@shared/functions";
+import { filterProgrammeByDate, getFromUrl, getJson } from "@shared/functions";
 import Logger from "@shared/Logger";
 import {
   XMLTVChannelModel,
@@ -8,12 +8,11 @@ import {
 } from "@objects/database/XMLTVSchema";
 import MongoConnector from "@objects/database/Mongo";
 
-const XMLTV_TIME_AHEAD_MILLI =
-  parseInt(process.env.XMLTV_TIME_AHEAD_SECONDS as string) * 1000;
-const XMLTV_TIME_BEHIND_MILLI =
-  parseInt(process.env.XMLTV_TIME_BEHIND_SECONDS as string) * 1000;
+const XMLTV_EXPIRATION_MILLI =
+  parseInt(process.env.XMLTV_EXPIRATION_SECONDS as string) * 1000;
 
 class XMLTV {
+  private _expired = false;
   private _loaded = false;
   private _valid = false;
   private _model?: XMLTV.BaseDocument;
@@ -39,10 +38,10 @@ class XMLTV {
       ignoreAttributes: boolean;
     }
   ) => {
-    const xmlTvJson = await getJson(filename);
+    const xmlTvModel = await getJson(filename);
 
-    const json = JSON.parse(xmlTvJson) as XMLTV.Base;
-    
+    const json = JSON.parse(xmlTvModel) as XMLTV.Base;
+
     const xmlTv = new XMLTV(name, parseOptions);
 
     await xmlTv.loadFromJSON(json);
@@ -51,26 +50,29 @@ class XMLTV {
   };
 
   public load = async (
-    filterIds?: string[]
-  ): Promise<XMLTV.BaseDocument | null> => {
-    if (this._model) {
+    filterIds?: string[],
+    refresh = false
+  ): Promise<boolean> => {
+    if (this.model && !refresh && !this.expired) {
       this._loaded = true;
-      return this._model;
+      return false;
     }
 
     if (!MongoConnector.connected) {
       await MongoConnector.connect();
     }
 
-    this._model = await this.getXMLTV(this._url, filterIds);
+    this._model = await this.getXMLTV(this._url, filterIds, refresh);
+
+    await this.save();
 
     this._loaded = true;
 
-    return this._model;
+    return true;
   };
 
-  public getByCode = (
-    code: string
+  public getByTvgId = (
+    tvgId: string
   ): {
     channel: XMLTV.ChannelModel;
     programme: XMLTV.ProgrammeModel[];
@@ -81,32 +83,12 @@ class XMLTV {
       }
 
       const channel = this._model.xmlTv.channel.find(
-        (channel) => channel["@_id"] === code
+        (channel) => channel["@_id"] === tvgId
       );
 
-      const programme = this._model.xmlTv.programme.filter((programme) => {
-        if (programme["@_channel"] !== code) {
-          return false;
-        }
-
-        const { year, month, day, hour, minute, second } = parseXmlDate(
-          programme["@_start"]
-        );
-
-        if (year < 2011) {
-          return true;
-        }
-
-        const date = new Date(Date.UTC(year, month, day, hour, minute, second));
-
-        const diff = date.getTime() - new Date().getTime();
-
-        if (diff < -3600001 || diff > XMLTV_TIME_AHEAD_MILLI) {
-          return false;
-        }
-
-        return true;
-      });
+      const programme = this._model.xmlTv.programme.filter(
+        (programme) => programme["@_channel"] === tvgId
+      );
 
       return channel
         ? {
@@ -124,12 +106,12 @@ class XMLTV {
           }
         : null;
     } catch (error) {
-      Logger.info(`[XMLTV.getByCode]: '${code}' not found`);
+      Logger.info(`[XMLTV.getByCode]: '${tvgId}' not found`);
       return null;
     }
   };
 
-  public getChannel = () => {    
+  public getChannel = (): XMLTV.ChannelModel[] => {
     if (!this._model) {
       throw new Error("[XMLTV.getChannel]: XMLTV JSON is empty");
     }
@@ -141,7 +123,7 @@ class XMLTV {
     }));
   };
 
-  public getProgramme = () => {
+  public getProgramme = (): XMLTV.ProgrammeModel[] => {
     if (!this._model) {
       throw new Error("[XMLTV.getProgramme]: XMLTV JSON is empty");
     }
@@ -153,6 +135,10 @@ class XMLTV {
       title: p.title,
     }));
   };
+
+  public get id() {
+    return this.model?.id;
+  }
 
   public get isLoaded() {
     return this._loaded;
@@ -166,12 +152,26 @@ class XMLTV {
     return this._valid;
   }
 
-  private loadFromJSON = async (json: XMLTV.Base) => {
+  private get expired() {
+    return this._expired;
+  }
+
+  private get model() {
+    if (this._model && this.checkExpired(this._model)) {
+      this._expired = true;
+    }
+
+    return this._model;
+  }
+
+  private checkExpired = (model: XMLTV.BaseDocument) => {
+    return (model?.date?.getTime() || 0) + XMLTV_EXPIRATION_MILLI - 1 < Date.now();
+  };
+
+  private loadFromJSON = async (base: XMLTV.Base) => {
     this._loaded = true;
 
-    const { xmlTv, xmlTvChannels, xmlTvProgrammes } = await this.populateModels(
-      json
-    );
+    const xmlTv = await this.populateModels(base);
 
     this._model = xmlTv;
 
@@ -183,68 +183,52 @@ class XMLTV {
   private getXMLTV = async (
     url: string,
     filterIds?: string[],
-    refresh = false
+    refresh?: boolean
   ) => {
     try {
       if (refresh) {
-        Logger.info("[XMLTV.getXMLTV]: Forcing refresh");
-        throw new Error();
+        Logger.info("[XMLTV.getXMLTV]: Forcing refresh...");
+        return this.createXmlTv(url, filterIds);
       }
 
-      const xmlTv = await XMLTVModel.findOne({ url })
+      const model = await XMLTVModel.findOne(
+        { url },
+        {},
+        { sort: { date: -1 } }
+      )
         .populate("xmlTv.channel")
         .populate("xmlTv.programme");
 
-      if (!xmlTv) {
-        throw new Error();
+      if (!model) {
+        Logger.info("[XMLTV.getXMLTV]: No XMLTV entry found");
+        return this.createXmlTv(url, filterIds);
       }
 
-      if (filterIds) {
-        xmlTv.xmlTv = this.filterDocumentIds(xmlTv, filterIds);
+      if (this.checkExpired(model)) {
+        Logger.info("[XMLTV.getXMLTV]: XMLTV entry expired");
+        return this.createXmlTv(url, filterIds);
+      }
+
+      Logger.info(
+        `[XMLTV.getXMLTV]: Found ${model.xmlTv.channel.length} XMLTV channels and ${model.xmlTv.programme.length} programmes`
+      );
+
+      if (!model?.xmlTv.channel || !model?.xmlTv.programme) {
+        Logger.info(`[XMLTV.getXMLTV]: Invalid XMLTV | ${this._url}`);
+        throw new Error();
       }
 
       this._valid = true;
 
-      return xmlTv;
+      return model;
     } catch (error) {
-      Logger.info("[XMLTV.getXMLTV]: No XMLTV entry found");
-      const json = await this.getJson(url, filterIds);
-
-      if (!json?.xmlTv.channel || !json?.xmlTv.programme) {
-        Logger.info(`[XMLTV.getJson]: Invalid XMLTV | ${this._url}`);
-        this._valid = false;
-        throw new Error();
-      }
-
-      const { xmlTv, xmlTvChannels, xmlTvProgrammes } =
-        await this.populateModels(json);
-      
-      this._valid = true;
-
-      return xmlTv;
+      Logger.err(error);
+      throw error;
     }
   };
 
   private filterProgammesByTime = (programmes: XMLTV.ProgrammeModel[]) => {
-    const filteredProgrammes = programmes.filter((programme) => {
-      const { year, month, day, hour, minute, second } = parseXmlDate(
-        programme["@_start"]
-      );
-
-      if (year < 2011) {
-        return true;
-      }
-
-      const date = new Date(Date.UTC(year, month, day, hour, minute, second));
-
-      const diff = date.getTime() - new Date().getTime();
-
-      if (diff < -XMLTV_TIME_BEHIND_MILLI || diff > XMLTV_TIME_AHEAD_MILLI) {
-        return false;
-      }
-
-      return true;
-    });
+    const filteredProgrammes = programmes.filter(filterProgrammeByDate);
 
     if (!filteredProgrammes.length) {
       Logger.info(
@@ -253,20 +237,6 @@ class XMLTV {
     }
 
     return filteredProgrammes;
-  };
-
-  private filterDocumentIds = (
-    xmlTv: XMLTV.BaseDocument,
-    filterIds: string[]
-  ) => {
-    return {
-      channel: xmlTv.xmlTv.channel.filter((channel) =>
-        filterIds.includes(channel["@_id"])
-      ),
-      programme: xmlTv.xmlTv.programme.filter((programme) =>
-        filterIds.includes(programme["@_channel"])
-      ),
-    };
   };
 
   private filterModelIds = (
@@ -306,31 +276,25 @@ class XMLTV {
     return true;
   };
 
-  private populateModels = async (
-    json: XMLTV.Base
-  ): Promise<{
-    xmlTv: XMLTV.BaseDocument;
-    xmlTvChannels: XMLTV.ChannelDocument[];
-    xmlTvProgrammes: XMLTV.ProgrammeDocument[];
-  }> => {
+  private populateModels = async (model: XMLTV.Base): Promise<XMLTV.BaseDocument> => {
     const channels = await XMLTVChannelModel.find({
-      "@_id": json.xmlTv.channel.map((channel) => channel["@_id"]),
+      "@_id": model.xmlTv.channel.map((channel) => channel["@_id"]),
     });
 
-    const xmlTvChannels = json.xmlTv.channel.map(
+    const xmlTvChannels = model.xmlTv.channel.map(
       (channel) =>
         channels.find((p) => p["@_id"] === channel["@_id"]) ||
         new XMLTVChannelModel(channel)
     );
 
     const programmes = await XMLTVProgrammeModel.find({
-      $or: json.xmlTv.programme.map((programme) => ({
+      $or: model.xmlTv.programme.map((programme) => ({
         "@_channel": programme["@_channel"],
         "@_start": programme["@_start"],
       })),
     });
 
-    const xmlTvProgrammes = json.xmlTv.programme.map(
+    const xmlTvProgrammes = model.xmlTv.programme.map(
       (programme) =>
         programmes.find(
           (p) =>
@@ -339,29 +303,45 @@ class XMLTV {
         ) || new XMLTVProgrammeModel(programme)
     );
 
-    const xmlTv =
-      (await XMLTVModel.findOne({ url: json.url })) ||
-      new XMLTVModel({
-        ...json,
+    const xmlTv = await XMLTVModel.findOne(
+      { url: model.url },
+      {},
+      { sort: { date: -1 } }
+    );
+
+    if (!xmlTv) {
+      return new XMLTVModel({
+        url: model.url,
         xmlTv: {
           channel: xmlTvChannels,
           programme: xmlTvProgrammes,
         },
       });
+    }
 
-    return { xmlTv, xmlTvChannels, xmlTvProgrammes };
+    xmlTv.set({
+      date: Date.now(),
+      xmlTv: {
+        channel: xmlTvChannels,
+        programme: xmlTvProgrammes,
+      },
+    });
+
+    return xmlTv;
   };
 
-  private getJson = async (
+  private createXmlTv = async (
     url: string,
     filterIds?: string[]
-  ): Promise<XMLTV.Base | null> => {
-    Logger.info(`[XMLTV.getJson]: Refreshing | ${url}`);
+  ): Promise<Promise<XMLTV.BaseDocument>> => {
+    Logger.info("[XMLTV.createXmlTv]: Creating XMLTV...");
 
-    const fileXml = await getFromUrl(url);
+    const xml = await this.getJson(url);
 
-    if (xmlParser.validate(fileXml) === true) {
-      const json = xmlParser.parse(fileXml, this._parseOptions).tv;
+    const validation = xmlParser.validate(xml);
+
+    if (validation === true) {
+      const json = xmlParser.parse(xml, this._parseOptions).tv;
 
       const { channel, programme } = filterIds
         ? this.filterModelIds(json.channel, json.programme, filterIds)
@@ -384,18 +364,30 @@ class XMLTV {
         )
       );
 
-      const xmlTvJson = {
-        url: this._url,
-        xmlTv: {
-          channel: filteredChannel,
-          programme: filteredProgramme,
-        },
-      };
+      this._expired = false;
 
-      return xmlTvJson;
+      return await this.populateModels(
+        {
+          url: url,
+          xmlTv: {
+            channel: filteredChannel,
+            programme: filteredProgramme,
+          },
+        }
+      );
     }
 
-    return null;
+    throw validation;
+  };
+
+  private getJson = async (url: string) => {
+    Logger.info(`[XMLTV.getJson]: Downloading XML from ${url}...`);
+
+    if (process.env.XMLTV_STATIC_DATA_FILE) {
+      return await getJson(process.env.XMLTV_STATIC_DATA_FILE);
+    }
+
+    return await getFromUrl(url);
   };
 }
 
