@@ -1,6 +1,5 @@
 import MongoConnector, { MongoCollection } from "@objects/database/Mongo";
 import IPTVOrgCode from "@objects/files/IPTVOrgCode";
-import XMLTV from "@objects/files/XMLTV";
 import * as SharedFunctions from "@shared/functions";
 
 const CODES_JSON_STATIC_DATA_FILE = process.env

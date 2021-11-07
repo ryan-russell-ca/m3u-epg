@@ -83,8 +83,8 @@ describe("XMLTV Tests", () => {
     jasmine.clock().uninstall();
   });
 
-  describe("IPTVOrgCode", () => {
-    it("Should be able to load a new IPTVOrgCode", async () => {
+  describe("XMLTV", () => {
+    it("Should be able to load a new XMLTV", async () => {
       const didLoad = await xmlTv.load(FILTER_IDS);
 
       expect(didLoad).toBeTrue();
@@ -177,7 +177,7 @@ describe("XMLTV Tests", () => {
 
     it("Should reload when expired time is reached", async () => {
       const id = xmlTv.id;
-      
+
       jasmine.clock().mockDate(new Date());
       jasmine.clock().tick(XMLTV_EXPIRATION_MILLI);
 

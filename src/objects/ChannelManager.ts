@@ -23,17 +23,9 @@ class ChannelManager {
     const tvgIds = this._m3uFile.tvgIds;
     const channelCodes = this._iptvOrgCode.getCodesByTvgIds(tvgIds);
 
-    const { xmlTvUrls, codeGuides } = this.getXmlListUrls(channelCodes);
+    const xmlTvUrls = this.getXmlListUrls(channelCodes);
 
     await this._xmlList.load(Array.from(xmlTvUrls), tvgIds);
-
-    // this._xmlList.mergeByCode(codeGuides);
-
-    // await this._m3uFile.insertCodeInfo(matchedCodes);
-
-    // await this._iptvOrgCode.save();
-    // await this._m3uFile.save();
-    // await this._xmlList.save();
 
     this._loaded = true;
   };
@@ -59,28 +51,21 @@ class ChannelManager {
   }
 
   private getXmlListUrls = (channel: XMLTV.CodeModel[]) => {
-    return channel.reduce<{
-      xmlTvUrls: Set<string>;
-      codeGuides: Map<string, string>;
-    }>(
+    return channel.reduce<Set<string>>(
       (acc, channel) => {
         const cuurrentChannel = channel as XMLTV.CodeDocument &
           M3U.ChannelInfoModel;
 
-        const xmlTvUrls = Object.keys(acc.xmlTvUrls);
+        const xmlTvUrls = Object.keys(acc);
         const guide =
           cuurrentChannel.guides.find((guide) => xmlTvUrls.includes(guide)) ||
           cuurrentChannel.guides[0];
 
-        acc.xmlTvUrls.add(guide);
-        acc.codeGuides.set(cuurrentChannel.tvgId, guide);
+        acc.add(guide);
 
         return acc;
       },
-      {
-        xmlTvUrls: new Set<string>(),
-        codeGuides: new Map<string, string>(),
-      }
+      new Set<string>()
     );
   };
 }

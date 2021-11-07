@@ -2,40 +2,11 @@ import MongoConnector, { MongoCollection } from "@objects/database/Mongo";
 import M3U from "@objects/files/M3U";
 import Matcher from "@objects/helpers/Matcher";
 import * as SharedFunctions from "@shared/functions";
-import { CODE_LIST } from "spec/fixtures/codesList";
 import { VALID_CHANNELS } from "spec/fixtures/validChannel";
 
 const M3U_STATIC_DATA_FILE = process.env.M3U_STATIC_DATA_FILE as string;
 const M3U_EXPIRATION_MILLI =
   parseInt(process.env.M3U_EXPIRATION_SECONDS as string) * 1000;
-
-const FILTER_IDS = [
-  "CBLN.ca",
-  "CBLT.ca",
-  "CBLTTV1.ca",
-  "CBOFT.ca",
-  "CBOT.ca",
-  "CFGCDT2.ca",
-  "CFGCDT.ca",
-  "CFPL.ca",
-  "CFTO.ca",
-  "CFTODT54.ca",
-  "CFTOTV21.ca",
-  "CHBX.ca",
-  "CHBXTV1.ca",
-  "CHCHDT1.ca",
-  "CHCHDT2.ca",
-  "CHCHDT3.ca",
-  "CHCHTV4.ca",
-  "CHCHTV5.ca",
-  "CHCHTV6.ca",
-  "CHCHTV7.ca",
-  "CHCJ.ca",
-  "CHEX2.ca",
-  "CHEX.ca",
-  "CHFD.ca",
-  "CHRODT43.ca",
-];
 
 describe("M3U Tests", () => {
   const originalEnvs = { ...process.env };
