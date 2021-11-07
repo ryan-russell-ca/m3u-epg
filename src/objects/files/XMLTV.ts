@@ -343,6 +343,7 @@ class XMLTV extends BaseFile<XMLTV.BaseDocument> {
       );
 
       this._expired = false;
+      this._valid = true;
 
       return await this.populateModels({
         url: url,

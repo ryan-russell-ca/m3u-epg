@@ -16,10 +16,10 @@ class XMLTVList {
   public load = async (
     xmlTvUrls: string[],
     filterIds?: string[]
-  ): Promise<{ [key: string]: XMLTV }> => {
+  ): Promise<boolean> => {
     if (this._model && Object.keys(this._model).length) {
       this._loaded = true;
-      return this._model;
+      return false;
     }
 
     const xmlTvs = await this.getJson(xmlTvUrls, filterIds);
@@ -29,7 +29,7 @@ class XMLTVList {
       CUSTOM_XMLTV_MAPPINGS_FILE,
       XML_PARSE_OPTIONS
     );
-
+      
     this._model = {
       ...xmlTvs,
       custom,
@@ -37,7 +37,7 @@ class XMLTVList {
     
     this._loaded = true;
 
-    return this._model;
+    return true;
   };
 
   public save = async () => {
@@ -114,7 +114,7 @@ class XMLTVList {
     for (let i = 0; i < xmlTvValues.length; i++) {
       const xmlTv = xmlTvValues[i] as XMLTV;
       await xmlTv.load(filterIds);
-
+      
       if (xmlTv.isValid) {
         xmlTvs[xmlTv.url] = xmlTv;
       }
