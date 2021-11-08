@@ -1,8 +1,6 @@
 import StatusCodes from 'http-status-codes';
 import { Request, Response } from 'express';
 import ChannelManager from '@objects/ChannelManager';
-import { getJson } from '@shared/functions';
-import Logger from '@shared/Logger';
 
 const { OK } = StatusCodes;
 
