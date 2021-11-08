@@ -64,4 +64,3 @@ namespace M3U {
   export type BaseDocument = Document<ObjectId, Record<string, unknown>, BaseModel> & BaseModel;
 }
 
-export default M3U;
