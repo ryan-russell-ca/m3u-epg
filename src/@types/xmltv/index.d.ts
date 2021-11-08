@@ -77,5 +77,3 @@ namespace XMLTV {
 
   export type BaseDocument = Document<ObjectId, Record<string, unknown>, BaseModel> & BaseModel;
 }
-
-export default XMLTV;
