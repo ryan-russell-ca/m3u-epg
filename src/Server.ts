@@ -2,7 +2,7 @@ import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import path from 'path';
 import helmet from 'helmet';
-import nocache from "nocache";
+import nocache from 'nocache';
 
 import express, { NextFunction, Request, Response } from 'express';
 import StatusCodes from 'http-status-codes';
@@ -14,7 +14,7 @@ import logger from '@shared/Logger';
 const app = express();
 const { BAD_REQUEST } = StatusCodes;
 
-app.set("etag", false);
+app.set('etag', false);
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));

@@ -1,8 +1,8 @@
-import { Definition } from "@objects/files/M3U";
-import fs from "fs/promises";
-import https from "https";
-import URL from "url";
-import Logger from "./Logger";
+import { Definition } from '@objects/files/M3U';
+import fs from 'fs/promises';
+import https from 'https';
+import URL from 'url';
+import Logger from './Logger';
 
 interface Match<T> {
   groups?: T;
@@ -15,7 +15,7 @@ export const parseXmlDate = (dateStr: string): XML.xmlDate => {
   );
 
   if (!matches?.groups) {
-    throw new Error("Bad XML date");
+    throw new Error('Bad XML date');
   }
 
   const { year, month, day, hour, minute, second, offsetHour, offsetMinute } =
@@ -35,27 +35,27 @@ export const parseXmlDate = (dateStr: string): XML.xmlDate => {
 
 export const getFromUrl = async (url: string): Promise<string> => {
   const promise: Promise<string> = new Promise((resolve, reject) => {
-    let json = "";
+    let json = '';
     const parsedUrl = URL.parse(url);
 
     const options = {
       hostname: parsedUrl.host,
       port: 443,
       path: parsedUrl.pathname,
-      method: "GET",
+      method: 'GET',
     };
 
     const req = https.request(options, (res) => {
-      res.on("data", (d) => {
+      res.on('data', (d) => {
         json += d;
       });
 
-      res.on("end", () => {
+      res.on('end', () => {
         resolve(json);
       });
     });
 
-    req.on("error", (error) => {
+    req.on('error', (error) => {
       reject(error);
     });
 
@@ -66,7 +66,7 @@ export const getFromUrl = async (url: string): Promise<string> => {
 };
 
 export const parseChannelName = (name: string) =>
-  name.split(":").pop()?.replace(/ */, "").toLowerCase() || "";
+  name.split(':').pop()?.replace(/ */, '').toLowerCase() || '';
 
 export const parseCountryFromChannelName = (name: string) => {
   const countryMatches = name.match(/^ *?(?<country>.*){2,2} *?:.*$/g);
@@ -76,7 +76,7 @@ export const parseCountryFromChannelName = (name: string) => {
     return country.trim().toLowerCase();
   }
 
-  return "unpopulated";
+  return 'unpopulated';
 };
 
 export const parseIdFromChannelName = (name: string) => {
@@ -84,7 +84,7 @@ export const parseIdFromChannelName = (name: string) => {
 
   if (nameMatches?.groups) {
     return Object.values(nameMatches.groups).map((m) =>
-      m.replace(/[\W_]+/g, "").toLowerCase()
+      m.replace(/[\W_]+/g, '').toLowerCase()
     );
   }
 
@@ -101,7 +101,7 @@ export const saveJson = async (filename: string, data: unknown) => {
 };
 
 export const getJson = async (filename: string) => {
-  return await fs.readFile(filename, "utf8");
+  return await fs.readFile(filename, 'utf8');
 };
 
 const XMLTV_TIME_AHEAD_MILLI =
@@ -109,9 +109,9 @@ const XMLTV_TIME_AHEAD_MILLI =
 const XMLTV_TIME_BEHIND_MILLI =
   parseInt(process.env.XMLTV_TIME_BEHIND_SECONDS as string) * 1000;
 
-export const filterProgrammeByDate = (programme: { "@_start": string }) => {
+export const filterProgrammeByDate = (programme: { '@_start': string }) => {
   const { year, month, day, hour, minute, second } = parseXmlDate(
-    programme["@_start"]
+    programme['@_start']
   );
 
   if (year < 2011) {
@@ -135,10 +135,10 @@ const M3U_INFO_REGEX =
 const M3U_TVGID_REGEX = /((?<tvgId>[A-Z0-9]{4}) TV)?/g;
   
 export const parseJson = (m3uFileString: string) => {
-  const split = m3uFileString.split("\n");
+  const split = m3uFileString.split('\n');
 
   const channels = split.reduce<M3U.ChannelInfoModel[]>((acc, line) => {
-    if (acc.length > 0 && line[0] && line[0] !== "#") {
+    if (acc.length > 0 && line[0] && line[0] !== '#') {
       acc[acc.length - 1].url = line;
       return acc;
     }
@@ -149,7 +149,7 @@ export const parseJson = (m3uFileString: string) => {
       tvgId?: string;
       logo?: string;
       name: string;
-    }>;;
+    }>;
 
     if (!matches?.groups) return acc;
 
@@ -165,8 +165,8 @@ export const parseJson = (m3uFileString: string) => {
       country: parseCountryFromChannelName(name),
       originalName: name || line,
       parsedName: parseChannelName(name),
-      parsedIds: [match.groups?.tvgId || "", ...parseIdFromChannelName(name)].filter((n) => n),
-      url: "",
+      parsedIds: [match.groups?.tvgId || '', ...parseIdFromChannelName(name)].filter((n) => n),
+      url: '',
       confirmed: false,
     });
 

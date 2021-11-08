@@ -1,4 +1,4 @@
-import Mongoose, { Schema } from "mongoose";
+import Mongoose, { Schema } from 'mongoose';
 
 const COUNTRY_WHITELIST = JSON.parse(process.env.COUNTRY_WHITELIST as string);
 
@@ -24,11 +24,11 @@ const M3UChannelSchema = new Schema(
     definition: String,
     confirmed: { type: Boolean, default: false },
   },
-  { collection: "playlistChannel" }
+  { collection: 'playlistChannel' }
 );
 
 export const M3UChannelModel = Mongoose.model<M3U.ChannelInfoModel>(
-  "M3UChannelModel",
+  'M3UChannelModel',
   M3UChannelSchema
 );
 
@@ -36,13 +36,13 @@ const M3USchema = new Schema(
   {
     date: { type: Date, default: Date.now() },
     channels: {
-      type: [{ type: Schema.Types.ObjectId, ref: "M3UChannelModel" }],
+      type: [{ type: Schema.Types.ObjectId, ref: 'M3UChannelModel' }],
       required: true,
     },
   },
-  { collection: "playlist" }
+  { collection: 'playlist' }
 );
 
-const M3UModel = Mongoose.model<M3U.BaseModel>("M3UModel", M3USchema);
+const M3UModel = Mongoose.model<M3U.BaseModel>('M3UModel', M3USchema);
 
 export default M3UModel;

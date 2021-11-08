@@ -1,4 +1,4 @@
-import Mongoose, { Schema } from "mongoose";
+import Mongoose, { Schema } from 'mongoose';
 
 const XMLTVCodeSchema = new Schema(
   {
@@ -8,11 +8,11 @@ const XMLTVCodeSchema = new Schema(
     country: String,
     guides: [String],
   },
-  { collection: "XMLTVCode" }
+  { collection: 'XMLTVCode' }
 );
 
 export const XMLTVCodeModel = Mongoose.model<XMLTV.CodeModel>(
-  "XMLTVCodeModel",
+  'XMLTVCodeModel',
   XMLTVCodeSchema
 );
 
@@ -20,14 +20,14 @@ const XMLTVCodesSchema = new Schema(
   {
     date: { type: Date, default: Date.now() },
     codes: {
-      type: [{ type: Schema.Types.ObjectId, ref: "XMLTVCodeModel" }],
+      type: [{ type: Schema.Types.ObjectId, ref: 'XMLTVCodeModel' }],
     },
   },
-  { collection: "XMLTVCodes" }
+  { collection: 'XMLTVCodes' }
 );
 
 export const XMLTVCodesModel = Mongoose.model<XMLTV.CodeBaseModel>(
-  "XMLTVCodesModel",
+  'XMLTVCodesModel',
   XMLTVCodesSchema
 );
 
