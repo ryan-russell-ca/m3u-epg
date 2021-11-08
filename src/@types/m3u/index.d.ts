@@ -1,5 +1,5 @@
 namespace M3U {
-  import { Document } from 'mongoose';
+  import { Document, ObjectId } from 'mongoose';
 
   export interface MatchOptions {
     name?: string | string[];
@@ -58,8 +58,10 @@ namespace M3U {
     definition?: string;
   }
 
-  export type ChannelInfoDocument = Document<any, any, ChannelInfoModel> &
+  export type ChannelInfoDocument = Document<ObjectId, Record<string, unknown>, ChannelInfoModel> &
     ChannelInfoModel;
 
-  export type BaseDocument = Document<any, any, BaseModel> & BaseModel;
+  export type BaseDocument = Document<ObjectId, Record<string, unknown>, BaseModel> & BaseModel;
 }
+
+export default M3U;

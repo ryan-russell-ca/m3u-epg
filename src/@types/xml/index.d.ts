@@ -21,3 +21,5 @@ namespace XML {
     offsetMinute: number;
   }
 }
+
+export default XML;

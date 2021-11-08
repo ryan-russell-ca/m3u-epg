@@ -1,5 +1,5 @@
 namespace XMLTV {
-  import { Document } from 'mongoose';
+  import { Document, ObjectId } from 'mongoose';
   
   export interface CodeRaw {
     tvg_id: string;
@@ -22,9 +22,9 @@ namespace XMLTV {
     codes: CodeDocument[];
   }
 
-  export type CodeDocument = Document<any, any, CodeModel> & CodeModel;
+  export type CodeDocument = Document<ObjectId, Record<string, unknown>, CodeModel> & CodeModel;
 
-  export type CodeBaseDocument = Document<any, any, CodeBaseModel> & CodeBaseModel;
+  export type CodeBaseDocument = Document<ObjectId, Record<string, unknown>, CodeBaseModel> & CodeBaseModel;
 
   export interface CodeBaseSorted {
     [key: string]: CodeModel;
@@ -62,9 +62,9 @@ namespace XMLTV {
     };
   }
 
-  export type ChannelDocument = Document<any, any, ChannelModel> & ChannelModel;
+  export type ChannelDocument = Document<ObjectId, Record<string, unknown>, ChannelModel> & ChannelModel;
 
-  export type ProgrammeDocument = Document<any, any, ProgrammeModel> &
+  export type ProgrammeDocument = Document<ObjectId, Record<string, unknown>, ProgrammeModel> &
     ProgrammeModel;
 
   export interface BaseModel {
@@ -75,5 +75,7 @@ namespace XMLTV {
     };
   }
 
-  export type BaseDocument = Document<any, any, BaseModel> & BaseModel;
+  export type BaseDocument = Document<ObjectId, Record<string, unknown>, BaseModel> & BaseModel;
 }
+
+export default XMLTV;
