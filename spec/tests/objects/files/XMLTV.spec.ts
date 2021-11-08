@@ -19,7 +19,6 @@ const getProgrammeDate = (programme: XMLTV.ProgrammeModel) => {
 };
 
 describe('XMLTV Tests', () => {
-  const originalEnvs = { ...process.env };
   let xmlTv: XMLTV;
   let xmlTvJson: {
     channel: XMLTV.ChannelModel[];
@@ -112,7 +111,7 @@ describe('XMLTV Tests', () => {
         return acc;
       }, []);
 
-      filtered.forEach(({ channel, programme }, i) => {
+      filtered.forEach(({ channel, programme }) => {
         const xmlInfo = xmlTv.getByTvgId(channel['@_id']);
 
         if (!xmlInfo) {

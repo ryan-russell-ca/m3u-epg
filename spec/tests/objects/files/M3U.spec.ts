@@ -4,7 +4,6 @@ import Matcher from '@objects/helpers/Matcher';
 import * as SharedFunctions from '@shared/functions';
 import { VALID_CHANNELS } from 'spec/fixtures/validChannel';
 
-const M3U_STATIC_DATA_FILE = process.env.M3U_STATIC_DATA_FILE as string;
 const M3U_EXPIRATION_MILLI =
   parseInt(process.env.M3U_EXPIRATION_SECONDS as string) * 1000;
 
@@ -12,7 +11,6 @@ describe('M3U Tests', () => {
   const matcher = jasmine.createSpyObj(Matcher, ['match']);
   matcher.match.and.callFake(() => []);
   let m3u: M3U;
-  let m3uJson: M3U.ChannelInfoModel[];
   let getJsonSpy: jasmine.Spy<(url: string) => Promise<string>>;
 
   beforeAll(async () => {
@@ -23,10 +21,6 @@ describe('M3U Tests', () => {
     ]);
 
     jasmine.clock().install();
-
-    m3uJson = SharedFunctions.parseJson(
-      await SharedFunctions.getJson(M3U_STATIC_DATA_FILE)
-    );
 
     getJsonSpy = spyOn(SharedFunctions, 'getJson').and.callThrough();
     m3u = new M3U();

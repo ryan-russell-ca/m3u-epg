@@ -1,6 +1,5 @@
 import { j2xParser } from 'fast-xml-parser';
 import XMLTV from './XMLTV';
-import Logger from '@shared/Logger';
 
 export const XML_PARSE_OPTIONS = {
   ignoreAttributes: false,

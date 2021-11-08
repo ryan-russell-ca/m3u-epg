@@ -4,8 +4,6 @@ import * as SharedFunctions from '@shared/functions';
 
 const CODES_JSON_STATIC_DATA_FILE = process.env
   .CODES_JSON_STATIC_DATA_FILE as string;
-const CODES_JSON_SHORT_STATIC_DATA_FILE = process.env
-  .CODES_JSON_SHORT_STATIC_DATA_FILE as string;
 const COUNTRY_WHITELIST = JSON.parse(process.env.COUNTRY_WHITELIST as string);
 const CODES_EXPIRATION_MILLI =
   parseInt(process.env.CODES_EXPIRATION_SECONDS as string) * 1000;
@@ -13,7 +11,6 @@ const CODES_EXPIRATION_MILLI =
 describe('IPTVOrgCode Tests', () => {
   const originalEnvs = { ...process.env };
   let codesList: XMLTV.CodeRaw[] = [];
-  let codesListShort: XMLTV.CodeRaw[] = [];
   let iptvOrgCode: IPTVOrgCode;
   let getJsonSpy: jasmine.Spy<(url: string) => Promise<string>>;
 
@@ -28,10 +25,6 @@ describe('IPTVOrgCode Tests', () => {
 
     codesList = JSON.parse(
       await SharedFunctions.getJson(CODES_JSON_STATIC_DATA_FILE)
-    );
-
-    codesListShort = JSON.parse(
-      await SharedFunctions.getJson(CODES_JSON_SHORT_STATIC_DATA_FILE)
     );
 
     getJsonSpy = spyOn(SharedFunctions, 'getJson').and.callThrough();

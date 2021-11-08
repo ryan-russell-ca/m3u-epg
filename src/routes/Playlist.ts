@@ -50,7 +50,7 @@ export const getUnmatched = async (req: Request, res: Response) => {
   return res.status(OK).json(channelManager.getUnmatchedChannels());
 };
 
-export const getMatches = async (req: Request, res: Response) => {
+export const getMatches = async () => {
   await channelManager.load();
   // return res.status(OK).json(
   //   channelManager.getInfo({
@@ -60,30 +60,4 @@ export const getMatches = async (req: Request, res: Response) => {
   //     listAll: req.query.listAll === "true",
   //   })
   // );
-};
-
-export const sandbox = async (req: Request, res: Response) => {
-  const GENERATED_MAPPINGS_FILE = process.env.GENERATED_MAPPINGS_FILE as string;
-  try {
-    const json = await getJson(GENERATED_MAPPINGS_FILE);
-    const customMappings = JSON.parse(json);
-    const filtered = Object.values(customMappings).filter(
-      (m: any) => m.confirmed
-    );
-    return res.status(OK).send(
-      '<pre>' +
-        JSON.stringify(
-          filtered.reduce<any>((acc, f: any) => {
-            acc[f.url] = f;
-            return acc;
-          }, {}),
-          null,
-          2
-        ) +
-        '</pre>'
-    );
-  } catch (error) {
-    Logger.info('[M3UFile]: Custom Mappings JSON is empty');
-  }
-  return res.status(OK).send('<pre></pre>');
 };

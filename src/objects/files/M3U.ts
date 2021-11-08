@@ -69,7 +69,7 @@ class M3U extends BaseFile<M3U.BaseDocument> {
   public getChannelJSON = (filters: M3U.ChannelInfoFilters) => {
     return this.model?.channels.filter((channel) => {
       return Object.entries(filters)
-        .filter(([_, value]: [string, string]) => value)
+        .filter(([, value]: [string, string]) => value)
         .every(([filter, value]: [string, string]) => {
           const regex = new RegExp(`^.*?(${value}).*$`, 'gi');
           return regex.test((channel as unknown as Record<string, string>)[filter]);
