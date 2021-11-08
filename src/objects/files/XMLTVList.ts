@@ -40,21 +40,6 @@ class XMLTVList {
     return true;
   };
 
-  public save = async () => {
-    if (!this._model) {
-      throw new Error("[XMLTVList.save]: XMLTV JSON is empty");
-    }
-
-    const xmlTvs = Object.values(this._model);
-
-    Logger.info("[XMLTVList.save]: Saving XMLTVListl files");
-    for (const xmlTv of xmlTvs) {
-      await xmlTv.save();
-    }
-
-    return true;
-  };
-
   public get isLoaded() {
     return this._loaded;
   }
@@ -76,9 +61,7 @@ class XMLTVList {
     if (!xmlTvs) {
       throw new Error("[XMLTVList.mergeByCode]: XMLTV list is empty");
     }
-    // console.log('start merge');
-    // console.log(Object.values(xmlTvs).map((x) => x.getChannel()));
-    
+
     return Object.values(xmlTvs).reduce<{
       channel: XMLTV.ChannelModel[];
       programme: XMLTV.ProgrammeModel[];

@@ -9,8 +9,8 @@ const M3U_EXPIRATION_MILLI =
   parseInt(process.env.M3U_EXPIRATION_SECONDS as string) * 1000;
 
 describe("M3U Tests", () => {
-  const originalEnvs = { ...process.env };
-  const matcher = new Matcher([]);
+  const matcher = jasmine.createSpyObj(Matcher, ["match"]);
+  matcher.match.and.callFake(() => []);
   let m3u: M3U;
   let m3uJson: M3U.ChannelInfoModel[];
   let getJsonSpy: jasmine.Spy<(url: string) => Promise<string>>;
@@ -51,8 +51,10 @@ describe("M3U Tests", () => {
     it("Should match list to filtered original by ids", async () => {
       const m3uFiltered = SharedFunctions.filterRegion(
         SharedFunctions.filterUnique(VALID_CHANNELS)
-      ).map((channel) => channel.tvgId).filter((c) => c);
-
+      )
+        .map((channel) => channel.tvgId)
+        .filter((c) => c);
+        
       expect(m3uFiltered).toEqual(m3u.tvgIds);
       return;
     });

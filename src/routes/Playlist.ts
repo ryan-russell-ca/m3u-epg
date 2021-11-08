@@ -41,7 +41,13 @@ export const getChannelInfo = async (req: Request, res: Response) => {
     definition: req.query.definition?.toString(),
   };
 
-  // return res.status(OK).json(channelManager.getChannelJSON(filters));
+  return res.status(OK).json(channelManager.getChannelJSON(filters));
+};
+
+export const getUnmatched = async (req: Request, res: Response) => {
+  await channelManager.load();
+
+  return res.status(OK).json(channelManager.getUnmatchedChannels());
 };
 
 export const getMatches = async (req: Request, res: Response) => {

@@ -103,8 +103,8 @@ describe("XMLTV Tests", () => {
         ),
       };
 
-      expect(JSON.stringify(xmlTvFiltered.channel)).toEqual(
-        JSON.stringify(xmlTv.getChannel())
+      expect(xmlTvFiltered.channel.map((c) => c["@_id"])).toEqual(
+        xmlTv.getChannel().map((c) => c["@_id"])
       );
       return;
     });

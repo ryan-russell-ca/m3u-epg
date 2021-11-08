@@ -20,7 +20,7 @@ namespace M3U {
 
   export interface BaseModel {
     date?: Date;
-    channels: ChannelInfoDocument[];
+    channels: (ChannelInfoModel | ChannelInfoDocument)[];
   }
 
   export interface ChannelInfoFilters {
@@ -34,7 +34,7 @@ namespace M3U {
   }
 
   export interface ChannelInfoModel extends NameChannelInfo {
-    group: string;
+    group: string | null;
     tvgId: string | null;
     logo: string | null;
     name: string;
@@ -56,10 +56,6 @@ namespace M3U {
     nameCode?: string;
     name?: string;
     definition?: string;
-  }
-
-  export interface NameChannelInfoMatch {
-    groups?: NameChannelInfo;
   }
 
   export type ChannelInfoDocument = Document<any, any, ChannelInfoModel> &

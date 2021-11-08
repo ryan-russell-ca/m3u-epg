@@ -64,8 +64,6 @@ class XMLTV extends BaseFile<XMLTV.BaseDocument> {
 
     this._model = await this.getXMLTV(this._url, filterIds, refresh);
 
-    await this.save();
-
     this._loaded = true;
 
     return true;
@@ -236,74 +234,90 @@ class XMLTV extends BaseFile<XMLTV.BaseDocument> {
       return true;
     }
 
-    if (!this._model) {
+    if (!this.model) {
       throw new Error("[XMLTV.save]: XMLTV JSON is empty");
     }
 
-    Logger.info("[XMLTV.save]: Saving XMLTV channel files");
-    await XMLTVChannelModel.bulkSave(this._model?.xmlTv.channel);
-
-    Logger.info("[XMLTV.save]: Saving XMLTV programme files");
-    await XMLTVProgrammeModel.bulkSave(this._model?.xmlTv.programme);
-
     Logger.info("[XMLTV.save]: Saving XMLTV file");
-    await this._model.save();
+    await this.model.save();
 
     return true;
+  };
+
+  private saveChannels = async (channels: XMLTV.ChannelModel[]) => {
+    const operations = channels.map((ch) => ({
+      updateOne: {
+        filter: { "@_id": ch["@_id"] },
+        update: {
+          $set: {
+            "@_id": ch["@_id"],
+            "display-name": ch["display-name"],
+            icon: ch.icon,
+          },
+        },
+        upsert: true,
+      },
+    }));
+
+    Logger.info("[XMLTV.save]: Saving XMLTV channel files");
+
+    const { insertedIds, upsertedIds } = await XMLTVChannelModel.bulkWrite(
+      operations
+    );
+
+    return [...Object.values(insertedIds), ...Object.values(upsertedIds)];
+  };
+
+  private saveProgrammes = async (programmes: XMLTV.ProgrammeModel[]) => {
+    const operations = programmes.map((pr) => ({
+      updateOne: {
+        filter: { "@_channel": pr["@_channel"], "@_start": pr["@_start"] },
+        update: {
+          $set: {
+            "@_start": pr["@_start"],
+            "@_stop": pr["@_stop"],
+            "@_channel": pr["@_channel"],
+            title: pr.title,
+            desc: pr.desc,
+            category: pr.category,
+          },
+        },
+        upsert: true,
+      },
+    }));
+
+    Logger.info("[XMLTV.save]: Saving XMLTV channel files");
+
+    const { insertedIds, upsertedIds } = await XMLTVProgrammeModel.bulkWrite(
+      operations
+    );
+
+    return [...Object.values(insertedIds), ...Object.values(upsertedIds)];
   };
 
   private populateModels = async (
     model: XMLTV.Base
   ): Promise<XMLTV.BaseDocument> => {
-    const channels = await XMLTVChannelModel.find({
-      "@_id": model.xmlTv.channel.map((channel) => channel["@_id"]),
-    });
+    const channelIds = await this.saveChannels(model.xmlTv.channel);
+    const programmeIds = await this.saveProgrammes(model.xmlTv.programme);
 
-    const xmlTvChannels = model.xmlTv.channel.map(
-      (channel) =>
-        channels.find((p) => p["@_id"] === channel["@_id"]) ||
-        new XMLTVChannelModel(channel)
-    );
-
-    const programmes = await XMLTVProgrammeModel.find({
-      $or: model.xmlTv.programme.map((programme) => ({
-        "@_channel": programme["@_channel"],
-        "@_start": programme["@_start"],
-      })),
-    });
-
-    const xmlTvProgrammes = model.xmlTv.programme.map(
-      (programme) =>
-        programmes.find(
-          (p) =>
-            p["@_channel"] === programme["@_channel"] &&
-            p["@_start"] === programme["@_start"]
-        ) || new XMLTVProgrammeModel(programme)
-    );
-
-    const xmlTv = await XMLTVModel.findOne(
-      { url: model.url },
-      {},
-      { sort: { date: -1 } }
-    );
-
-    if (!xmlTv) {
-      return new XMLTVModel({
-        url: model.url,
-        xmlTv: {
-          channel: xmlTvChannels,
-          programme: xmlTvProgrammes,
-        },
-      });
-    }
+    const xmlTv =
+      (await XMLTVModel.findOne(
+        { url: model.url },
+        {},
+        { sort: { date: -1 } }
+      )) || new XMLTVModel({ url: model.url });
 
     xmlTv.set({
       date: Date.now(),
       xmlTv: {
-        channel: xmlTvChannels,
-        programme: xmlTvProgrammes,
+        channel: channelIds,
+        programme: programmeIds,
       },
     });
+
+    await xmlTv.save();
+    await xmlTv.populate(["xmlTv.channel", "xmlTv.programme"]);
 
     return xmlTv;
   };
