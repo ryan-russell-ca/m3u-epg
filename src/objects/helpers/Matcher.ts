@@ -1,3 +1,4 @@
+import * as StringSimilarity from "string-similarity";
 import FuzzySet from "fuzzyset.js";
 import Logger from "@shared/Logger";
 
@@ -15,7 +16,7 @@ class Matcher {
 
     this._idsSet = FuzzySet(Object.keys(id));
     this._namesSet = FuzzySet(Object.keys(name));
-  };
+  }
 
   public match = (options: M3U.MatchOptions) => {
     const { id, name, formatted, listAll } = options;
@@ -27,7 +28,7 @@ class Matcher {
             []
           )
           .sort(([a], [b]) => b - a)
-      : this.matches({ id });
+      : this.matches({ id }, 0.8);
 
     const nameMatches = Array.isArray(name)
       ? name
@@ -73,9 +74,14 @@ class Matcher {
     }
 
     if (name) {
-      return (
-        this._namesSet?.get(name)?.filter(([score]) => score >= minScore) || []
-      );
+      const match = StringSimilarity.findBestMatch(name, Object.keys(this._names)).bestMatch;
+
+      if (match.rating > minScore) {
+        return [[match.rating, match.target]] as [number, string][];
+      }
+      // return (
+      //   this._namesSet?.get(name)?.filter(([score]) => score >= minScore) || []
+      // );
     }
 
     return [];

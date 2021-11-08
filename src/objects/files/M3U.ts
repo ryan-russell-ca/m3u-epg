@@ -23,7 +23,7 @@ export enum Definition {
   Unknown = "UNKNOWN",
 }
 
-class M3UFile extends BaseFile<M3U.BaseDocument> {
+class M3U extends BaseFile<M3U.BaseDocument> {
   protected _expirationMilli = M3U_EXPIRATION_MILLI;
   private _matcher?: M3U.Matcher;
 
@@ -51,123 +51,46 @@ class M3UFile extends BaseFile<M3U.BaseDocument> {
     return true;
   };
 
-  // // TODO: Remove mutations to channels
-  // public insertCodeInfo = async (codes: {
-  //   [tvgId: string]: XMLTV.CodeDocument | M3U.CustomMapping;
-  // }) => {
-  //   if (!this._model) {
-  //     throw new Error("[M3UFile]: M3U JSON is empty");
-  //   }
+  public get channels(): M3U.ChannelInfoModel[] {
+    if (!this.isLoaded) {
+      throw new Error("[M3U]: M3U JSON is not loaded");
+    }
 
-  //   const tvgIds = this._model?.channels.reduce<M3U.ChannelInfoModel>((acc, channel) => {
-  //     const channelJson = channel.toJSON();
-
-  //     if (!channelJson.url) {
-  //       return acc;
-  //     }
-
-  //     const code = codes[channelJson.url] as XMLTV.CodeDocument &
-  //       M3U.CustomMapping;
-
-  //     if (!code) {
-  //       acc[channelJson.url] = {
-  //         ...channelJson,
-  //         confirmed: false,
-  //         tvgId: null,
-  //         logo: null,
-  //         country: "unpoplated",
-  //       };
-
-  //       return acc;
-  //     }
-
-  //     const append = {
-  //       tvgId: code.tvgId || "",
-  //       name: code.displayName || code.name || channelJson.name,
-  //       logo: channelJson.logo || code.logo,
-  //       country: channelJson.country || code.country,
-  //     };
-
-  //     channel.set({
-  //       ...append,
-  //     });
-
-  //     acc[channelJson.url] = {
-  //       ...channelJson,
-  //       ...append,
-  //       confirmed: false,
-  //     };
-
-  //     return acc;
-  //   }, {});
-  // };
-
-  // public customMap = (channel: M3U.ChannelInfoDocument) => {
-  //   if (!this._mappings || !channel.url) {
-  //     return null;
-  //   }
-
-  //   return this._mappings[channel.url];
-  // };
-
-  // public get channels(): M3U.ChannelInfoDocument[] {
-  //   if (!this.isLoaded) {
-  //     throw new Error("[M3UFile]: M3U JSON is not loaded");
-  //   }
-
-  //   return this._model?.channels || [];
-  // }
+    return this._model?.channels || [];
+  }
 
   public get tvgIds() {
-    const tvgIds = this._model?.channels.map((channel) => channel.tvgId).filter((c) => c);
+    const tvgIds = this.model?.channels
+      .map((channel) => channel.tvgId)
+      .filter((c) => c);
     return (tvgIds || []) as string[];
   }
 
-  // public getChannelJSON = (filters: M3U.ChannelInfoFilters) => {
-  //   return this._model?.channels.filter((channel) => {
-  //     return Object.entries(filters)
-  //       .filter(([_, value]) => value)
-  //       .every(([filter, value]) => {
-  //         const regex = new RegExp(`^.*?(${value}).*$`, "gi");
+  public getChannelJSON = (filters: M3U.ChannelInfoFilters) => {
+    return this.model?.channels.filter((channel) => {
+      return Object.entries(filters)
+        .filter(([_, value]) => value)
+        .every(([filter, value]) => {
+          const regex = new RegExp(`^.*?(${value}).*$`, "gi");
 
-  //         // @ts-ignore
-  //         return regex.test(channel[filter]);
-  //       });
-  //   });
-  // };
-
-  public save = async () => {
-    if (!this._model) {
-      throw new Error("[M3UFile.save]: M3U JSON is empty");
-    }
-
-    // TODO: Fix the root problem and remove this filter
-    const u = new Set();
-    const toSave = this._model.channels.filter((c) => {
-      if (u.has(c.id)) {
-        return false;
-      }
-      u.add(c.id);
-      return true;
+          // @ts-ignore
+          return regex.test(channel[filter]);
+        });
     });
+  };
 
-    Logger.info("[M3UFile.save]: Saving M3U channel files");
-    await M3UChannelModel.bulkSave(toSave);
-
-    Logger.info("[M3UFile.save]: Saving M3U file");
-    await this._model.save();
-
-    return true;
+  public getChannels = () => {
+    return this.model?.channels || [];
   };
 
   public toString = () => {
-    if (!this._model) {
-      throw new Error("[M3UFile.toString]: M3U JSON is empty");
+    if (!this.model) {
+      throw new Error("[M3U.toString]: M3U JSON is empty");
     }
 
     return [
       "#EXTM3U ",
-      ...this._model.channels.map((d) => {
+      ...this.model.channels.map((d) => {
         return [
           `#EXTINF: -1 group-title="${d.group}" tvg-id="${d.tvgId}" tvg-logo="${d.logo}", ${d.name}`,
           d.url,
@@ -178,25 +101,27 @@ class M3UFile extends BaseFile<M3U.BaseDocument> {
 
   private getM3U = async (
     uniqueOnly: boolean,
-    refresh?: boolean,
+    refresh?: boolean
   ): Promise<M3U.BaseDocument> => {
     try {
       if (refresh) {
-        Logger.info("[M3UFile.getM3U]: Forcing refresh");
+        Logger.info("[M3U.getM3U]: Forcing refresh");
         return this.createM3U(uniqueOnly);
       }
 
-      const model = await M3UModel
-        .findOne({}, {}, { sort: { date: -1 } })
-        .populate("channels");
-      
+      const model = await M3UModel.findOne(
+        {},
+        {},
+        { sort: { date: -1 } }
+      ).populate("channels");
+
       if (!model) {
-        Logger.info("[M3UFile.getM3U]: No M3U entry found");
+        Logger.info("[M3U.getM3U]: No M3U entry found");
         return this.createM3U(uniqueOnly);
       }
 
       if (this.checkExpired(model)) {
-        Logger.info("[M3UFile.getM3U]: M3U entry expired");
+        Logger.info("[M3U.getM3U]: M3U entry expired");
         return this.createM3U(uniqueOnly);
       }
 
@@ -211,37 +136,92 @@ class M3UFile extends BaseFile<M3U.BaseDocument> {
     }
   };
 
+  private insertChannels = async (channels: M3U.ChannelInfoModel[]) => {
+    const operations = channels.map((ch) => ({
+      updateOne: {
+        filter: { url: ch.url },
+        update: {
+          $set: {
+            group: ch.group,
+            name: ch.name,
+            originalName: ch.originalName,
+            country: ch.country,
+            url: ch.url,
+            parsedName: ch.parsedName,
+            parsedIds: ch.parsedIds,
+            logo: ch.logo,
+            tvgId: ch.tvgId,
+            definition: ch.definition,
+            confirmed: ch.confirmed,
+          },
+        },
+        upsert: true,
+      },
+    }));
+
+    Logger.info("[M3U.save]: Saving M3U channel files");
+
+    const { insertedIds, upsertedIds } = await M3UChannelModel.bulkWrite(operations);
+
+    return [
+      ...Object.values(insertedIds),
+      ...Object.values(upsertedIds),
+    ];
+  };
+
+  public save = async () => {
+    if (!this.model) {
+      throw new Error("[M3U.save]: M3U JSON is empty");
+    }
+
+    Logger.info("[M3U.save]: Saving M3U file");
+    await this.model.save();
+
+    return true;
+  };
+
   private createM3U = async (
     uniqueOnly: boolean
   ): Promise<M3U.BaseDocument> => {
+    Logger.info("[M3U.createM3U]: Creating M3U playlist...");
+
     const m3uFileString = await this.getJson();
     const m3uFileJson = parseJson(m3uFileString);
 
-    const channels = uniqueOnly
+    const filtered = uniqueOnly
       ? filterRegion(filterUnique(m3uFileJson))
       : m3uFileJson;
 
-    const channelDocuments = await M3UChannelModel.find({
-      url: channels.map((channel) => channel.url),
-    });
-    
     const confirmedMappings = await this.getConfirmedMatches();
 
     this._expired = false;
-   
-    return new M3UModel({
-      channels: channels.map((channel) => {
-        return (
-          channelDocuments.find((c) => c.url === channel.url) ||
-          new M3UChannelModel(
-            confirmedMappings[channel.url] || {
-              ...channel,
-              ...this.getMatch(channel),
-            }
-          )
-        );
-      }),
+
+    const channels = filtered.map((channel) => {
+      const attributes = confirmedMappings[channel.url] || {
+        ...channel,
+        ...this.getMatch(channel),
+      };
+
+      return {
+        group: attributes.group,
+        name: attributes.name,
+        originalName: attributes.originalName,
+        country: attributes.country,
+        url: attributes.url,
+        parsedName: attributes.parsedName,
+        parsedIds: attributes.parsedIds,
+        logo: attributes.logo,
+        tvgId: attributes.tvgId,
+        definition: attributes.definition,
+        confirmed: attributes.confirmed,
+      };
     });
+
+    const ids = await this.insertChannels(channels);
+
+    return (await M3UModel.create({
+      channels: ids,
+    })).populate("channels");
   };
 
   // TODO: replace function using Mongo
@@ -252,16 +232,14 @@ class M3UFile extends BaseFile<M3U.BaseDocument> {
 
       return mappings;
     } catch (_) {
-      Logger.warn(
-        "[M3UFile.getConfirmedMatches]: Custom Mappings JSON is empty"
-      );
+      Logger.warn("[M3U.getConfirmedMatches]: Custom Mappings JSON is empty");
       return {};
     }
   };
 
-  private getMatch = (channel: M3U.ChannelInfoModel) => {    
+  private getMatch = (channel: M3U.ChannelInfoModel) => {
     if (!this._matcher) {
-      Logger.info("[M3UFile.getMatch]: No matcher set");
+      Logger.info("[M3U.getMatch]: No matcher set");
       return {};
     }
 
@@ -270,7 +248,7 @@ class M3UFile extends BaseFile<M3U.BaseDocument> {
     ) as string[];
 
     const match = this._matcher.match({
-      name: [channel.name, channel.parsedName],
+      name: [channel.name, channel.parsedName, channel.originalName],
       id,
       formatted: true,
     }) as XMLTV.CodeMatch[];
@@ -283,6 +261,8 @@ class M3UFile extends BaseFile<M3U.BaseDocument> {
   };
 
   private getJson = async (): Promise<string> => {
+    Logger.info("[M3U.getJson]: Downloading playlist...");
+
     try {
       if (process.env.M3U_STATIC_DATA_FILE) {
         return await getJson(process.env.M3U_STATIC_DATA_FILE);
@@ -300,4 +280,4 @@ class M3UFile extends BaseFile<M3U.BaseDocument> {
   };
 }
 
-export default M3UFile;
+export default M3U;

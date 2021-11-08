@@ -4,11 +4,10 @@ import https from "https";
 import URL from "url";
 import Logger from "./Logger";
 
-export const pErr = (err: Error) => {
-  if (err) {
-    Logger.err(err);
-  }
-};
+interface Match<T> {
+  groups?: T;
+}
+
 
 export const parseXmlDate = (dateStr: string): XML.xmlDate => {
   const matches = dateStr.match(
@@ -83,8 +82,10 @@ export const parseCountryFromChannelName = (name: string) => {
 export const parseIdFromChannelName = (name: string) => {
   const nameMatches = name.match(/(?<para>\(.*\))/g);
 
-  if (nameMatches) {
-    return nameMatches.map((m) => m.replace(/[\W_]+/g, "").toLowerCase());
+  if (nameMatches?.groups) {
+    return Object.values(nameMatches.groups).map((m) =>
+      m.replace(/[\W_]+/g, "").toLowerCase()
+    );
   }
 
   return [];
@@ -131,6 +132,8 @@ export const filterProgrammeByDate = (programme: { "@_start": string }) => {
 const M3U_INFO_REGEX =
   /^#EXTINF:.?(?<extInf>\d) *group-title="(?<group>.*?)" *tvg-id="(?<tvgId>.*?)" *tvg-logo="(?<logo>.*?)" *,(?<name>.*)/;
 
+const M3U_TVGID_REGEX = /((?<tvgId>[A-Z0-9]{4}) TV)?/g;
+  
 export const parseJson = (m3uFileString: string) => {
   const split = m3uFileString.split("\n");
 
@@ -140,21 +143,29 @@ export const parseJson = (m3uFileString: string) => {
       return acc;
     }
 
-    const matches = line.match(M3U_INFO_REGEX);
+    const matches = line.match(M3U_INFO_REGEX) as Match<{
+      extInf?: string;
+      group?: string;
+      tvgId?: string;
+      logo?: string;
+      name: string;
+    }>;;
 
     if (!matches?.groups) return acc;
 
-    const { group, tvgId, logo, name, nameCode } = matches.groups;
+    const { group, tvgId, logo, name } = matches.groups;
+
+    const match = name.match(M3U_TVGID_REGEX) as Match<{ tvgId: string }>;
 
     acc.push({
-      group,
-      tvgId,
-      logo,
+      group: group || null,
+      tvgId: tvgId || null,
+      logo: logo || null,
       name,
       country: parseCountryFromChannelName(name),
       originalName: name || line,
       parsedName: parseChannelName(name),
-      parsedIds: [nameCode, ...parseIdFromChannelName(name)].filter((n) => n),
+      parsedIds: [match.groups?.tvgId || "", ...parseIdFromChannelName(name)].filter((n) => n),
       url: "",
       confirmed: false,
     });
@@ -166,15 +177,18 @@ export const parseJson = (m3uFileString: string) => {
 };
 
 const CHANNEL_MATCHING_REGEX =
-  /^((.*?:( *)?)|([A-Z]{2} ?\((?<region>.*?)\) )?)?((?<nameCode>[A-Z]{4}) TV)?(?<name>.*?)( *)?(?<definition>F?HD)?$/i;
+  /^((.*?:( *)?)|([A-Z]{2} ?\((?<region>.*?)\) )?)?(?<name>.*?)( *)?(?<definition>F?HD)?$/i;
 
 export const filterUnique = (channels: M3U.ChannelInfoModel[]) => {
   const channelDictionary = channels.reduce<
     Record<string, Record<string, M3U.ChannelInfoModel>>
   >((acc, channel) => {
-    const matches = channel.name.match(
-      CHANNEL_MATCHING_REGEX
-    ) as M3U.NameChannelInfoMatch;
+    const matches = channel.name.match(CHANNEL_MATCHING_REGEX) as Match<{
+      region?: string;
+      nameCode?: string;
+      name?: string;
+      definition?: string;
+    }>;
 
     const info = matches?.groups;
 

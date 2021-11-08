@@ -42,31 +42,32 @@ class ChannelManager {
   //   return this._iptvOrgCode.match(options);
   // };
 
-  // public getChannelJSON = (filters: M3U.ChannelInfoFilters) => {
-  //   return this._m3uFile.getChannelJSON(filters);
-  // };
+  public getChannelJSON = (filters: M3U.ChannelInfoFilters) => {
+    return this._m3uFile.getChannelJSON(filters);
+  };
+
+  public getUnmatchedChannels = () => {
+    return this._m3uFile.getChannels().filter((channel => !channel.confirmed && !channel.tvgId));
+  }
 
   public get isLoaded() {
     return this._loaded;
   }
 
   private getXmlListUrls = (channel: XMLTV.CodeModel[]) => {
-    return channel.reduce<Set<string>>(
-      (acc, channel) => {
-        const cuurrentChannel = channel as XMLTV.CodeDocument &
-          M3U.ChannelInfoModel;
+    return channel.reduce<Set<string>>((acc, channel) => {
+      const cuurrentChannel = channel as XMLTV.CodeDocument &
+        M3U.ChannelInfoModel;
 
-        const xmlTvUrls = Object.keys(acc);
-        const guide =
-          cuurrentChannel.guides.find((guide) => xmlTvUrls.includes(guide)) ||
-          cuurrentChannel.guides[0];
+      const xmlTvUrls = Object.keys(acc);
+      const guide =
+        cuurrentChannel.guides.find((guide) => xmlTvUrls.includes(guide)) ||
+        cuurrentChannel.guides[0];
 
-        acc.add(guide);
+      acc.add(guide);
 
-        return acc;
-      },
-      new Set<string>()
-    );
+      return acc;
+    }, new Set<string>());
   };
 }
 

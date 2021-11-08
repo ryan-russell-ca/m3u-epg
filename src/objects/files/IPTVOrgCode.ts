@@ -140,7 +140,7 @@ class IPTVOrgCode extends BaseFile<XMLTV.CodeBaseDocument> {
   };
 
   private getJson = async (): Promise<XMLTV.CodeRaw[]> => {
-    Logger.info("[IPTVOrgCode.getJson]: Downloading codes");
+    Logger.info("[IPTVOrgCode.getJson]: Downloading codes...");
 
     try {
       if (process.env.CODES_JSON_STATIC_DATA_FILE) {
