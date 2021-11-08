@@ -1,5 +1,5 @@
-import FuzzySet from "fuzzyset.js";
-import Logger from "@shared/Logger";
+import FuzzySet from 'fuzzyset.js';
+import Logger from '@shared/Logger';
 
 class Matcher {
   private _names: XMLTV.CodeBaseSorted;
@@ -15,7 +15,7 @@ class Matcher {
 
     this._idsSet = FuzzySet(Object.keys(id));
     this._namesSet = FuzzySet(Object.keys(name));
-  };
+  }
 
   public match = (options: M3U.MatchOptions) => {
     const { id, name, formatted, listAll } = options;
@@ -43,8 +43,8 @@ class Matcher {
 
     if (formatted) {
       const matches = [
-        ...this.matchFormatted(idMatchesList, "id"),
-        ...this.matchFormatted(nameMatchesList, "name"),
+        ...this.matchFormatted(idMatchesList, 'id'),
+        ...this.matchFormatted(nameMatchesList, 'name'),
       ]
         .filter((a) => a)
         .sort((a, b) => b.score - a.score) as XMLTV.CodeMatch[];
@@ -60,7 +60,7 @@ class Matcher {
   private matches = (options: M3U.MatchOptionsSingle, minScore = 0.5) => {
     if (options.id && options.name) {
       throw new Error(
-        "[Matcher.matches]: Matching cannot contain both id and name"
+        '[Matcher.matches]: Matching cannot contain both id and name'
       );
     }
 
@@ -93,9 +93,9 @@ class Matcher {
 
   private getCodeByAttr = (value: string, attr: string) => {
     switch (attr) {
-      case "id":
+      case 'id':
         return this._ids[value];
-      case "name":
+      case 'name':
         return this._names[value];
       default:
         return null;
@@ -119,7 +119,7 @@ class Matcher {
           return acc;
         }
 
-        const idCode = code.tvgId.replace(".", "");
+        const idCode = code.tvgId.replace('.', '');
 
         acc.id[idCode.toLowerCase()] = code;
         acc.name[code.displayName.toLowerCase()] = code;

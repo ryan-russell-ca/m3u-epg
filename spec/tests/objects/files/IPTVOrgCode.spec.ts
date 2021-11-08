@@ -1,6 +1,6 @@
-import MongoConnector, { MongoCollection } from "@objects/database/Mongo";
-import IPTVOrgCode from "@objects/files/IPTVOrgCode";
-import * as SharedFunctions from "@shared/functions";
+import MongoConnector, { MongoCollection } from '@objects/database/Mongo';
+import IPTVOrgCode from '@objects/files/IPTVOrgCode';
+import * as SharedFunctions from '@shared/functions';
 
 const CODES_JSON_STATIC_DATA_FILE = process.env
   .CODES_JSON_STATIC_DATA_FILE as string;
@@ -10,7 +10,7 @@ const COUNTRY_WHITELIST = JSON.parse(process.env.COUNTRY_WHITELIST as string);
 const CODES_EXPIRATION_MILLI =
   parseInt(process.env.CODES_EXPIRATION_SECONDS as string) * 1000;
 
-describe("IPTVOrgCode Tests", () => {
+describe('IPTVOrgCode Tests', () => {
   const originalEnvs = { ...process.env };
   let codesList: XMLTV.CodeRaw[] = [];
   let codesListShort: XMLTV.CodeRaw[] = [];
@@ -34,7 +34,7 @@ describe("IPTVOrgCode Tests", () => {
       await SharedFunctions.getJson(CODES_JSON_SHORT_STATIC_DATA_FILE)
     );
 
-    getJsonSpy = spyOn(SharedFunctions, "getJson").and.callThrough();
+    getJsonSpy = spyOn(SharedFunctions, 'getJson').and.callThrough();
     iptvOrgCode = new IPTVOrgCode();
     return;
   });
@@ -43,8 +43,8 @@ describe("IPTVOrgCode Tests", () => {
     jasmine.clock().uninstall();
   });
 
-  describe("IPTVOrgCode", () => {
-    it("Should be able to load a new IPTVOrgCode", async () => {
+  describe('IPTVOrgCode', () => {
+    it('Should be able to load a new IPTVOrgCode', async () => {
       const didLoad = await iptvOrgCode.load();
 
       expect(didLoad).toBeTrue();
@@ -53,7 +53,7 @@ describe("IPTVOrgCode Tests", () => {
       return;
     });
 
-    it("Should match codeList to filtered original by country", async () => {
+    it('Should match codeList to filtered original by country', async () => {
       const codeListIds = codesList
         .filter((code) => COUNTRY_WHITELIST.includes(code.country))
         .map((code) => code.tvg_id);
@@ -63,7 +63,7 @@ describe("IPTVOrgCode Tests", () => {
       return;
     });
 
-    it("Should match list selected ids", async () => {
+    it('Should match list selected ids', async () => {
       const iptvOrgCodesList = iptvOrgCode.codeList;
 
       const codes = [
@@ -80,19 +80,19 @@ describe("IPTVOrgCode Tests", () => {
       return;
     });
 
-    it("Should save Mongo collections", async () => {
+    it('Should save Mongo collections', async () => {
       const saved = await iptvOrgCode.save();
 
       expect(saved).toBeTrue();
     });
 
-    it("Should not reload when loaded", async () => {
+    it('Should not reload when loaded', async () => {
       const didLoad = await iptvOrgCode.load();
 
       expect(didLoad).toBeFalse();
     });
 
-    it("Should reload with reload flag `true`", async () => {
+    it('Should reload with reload flag `true`', async () => {
       const id = iptvOrgCode.id;
       const didLoad = await iptvOrgCode.load(true);
 
@@ -102,7 +102,7 @@ describe("IPTVOrgCode Tests", () => {
       expect(id).not.toEqual(iptvOrgCode.id);
     });
 
-    it("Should match codeList to filtered original by country after reload", async () => {
+    it('Should match codeList to filtered original by country after reload', async () => {
       const codeListIds = codesList
         .filter((code) => COUNTRY_WHITELIST.includes(code.country))
         .map((code) => code.tvg_id);
@@ -112,7 +112,7 @@ describe("IPTVOrgCode Tests", () => {
       return;
     });
 
-    it("Should reload when expired time is reached", async () => {
+    it('Should reload when expired time is reached', async () => {
       process.env.CODES_JSON_STATIC_DATA_FILE =
         originalEnvs.CODES_JSON_SHORT_STATIC_DATA_FILE;
 
@@ -130,7 +130,7 @@ describe("IPTVOrgCode Tests", () => {
       expect(id).not.toEqual(iptvOrgCode.id);
     });
 
-    it("Should select most recent Document", async () => {
+    it('Should select most recent Document', async () => {
       const newIptvOrgCode = new IPTVOrgCode();
       const didLoad = await newIptvOrgCode.load();
 

@@ -1,7 +1,7 @@
-import IPTVOrgCode from "./files/IPTVOrgCode";
-import M3UFile from "./files/M3U";
-import XMLTVList from "./files/XMLTVList";
-import Matcher from "./helpers/Matcher";
+import IPTVOrgCode from './files/IPTVOrgCode';
+import M3UFile from './files/M3U';
+import XMLTVList from './files/XMLTVList';
+import Matcher from './helpers/Matcher';
 
 class ChannelManager {
   private _loaded = false;

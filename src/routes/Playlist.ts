@@ -1,8 +1,8 @@
-import StatusCodes from "http-status-codes";
-import { Request, Response } from "express";
-import ChannelManager from "@objects/ChannelManager";
-import { getJson } from "@shared/functions";
-import Logger from "@shared/Logger";
+import StatusCodes from 'http-status-codes';
+import { Request, Response } from 'express';
+import ChannelManager from '@objects/ChannelManager';
+import { getJson } from '@shared/functions';
+import Logger from '@shared/Logger';
 
 const { OK } = StatusCodes;
 
@@ -13,18 +13,18 @@ export const getPlaylist = async (req: Request, res: Response) => {
   //   return res.status(OK).json(m3u.json());
   // }
 
-  const refresh = req.query.refresh === "true";
+  const refresh = req.query.refresh === 'true';
 
   await channelManager.load(refresh);
 
-  res.contentType("text");
+  res.contentType('text');
   return res.status(OK).send(await channelManager.getM3U());
 };
 
 export const getEpg = async (req: Request, res: Response) => {
   await channelManager.load();
 
-  res.contentType("xml");
+  res.contentType('xml');
   return res.status(OK).send(channelManager.getXMLTV());
 };
 
@@ -71,7 +71,7 @@ export const sandbox = async (req: Request, res: Response) => {
       (m: any) => m.confirmed
     );
     return res.status(OK).send(
-      "<pre>" +
+      '<pre>' +
         JSON.stringify(
           filtered.reduce<any>((acc, f: any) => {
             acc[f.url] = f;
@@ -80,10 +80,10 @@ export const sandbox = async (req: Request, res: Response) => {
           null,
           2
         ) +
-        "</pre>"
+        '</pre>'
     );
   } catch (error) {
-    Logger.info("[M3UFile]: Custom Mappings JSON is empty");
+    Logger.info('[M3UFile]: Custom Mappings JSON is empty');
   }
-  return res.status(OK).send("<pre></pre>");
+  return res.status(OK).send('<pre></pre>');
 };

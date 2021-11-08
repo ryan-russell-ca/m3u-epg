@@ -6,7 +6,7 @@ class BaseFile<
 > {
   protected _loaded = false;
   protected _expired = false;
-  protected _expirationMilli: number = 0;
+  protected _expirationMilli = 0;
   protected _model?: T;
 
   public get id() {

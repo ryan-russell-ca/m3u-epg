@@ -1,17 +1,17 @@
-import Logger from "@shared/Logger";
-import Mongoose from "mongoose";
+import Logger from '@shared/Logger';
+import Mongoose from 'mongoose';
 
 const MONO_DB_CONNECTION_STRING = process.env
   .MONO_DB_CONNECTION_STRING as string;
 
 export enum MongoCollection {
-  PlaylistChannel = "playlistChannel",
-  Playlist = "playlist",
-  XMLTvCode = "xmltvCode",
-  XMLTvCodes = "xmltvCodes",
-  XMLTvChannel = "xmltvChannel",
-  XMLTvProgramme = "xmltvProgramme",
-  XMLTv = "xmltv",
+  PlaylistChannel = 'playlistChannel',
+  Playlist = 'playlist',
+  XMLTvCode = 'xmltvCode',
+  XMLTvCodes = 'xmltvCodes',
+  XMLTvChannel = 'xmltvChannel',
+  XMLTvProgramme = 'xmltvProgramme',
+  XMLTv = 'xmltv',
 }
 
 class MongoConnector {
@@ -19,21 +19,21 @@ class MongoConnector {
 
   constructor() {
     this._connection.connection.on(
-      "error",
-      console.error.bind(console, "MongoDB connection error:")
+      'error',
+      console.error.bind(console, 'MongoDB connection error:')
     );
 
-    this._connection.connection.on("connected", () =>
-      Logger.info("MongoDB connected")
+    this._connection.connection.on('connected', () =>
+      Logger.info('MongoDB connected')
     );
 
-    this._connection.connection.on("disconencted", () =>
-      Logger.info("MongoDB disconnected")
+    this._connection.connection.on('disconencted', () =>
+      Logger.info('MongoDB disconnected')
     );
   }
 
   public connect = async () => {
-    Logger.info("[MongoConnector.connect]: Connecting to MongoDB...");
+    Logger.info('[MongoConnector.connect]: Connecting to MongoDB...');
 
     await this._connection.connect(MONO_DB_CONNECTION_STRING, {
       // useNewUrlParser: true,

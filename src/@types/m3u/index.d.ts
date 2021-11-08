@@ -1,5 +1,5 @@
 namespace M3U {
-  import { Document } from "mongoose";
+  import { Document } from 'mongoose';
 
   export interface MatchOptions {
     name?: string | string[];
@@ -29,7 +29,7 @@ namespace M3U {
     name?: string;
     originalName?: string;
     url?: string;
-    country?: string | null;
+    country?: string;
     definition?: string;
   }
 

@@ -1,13 +1,13 @@
-import xmlParser from "fast-xml-parser";
-import { filterProgrammeByDate, getFromUrl, getJson } from "@shared/functions";
-import Logger from "@shared/Logger";
+import xmlParser from 'fast-xml-parser';
+import { filterProgrammeByDate, getFromUrl, getJson } from '@shared/functions';
+import Logger from '@shared/Logger';
 import {
   XMLTVChannelModel,
   XMLTVModel,
   XMLTVProgrammeModel,
-} from "@objects/database/XMLTVSchema";
-import MongoConnector from "@objects/database/Mongo";
-import BaseFile from "./BaseFile";
+} from '@objects/database/XMLTVSchema';
+import MongoConnector from '@objects/database/Mongo';
+import BaseFile from './BaseFile';
 
 const XMLTV_EXPIRATION_MILLI =
   parseInt(process.env.XMLTV_EXPIRATION_SECONDS as string) * 1000;
@@ -77,28 +77,28 @@ class XMLTV extends BaseFile<XMLTV.BaseDocument> {
   } | null => {
     try {
       if (!this._model) {
-        throw new Error("[XMLTV.getByCode]: XMLTV is empty");
+        throw new Error('[XMLTV.getByCode]: XMLTV is empty');
       }
 
       const channel = this._model.xmlTv.channel.find(
-        (channel) => channel["@_id"] === tvgId
+        (channel) => channel['@_id'] === tvgId
       );
 
       const programme = this._model.xmlTv.programme.filter(
-        (programme) => programme["@_channel"] === tvgId
+        (programme) => programme['@_channel'] === tvgId
       );
 
       return channel
         ? {
             channel: {
-              "@_id": channel["@_id"],
-              "display-name": channel["display-name"],
+              '@_id': channel['@_id'],
+              'display-name': channel['display-name'],
               icon: channel.icon,
             },
             programme: programme.map((p) => ({
-              "@_start": p["@_start"],
-              "@_stop": p["@_stop"],
-              "@_channel": p["@_channel"],
+              '@_start': p['@_start'],
+              '@_stop': p['@_stop'],
+              '@_channel': p['@_channel'],
               title: p.title,
             })),
           }
@@ -111,25 +111,25 @@ class XMLTV extends BaseFile<XMLTV.BaseDocument> {
 
   public getChannel = (): XMLTV.ChannelModel[] => {
     if (!this._model) {
-      throw new Error("[XMLTV.getChannel]: XMLTV JSON is empty");
+      throw new Error('[XMLTV.getChannel]: XMLTV JSON is empty');
     }
 
     return this._model.xmlTv.channel.map((c) => ({
-      "@_id": c["@_id"],
-      "display-name": c["display-name"],
+      '@_id': c['@_id'],
+      'display-name': c['display-name'],
       icon: c.icon,
     }));
   };
 
   public getProgramme = (): XMLTV.ProgrammeModel[] => {
     if (!this._model) {
-      throw new Error("[XMLTV.getProgramme]: XMLTV JSON is empty");
+      throw new Error('[XMLTV.getProgramme]: XMLTV JSON is empty');
     }
 
     return this._model.xmlTv.programme.map((p) => ({
-      "@_start": p["@_start"],
-      "@_stop": p["@_stop"],
-      "@_channel": p["@_channel"],
+      '@_start': p['@_start'],
+      '@_stop': p['@_stop'],
+      '@_channel': p['@_channel'],
       title: p.title,
     }));
   };
@@ -161,7 +161,7 @@ class XMLTV extends BaseFile<XMLTV.BaseDocument> {
   ) => {
     try {
       if (refresh) {
-        Logger.info("[XMLTV.getXMLTV]: Forcing refresh...");
+        Logger.info('[XMLTV.getXMLTV]: Forcing refresh...');
         return this.createXmlTv(url, filterIds);
       }
 
@@ -170,16 +170,16 @@ class XMLTV extends BaseFile<XMLTV.BaseDocument> {
         {},
         { sort: { date: -1 } }
       )
-        .populate("xmlTv.channel")
-        .populate("xmlTv.programme");
+        .populate('xmlTv.channel')
+        .populate('xmlTv.programme');
 
       if (!model) {
-        Logger.info("[XMLTV.getXMLTV]: No XMLTV entry found");
+        Logger.info('[XMLTV.getXMLTV]: No XMLTV entry found');
         return this.createXmlTv(url, filterIds);
       }
 
       if (this.checkExpired(model)) {
-        Logger.info("[XMLTV.getXMLTV]: XMLTV entry expired");
+        Logger.info('[XMLTV.getXMLTV]: XMLTV entry expired');
         return this.createXmlTv(url, filterIds);
       }
 
@@ -220,25 +220,25 @@ class XMLTV extends BaseFile<XMLTV.BaseDocument> {
   ) => {
     return {
       channel: channels.filter((channel) =>
-        filterIds.includes(channel["@_id"])
+        filterIds.includes(channel['@_id'])
       ),
       programme: programmes.filter((programme) =>
-        filterIds.includes(programme["@_channel"])
+        filterIds.includes(programme['@_channel'])
       ),
     };
   };
 
   public save = async () => {
-    if (this._url === "custom") {
-      Logger.info("[XMLTV.save]: Skipping save XMLTV custom channel files");
+    if (this._url === 'custom') {
+      Logger.info('[XMLTV.save]: Skipping save XMLTV custom channel files');
       return true;
     }
 
     if (!this.model) {
-      throw new Error("[XMLTV.save]: XMLTV JSON is empty");
+      throw new Error('[XMLTV.save]: XMLTV JSON is empty');
     }
 
-    Logger.info("[XMLTV.save]: Saving XMLTV file");
+    Logger.info('[XMLTV.save]: Saving XMLTV file');
     await this.model.save();
 
     return true;
@@ -247,11 +247,11 @@ class XMLTV extends BaseFile<XMLTV.BaseDocument> {
   private saveChannels = async (channels: XMLTV.ChannelModel[]) => {
     const operations = channels.map((ch) => ({
       updateOne: {
-        filter: { "@_id": ch["@_id"] },
+        filter: { '@_id': ch['@_id'] },
         update: {
           $set: {
-            "@_id": ch["@_id"],
-            "display-name": ch["display-name"],
+            '@_id': ch['@_id'],
+            'display-name': ch['display-name'],
             icon: ch.icon,
           },
         },
@@ -259,7 +259,7 @@ class XMLTV extends BaseFile<XMLTV.BaseDocument> {
       },
     }));
 
-    Logger.info("[XMLTV.save]: Saving XMLTV channel files");
+    Logger.info('[XMLTV.save]: Saving XMLTV channel files');
 
     const { insertedIds, upsertedIds } = await XMLTVChannelModel.bulkWrite(
       operations
@@ -271,12 +271,12 @@ class XMLTV extends BaseFile<XMLTV.BaseDocument> {
   private saveProgrammes = async (programmes: XMLTV.ProgrammeModel[]) => {
     const operations = programmes.map((pr) => ({
       updateOne: {
-        filter: { "@_channel": pr["@_channel"], "@_start": pr["@_start"] },
+        filter: { '@_channel': pr['@_channel'], '@_start': pr['@_start'] },
         update: {
           $set: {
-            "@_start": pr["@_start"],
-            "@_stop": pr["@_stop"],
-            "@_channel": pr["@_channel"],
+            '@_start': pr['@_start'],
+            '@_stop': pr['@_stop'],
+            '@_channel': pr['@_channel'],
             title: pr.title,
             desc: pr.desc,
             category: pr.category,
@@ -286,7 +286,7 @@ class XMLTV extends BaseFile<XMLTV.BaseDocument> {
       },
     }));
 
-    Logger.info("[XMLTV.save]: Saving XMLTV channel files");
+    Logger.info('[XMLTV.save]: Saving XMLTV channel files');
 
     const { insertedIds, upsertedIds } = await XMLTVProgrammeModel.bulkWrite(
       operations
@@ -317,7 +317,7 @@ class XMLTV extends BaseFile<XMLTV.BaseDocument> {
     });
 
     await xmlTv.save();
-    await xmlTv.populate(["xmlTv.channel", "xmlTv.programme"]);
+    await xmlTv.populate(['xmlTv.channel', 'xmlTv.programme']);
 
     return xmlTv;
   };
@@ -326,7 +326,7 @@ class XMLTV extends BaseFile<XMLTV.BaseDocument> {
     url: string,
     filterIds?: string[]
   ): Promise<Promise<XMLTV.BaseDocument>> => {
-    Logger.info("[XMLTV.createXmlTv]: Creating XMLTV...");
+    Logger.info('[XMLTV.createXmlTv]: Creating XMLTV...');
 
     const xml = await this.getJson(url);
 
@@ -341,7 +341,7 @@ class XMLTV extends BaseFile<XMLTV.BaseDocument> {
 
       const filteredChannel = (channel as XMLTV.ChannelModel[]).filter(
         (c, i, channels) =>
-          i === channels.findIndex((cc) => cc["@_id"] === c["@_id"])
+          i === channels.findIndex((cc) => cc['@_id'] === c['@_id'])
       );
 
       const filteredProgramme = this.filterProgammesByTime(
@@ -350,8 +350,8 @@ class XMLTV extends BaseFile<XMLTV.BaseDocument> {
             i ===
             programmes.findIndex(
               (pp) =>
-                pp["@_channel"] === p["@_channel"] &&
-                pp["@_start"] === p["@_start"]
+                pp['@_channel'] === p['@_channel'] &&
+                pp['@_start'] === p['@_start']
             )
         )
       );

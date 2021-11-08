@@ -1,5 +1,5 @@
 namespace XMLTV {
-  import { Document } from "mongoose";
+  import { Document } from 'mongoose';
   
   export interface CodeRaw {
     tvg_id: string;
@@ -37,20 +37,20 @@ namespace XMLTV {
   }
 
   export interface ChannelModel {
-    "@_id": string;
-    "display-name": string;
+    '@_id': string;
+    'display-name': string;
     icon: {
-      "@_src": string;
+      '@_src': string;
     };
   }
 
   export interface ProgrammeModel {
-    "@_start": string;
-    "@_stop": string;
-    "@_channel": string;
-    title: { "#text": string; "@_lang": string };
-    desc?: { "#text": string, "@_lang": string; };
-    category?: { "#text": string, "@_lang": string; };
+    '@_start': string;
+    '@_stop': string;
+    '@_channel': string;
+    title: { '#text': string; '@_lang': string };
+    desc?: { '#text': string, '@_lang': string; };
+    category?: { '#text': string, '@_lang': string; };
   }
 
   export interface Base {

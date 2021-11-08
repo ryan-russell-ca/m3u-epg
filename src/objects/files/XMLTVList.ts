@@ -1,6 +1,6 @@
-import { j2xParser } from "fast-xml-parser";
-import XMLTV from "./XMLTV";
-import Logger from "@shared/Logger";
+import { j2xParser } from 'fast-xml-parser';
+import XMLTV from './XMLTV';
+import Logger from '@shared/Logger';
 
 export const XML_PARSE_OPTIONS = {
   ignoreAttributes: false,
@@ -25,7 +25,7 @@ class XMLTVList {
     const xmlTvs = await this.getJson(xmlTvUrls, filterIds);
 
     const custom = await XMLTV.fromFile(
-      "custom",
+      'custom',
       CUSTOM_XMLTV_MAPPINGS_FILE,
       XML_PARSE_OPTIONS
     );
@@ -46,7 +46,7 @@ class XMLTVList {
 
   public toString = () => {
     if (!this._model) {
-      throw new Error("[XMLTVList.toString]: XMLTVs is empty");
+      throw new Error('[XMLTVList.toString]: XMLTVs is empty');
     }
 
     const parser = new j2xParser(XML_PARSE_OPTIONS);
@@ -59,7 +59,7 @@ class XMLTVList {
 
   private merge = (xmlTvs: { [xmlTvUrl: string]: XMLTV }) => {
     if (!xmlTvs) {
-      throw new Error("[XMLTVList.mergeByCode]: XMLTV list is empty");
+      throw new Error('[XMLTVList.mergeByCode]: XMLTV list is empty');
     }
 
     return Object.values(xmlTvs).reduce<{

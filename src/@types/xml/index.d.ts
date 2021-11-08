@@ -8,7 +8,7 @@ namespace XML {
     second: string;
     offsetHour: string;
     offsetMinute: string;
-  };
+  }
 
   export interface xmlDate {
     year: number;
@@ -19,5 +19,5 @@ namespace XML {
     second: number;
     offsetHour: number;
     offsetMinute: number;
-  };
+  }
 }

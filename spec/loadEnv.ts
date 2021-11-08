@@ -1,4 +1,4 @@
-import dotenv from "dotenv";
+import dotenv from 'dotenv';
 
 const result2 = dotenv.config({
   path: `./src/pre-start/env/test.env`,
