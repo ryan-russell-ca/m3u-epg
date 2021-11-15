@@ -38,10 +38,6 @@ class ChannelManager {
     return this._xmlList.toString();
   };
 
-  // public getInfo = (options: XMLTV.MatchOptions) => {
-  //   return this._iptvOrgCode.match(options);
-  // };
-
   public getChannelJSON = (filters: M3U.ChannelInfoFilters) => {
     return this._m3uFile.getChannelJSON(filters);
   };
