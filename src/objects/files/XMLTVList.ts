@@ -28,12 +28,12 @@ class XMLTVList {
       CUSTOM_XMLTV_MAPPINGS_FILE,
       XML_PARSE_OPTIONS
     );
-      
+
     this._model = {
       ...xmlTvs,
       custom,
     };
-    
+
     this._loaded = true;
 
     return true;
@@ -49,7 +49,7 @@ class XMLTVList {
     }
 
     const parser = new j2xParser(XML_PARSE_OPTIONS);
-    
+
     return (
       '<?xml version="1.0" encoding="UTF-8" ?>' +
       parser.parse({ tv: this.merge(this._model) }).toString()
@@ -96,7 +96,7 @@ class XMLTVList {
     for (let i = 0; i < xmlTvValues.length; i++) {
       const xmlTv = xmlTvValues[i] as XMLTV;
       await xmlTv.load(filterIds);
-      
+
       if (xmlTv.isValid) {
         xmlTvs[xmlTv.url] = xmlTv;
       }

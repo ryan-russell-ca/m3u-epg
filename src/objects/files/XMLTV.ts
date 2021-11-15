@@ -286,7 +286,7 @@ class XMLTV extends BaseFile<XMLTV.BaseDocument> {
       },
     }));
 
-    Logger.info('[XMLTV.save]: Saving XMLTV channel files');
+    Logger.info('[XMLTV.save]: Saving XMLTV programme files');
 
     const { insertedIds, upsertedIds } = await XMLTVProgrammeModel.bulkWrite(
       operations
