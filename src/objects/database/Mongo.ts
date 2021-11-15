@@ -35,10 +35,7 @@ class MongoConnector {
   public connect = async () => {
     Logger.info('[MongoConnector.connect]: Connecting to MongoDB...');
 
-    await this._connection.connect(MONO_DB_CONNECTION_STRING, {
-      // useNewUrlParser: true,
-      // useUnifiedTopology: true,
-    });
+    await this._connection.connect(MONO_DB_CONNECTION_STRING);
 
     return true;
   };
