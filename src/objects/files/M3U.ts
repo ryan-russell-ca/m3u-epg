@@ -4,11 +4,12 @@ import {
   parseJson,
   filterUnique,
   filterRegion,
-} from '@shared/functions';
-import M3UModel, { M3UChannelModel } from '@objects/database/M3USchema';
-import MongoConnector from '@objects/database/Mongo';
-import Logger from '@shared/Logger';
-import BaseFile from './BaseFile';
+} from "@shared/functions";
+import M3UModel, { M3UChannelModel } from "@objects/database/M3USchema";
+import MongoConnector from "@objects/database/Mongo";
+import Logger from "@shared/Logger";
+import BaseFile from "./BaseFile";
+import readline from 'readline';
 
 const M3U_URL = process.env.M3U_URL as string;
 const M3U_FILENAME = process.env.M3U_FILENAME as string;
@@ -17,10 +18,10 @@ const M3U_EXPIRATION_MILLI =
   parseInt(process.env.M3U_EXPIRATION_SECONDS as string) * 1000;
 
 export enum Definition {
-  FullHighDef = 'FHD',
-  HighDef = 'HD',
-  StandardDef = 'SD',
-  Unknown = 'UNKNOWN',
+  FullHighDef = "FHD",
+  HighDef = "HD",
+  StandardDef = "SD",
+  Unknown = "UNKNOWN",
 }
 
 class M3U extends BaseFile<M3U.BaseDocument> {
@@ -53,7 +54,7 @@ class M3U extends BaseFile<M3U.BaseDocument> {
 
   public get channels(): M3U.ChannelInfoModel[] {
     if (!this.isLoaded) {
-      throw new Error('[M3U]: M3U JSON is not loaded');
+      throw new Error("[M3U]: M3U JSON is not loaded");
     }
 
     return this._model?.channels || [];
@@ -71,8 +72,10 @@ class M3U extends BaseFile<M3U.BaseDocument> {
       return Object.entries(filters)
         .filter(([, value]: [string, string]) => value)
         .every(([filter, value]: [string, string]) => {
-          const regex = new RegExp(`^.*?(${value}).*$`, 'gi');
-          return regex.test((channel as unknown as Record<string, string>)[filter]);
+          const regex = new RegExp(`^.*?(${value}).*$`, "gi");
+          return regex.test(
+            (channel as unknown as Record<string, string>)[filter]
+          );
         });
     });
   };
@@ -83,18 +86,20 @@ class M3U extends BaseFile<M3U.BaseDocument> {
 
   public toString = () => {
     if (!this.model) {
-      throw new Error('[M3U.toString]: M3U JSON is empty');
+      throw new Error("[M3U.toString]: M3U JSON is empty");
     }
 
     return [
-      '#EXTM3U ',
-      ...this.model.channels.map((d) => {
-        return [
-          `#EXTINF: -1 group-title="${d.group}" tvg-id="${d.tvgId}" tvg-logo="${d.logo}", ${d.name}`,
-          d.url,
-        ].join('\n');
-      }),
-    ].join('\n');
+      "#EXTM3U ",
+      ...this.model.channels
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((channel, no) => {
+          return [
+            `#EXTINF: -1 tvg-chno="${no}" group-title="${channel.group}" tvg-id="${channel.tvgId}" tvg-logo="${channel.logo}", ${channel.name}`,
+            channel.url,
+          ].join("\n");
+        }),
+    ].join("\n");
   };
 
   private getM3U = async (
@@ -103,7 +108,7 @@ class M3U extends BaseFile<M3U.BaseDocument> {
   ): Promise<M3U.BaseDocument> => {
     try {
       if (refresh) {
-        Logger.info('[M3U.getM3U]: Forcing refresh');
+        Logger.info("[M3U.getM3U]: Forcing refresh");
         return this.createM3U(uniqueOnly);
       }
 
@@ -111,15 +116,15 @@ class M3U extends BaseFile<M3U.BaseDocument> {
         {},
         {},
         { sort: { date: -1 } }
-      ).populate('channels');
+      ).populate("channels");
 
       if (!model) {
-        Logger.info('[M3U.getM3U]: No M3U entry found');
+        Logger.info("[M3U.getM3U]: No M3U entry found");
         return this.createM3U(uniqueOnly);
       }
 
       if (this.checkExpired(model)) {
-        Logger.info('[M3U.getM3U]: M3U entry expired');
+        Logger.info("[M3U.getM3U]: M3U entry expired");
         return this.createM3U(uniqueOnly);
       }
 
@@ -135,6 +140,8 @@ class M3U extends BaseFile<M3U.BaseDocument> {
   };
 
   private insertChannels = async (channels: M3U.ChannelInfoModel[]) => {
+    Logger.info('[M3U.insertChannels]: Mapping M3U channel files');
+ 
     const operations = channels.map((ch) => ({
       updateOne: {
         filter: { url: ch.url },
@@ -151,28 +158,28 @@ class M3U extends BaseFile<M3U.BaseDocument> {
             tvgId: ch.tvgId,
             definition: ch.definition,
             confirmed: ch.confirmed,
+            confidence: ch.confidence,
           },
         },
         upsert: true,
       },
     }));
 
-    Logger.info('[M3U.save]: Saving M3U channel files');
+    Logger.info('[M3U.insertChannels]: Saving M3U channel files');
+ 
+    const { insertedIds, upsertedIds } = await M3UChannelModel.bulkWrite(
+      operations
+    );
 
-    const { insertedIds, upsertedIds } = await M3UChannelModel.bulkWrite(operations);
-
-    return [
-      ...Object.values(insertedIds),
-      ...Object.values(upsertedIds),
-    ];
+    return [...Object.values(insertedIds), ...Object.values(upsertedIds)];
   };
 
   public save = async () => {
     if (!this.model) {
-      throw new Error('[M3U.save]: M3U JSON is empty');
+      throw new Error("[M3U.save]: M3U JSON is empty");
     }
 
-    Logger.info('[M3U.save]: Saving M3U file');
+    Logger.info("[M3U.save]: Saving M3U file");
     await this.model.save();
 
     return true;
@@ -181,7 +188,7 @@ class M3U extends BaseFile<M3U.BaseDocument> {
   private createM3U = async (
     uniqueOnly: boolean
   ): Promise<M3U.BaseDocument> => {
-    Logger.info('[M3U.createM3U]: Creating M3U playlist...');
+    Logger.info("[M3U.createM3U]: Creating M3U playlist...");
 
     const m3uFileString = await this.getJson();
     const m3uFileJson = parseJson(m3uFileString);
@@ -190,11 +197,21 @@ class M3U extends BaseFile<M3U.BaseDocument> {
       ? filterRegion(filterUnique(m3uFileJson))
       : m3uFileJson;
 
+    Logger.info('[M3U.createM3U]: Matching confirmed channels...');
+
     const confirmedMappings = await this.getConfirmedMatches();
 
     this._expired = false;
 
-    const channels = filtered.map((channel) => {
+    Logger.info('[M3U.createM3U]: Matching unconfirmed channels...');
+
+    Logger.info(`[M3U.createM3U]: Matching channels starting...`);
+    const numChannels = filtered.length;
+    const channels = filtered.map((channel, i) => {
+      readline.moveCursor(process.stdout, 0, -1);
+      readline.clearLine(process.stdout, 1);
+      Logger.info(`[M3U.createM3U]: Matching channel ${i + 1}/${numChannels}`);
+
       const attributes = confirmedMappings[channel.url] || {
         ...channel,
         ...this.getMatch(channel),
@@ -212,14 +229,17 @@ class M3U extends BaseFile<M3U.BaseDocument> {
         tvgId: attributes.tvgId,
         definition: attributes.definition,
         confirmed: attributes.confirmed,
+        confidence: attributes.confidence,
       };
     });
 
     const ids = await this.insertChannels(channels);
 
-    return (await M3UModel.create({
-      channels: ids,
-    })).populate('channels');
+    return (
+      await M3UModel.create({
+        channels: ids,
+      })
+    ).populate("channels");
   };
 
   // TODO: replace function using Mongo
@@ -230,14 +250,14 @@ class M3U extends BaseFile<M3U.BaseDocument> {
 
       return mappings;
     } catch (_) {
-      Logger.warn('[M3U.getConfirmedMatches]: Custom Mappings JSON is empty');
+      Logger.warn("[M3U.getConfirmedMatches]: Custom Mappings JSON is empty");
       return {};
     }
   };
 
   private getMatch = (channel: M3U.ChannelInfoModel) => {
     if (!this._matcher) {
-      Logger.info('[M3U.getMatch]: No matcher set');
+      Logger.info("[M3U.getMatch]: No matcher set");
       return {};
     }
 
@@ -252,14 +272,17 @@ class M3U extends BaseFile<M3U.BaseDocument> {
     }) as XMLTV.CodeMatch[];
 
     if (match[0]?.code) {
-      return match[0].code;
+      return {
+        code: match[0].code,
+        confidence: match[0].score,
+      };
     }
 
     return {};
   };
 
   private getJson = async (): Promise<string> => {
-    Logger.info('[M3U.getJson]: Downloading playlist...');
+    Logger.info("[M3U.getJson]: Downloading playlist...");
 
     try {
       if (process.env.M3U_STATIC_DATA_FILE) {

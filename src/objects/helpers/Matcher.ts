@@ -79,9 +79,6 @@ class Matcher {
       if (match.rating > minScore) {
         return [[match.rating, match.target]] as [number, string][];
       }
-      // return (
-      //   this._namesSet?.get(name)?.filter(([score]) => score >= minScore) || []
-      // );
     }
 
     return [];

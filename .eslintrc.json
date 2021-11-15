@@ -7,5 +7,5 @@
   "rules": {
     "quotes": ["error", "single", { "allowTemplateLiterals": true }]
   },
-  "ignorePatterns": ["src/**/*.test.ts", "src/frontend/generated/*"]
+  "ignorePatterns": []
 }

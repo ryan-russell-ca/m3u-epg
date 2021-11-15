@@ -24,6 +24,7 @@ const M3UChannelSchema = new Schema(
     tvgId: String,
     definition: String,
     confirmed: { type: Boolean, default: false },
+    confidence: Number,
   },
   { collection: MongoCollection.PlaylistChannel }
 );

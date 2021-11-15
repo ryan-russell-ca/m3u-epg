@@ -45,6 +45,7 @@ namespace M3U {
     definition?: string;
     parsedIds: string[] | null;
     confirmed: boolean;
+    confidence?: number;
   }
 
   export interface ChannelInfoMapping {
@@ -63,4 +64,3 @@ namespace M3U {
 
   export type BaseDocument = Document<ObjectId, Record<string, unknown>, BaseModel> & BaseModel;
 }
-

@@ -35,7 +35,7 @@ describe('M3U Tests', () => {
   describe('M3U', () => {
     it('Should be able to load a new M3U', async () => {
       const didLoad = await m3u.load(matcher);
-
+      
       expect(didLoad).toBeTrue();
       expect(getJsonSpy).toHaveBeenCalledTimes(2);
       expect(m3u.isLoaded).toBeTrue;
