@@ -46,6 +46,13 @@ class ChannelManager {
     return this._m3uFile.getChannels().filter((channel => !channel.confirmed && !channel.tvgId));
   }
 
+  public getMatch = async (filter: {
+    name?: string;
+    id?: string;
+  }) => {
+    return this._m3uFile.getSingleChannelMatch(filter);
+  };
+
   public get isLoaded() {
     return this._loaded;
   }
