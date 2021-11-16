@@ -2,29 +2,23 @@ import { M3UChannelModel } from '@objects/database/M3USchema';
 import MongoConnector from '@objects/database/Mongo';
 import { program } from 'commander';
 import Inquirer from 'inquirer';
-import { table } from 'table';
-import TableViewer from './helpers/TableViewer';
+import Question from './helpers/Question';
+import { ConfirmChannel } from './questions/Confirmation';
 
 enum EntryActions {
   ViewConfirmed = 1,
   ViewUnconfirmed = 2,
   ViewAll = 3,
-  ConfirmChannels = 4,
-  Quit = 5,
-}
-
-enum ConfirmationActions {
-  Confirm = 1,
-  Skip = 2,
-  Edit = 3,
-  Save = 4,
-  Quit = 5,
+  ConfirmChannelsHigh = 4,
+  ConfirmChannelsLow = 5,
+  ConfirmChannelsUnmatched = 6,
+  Quit = 20,
 }
 
 const prompt = Inquirer.createPromptModule();
 
 const entry = async () => {
-  const { action } = await prompt({
+  const { action } = await Question({
     type: 'list',
     name: 'action',
     choices: [
@@ -34,9 +28,21 @@ const entry = async () => {
         value: EntryActions.ViewUnconfirmed,
       },
       { name: 'View All Channels', value: EntryActions.ViewAll },
-      { name: 'Confirm Channels', value: EntryActions.ConfirmChannels },
+      {
+        name: 'Confirm Channels [High -> Low]',
+        value: EntryActions.ConfirmChannelsHigh,
+      },
+      {
+        name: 'Confirm Channels [Low -> High]',
+        value: EntryActions.ConfirmChannelsLow,
+      },
+      {
+        name: 'Confirm Channels [Unmatched]',
+        value: EntryActions.ConfirmChannelsUnmatched,
+      },
     ],
     default: 0,
+    message: 'Please select an action:',
   });
 
   switch (action) {
@@ -44,10 +50,14 @@ const entry = async () => {
       await viewChannels(true);
       break;
     case 2:
-      return confirmChannels(false);
+      break;
     case 3:
-      return confirmChannels(true);
+      break;
     case 4:
+      return confirmChannels(-1);
+    case 5:
+      return confirmChannels(1);
+    case 6:
       return confirmChannels();
     default:
       break;
@@ -99,49 +109,22 @@ const viewChannels = async (confirmed?: boolean) => {
   return;
 };
 
-const confirmChannels = async (confirmed?: boolean) => {
+const confirmChannels = async (direction?: number): Promise<void> => {
   if (!MongoConnector.connected) {
     await MongoConnector.connect();
   }
 
   const channels: M3U.ChannelInfoDocument[] = await M3UChannelModel.find(
-    confirmed !== undefined ? { confirmed } : {},
+    { confirmed: false, tvgId: !direction ? null : undefined },
     null,
-    { limit: 10 }
+    { limit: 100, sort: { confidence: direction } }
   );
 
   for (const channel of channels) {
-    const { action } = await prompt({
-      type: 'list',
-      name: 'action',
-      choices: [
-        { name: 'Confirm & Save', value: ConfirmationActions.Confirm },
-        { name: 'Skip', value: ConfirmationActions.Skip },
-        { name: 'Edit', value: ConfirmationActions.Edit },
-        { name: 'Save', value: ConfirmationActions.Save },
-        { name: 'Quit', value: ConfirmationActions.Quit },
-      ],
-      default: 1,
-      message: () => '\n' + table(Object.entries(channel.toJSON())),
-    });
-
-    switch (action) {
-      case 1:
-        channel.set({ confirmed: true });
-        await channel.save();
-        break;
-      case 2:
-        break;
-      case 4:
-        await M3UChannelModel.bulkSave(channels);
-      case 3:
-      case 5:
-      default:
-        break;
-    }
+    await ConfirmChannel(channel);
   }
 
-  return;
+  return await confirmChannels(direction);
 };
 
 program
