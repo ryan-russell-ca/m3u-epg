@@ -244,9 +244,9 @@ class M3U extends BaseFile<BaseDocument> {
     const m3uFileString = await this.getJson();
     const m3uFileJson = parseJson(m3uFileString);
 
-    const filtered = uniqueOnly
+    const filtered = (uniqueOnly
       ? filterRegion(filterUnique(m3uFileJson))
-      : m3uFileJson;
+      : m3uFileJson);
 
     Logger.info('[createM3U]: Matching confirmed channels...');
 

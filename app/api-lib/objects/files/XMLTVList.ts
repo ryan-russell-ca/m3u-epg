@@ -1,9 +1,11 @@
-import { j2xParser } from 'fast-xml-parser';
+import fs from 'fs';
+import path from 'path';
 import XMLTV from './XMLTV';
 import { ChannelModel, ProgrammeModel } from 'xmltv';
 
 export const XML_PARSE_OPTIONS = {
   ignoreAttributes: false,
+  format: true,
 };
 
 const CUSTOM_XMLTV_MAPPINGS_FILE = process.env
@@ -57,41 +59,39 @@ class XMLTVList {
       throw new Error('[XMLTVList.parseMergeByCode]: XMLTV list is empty');
     }
 
-    const parser = new j2xParser(XML_PARSE_OPTIONS);
-
     const { channel, programme } = Object.values(xmlTvs).reduce<{
       channel: string;
       programme: string;
     }>(
       (acc, xmlTv) => {
-        try {
-          const channel = xmlTv.getChannel();
-          const programme = xmlTv.getProgramme();
+        const channel = xmlTv.getChannel(true);
+        const programme = xmlTv.getProgramme(true);
 
-          if (channel.length > 0 && programme.length > 0) {
-            acc.channel += parser.parse(channel);
-            acc.programme += parser.parse(programme);
-          }
-
-          return acc;
-        } catch (e) {
-          console.error(e);
+        if (channel.length && programme.length) {
+          acc.channel += channel;
+          acc.programme += programme;
         }
+
+        return acc;
       },
-      {
-        channel: '',
-        programme: '',
-      }
+      { channel: '', programme: '' }
     );
-    return `<?xml version="1.0" encoding="UTF-8" ?>
+
+    const xmlPath = path.join(`./data/playlist/${'epg'}.xml`);
+    const data = `
+      <?xml version="1.0" encoding="UTF-8" ?>
       <tv>
-        <channel>
-          ${channel}
-        </channel>
-        <programme>
-          ${programme}
-        </programme>
-      </tv>`;
+        ${channel}
+        ${programme}
+      </tv>
+    `.trim();
+
+    fs.writeFileSync(xmlPath, data);
+
+    return {
+      filename: xmlPath,
+      size: data.length,
+    };
   };
 
   private getJson = async (

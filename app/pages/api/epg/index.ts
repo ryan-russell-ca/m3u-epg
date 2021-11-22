@@ -1,3 +1,4 @@
+import fs from 'fs';
 import ChannelManager from '@/api-lib/objects/channelManager';
 
 const routes = async (req, res) => {
@@ -5,8 +6,13 @@ const routes = async (req, res) => {
 
   await ChannelManager.load(refresh);
 
+  const { filename, size } = ChannelManager.getXMLTV();
+
   res.setHeader('Content-Type', 'application/xml');
-  return res.status(200).send(ChannelManager.getXMLTV());
+  res.setHeader('Content-Length', size);
+  res.status(200)
+
+  fs.createReadStream(filename).pipe(res);
 };
 
 export default routes;
