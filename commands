@@ -1,2 +1,0 @@
-npm run build && npm i -g && chmod +x dist/cli/index.js && iptv-cli confirm-channels
-npm run build && node -r module-alias/register dist/cli confirm-channels
