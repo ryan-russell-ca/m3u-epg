@@ -3,15 +3,14 @@ version: "3.4"
 services:
   iptv-app:
     build:
-      context: ./
-      target: develop
+      context: ./app
     depends_on:
       - iptv-app-mongo
     ports:
-      - 32300:3000
+      - 32400:3000
     volumes:
-      - ./:/code
-    command: [ "sh", "/code/startup.sh" ]
+      - ./app:/code
+    command: [ "npm", "run", "dev" ]
 
   iptv-app-mongo:
     image: mongo:5.0.3
