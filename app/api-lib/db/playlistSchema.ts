@@ -1,4 +1,4 @@
-import { BaseModel, ChannelInfoModel } from 'm3u';
+import { BaseModel, ChannelInfoModel } from '@/types/m3u';
 import Mongoose, { Schema } from 'mongoose';
 import { MongoCollection } from './mongo';
 
@@ -30,7 +30,7 @@ const PlaylistChannelSchema = new Schema(
   { collection: MongoCollection.PlaylistChannel }
 );
 
-export const PlaylistChannelModel = Mongoose.models['PlaylistChannelModel']
+export const PlaylistChannelModel: Mongoose.Model<ChannelInfoModel> = Mongoose.models['PlaylistChannelModel']
   ? Mongoose.model('PlaylistChannelModel')
   : Mongoose.model<ChannelInfoModel>('PlaylistChannelModel', PlaylistChannelSchema);
 
@@ -45,7 +45,7 @@ const PlaylistSchema = new Schema(
   { collection: MongoCollection.Playlist }
 );
 
-const PlaylistModel = Mongoose.models['PlaylistModel']
+const PlaylistModel: Mongoose.Model<BaseModel> = Mongoose.models['PlaylistModel']
   ? Mongoose.model('PlaylistModel')
   : Mongoose.model<BaseModel>('PlaylistModel', PlaylistSchema);
 

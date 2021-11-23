@@ -1,8 +1,8 @@
 import * as StringSimilarity from 'string-similarity';
 import FuzzySet from 'fuzzyset.js';
 import Logger from '@/api-lib/modules/Logger';
-import { CodeBaseSorted, CodeMatch, CodeModel } from 'xmltv';
-import { MatchOptions, MatchOptionsSingle } from 'm3u';
+import { CodeBaseSorted, CodeMatch, CodeModel } from '@/types/xmltv';
+import { MatchOptions, MatchOptionsSingle } from '@/types/m3u';
 
 class Matcher {
   private _names: CodeBaseSorted;

@@ -3,8 +3,7 @@ import Logger from '@/api-lib/modules/Logger';
 import MongoConnector from '@/api-lib/db/mongo';
 import XMLTVCodesModel, { XMLTVCodeModel } from '@/api-lib/db/xmltvCodeSchema';
 import BaseFile from './BaseFile';
-import { CodeBaseDocument, CodeRaw } from 'xmltv';
-import { CodeModel } from '@types/xmltv';
+import { CodeBaseDocument, CodeModel, CodeRaw } from '@/types/xmltv';
 
 const CODES_JSON_URL = process.env.CODES_JSON_URL as string;
 const COUNTRY_WHITELIST = JSON.parse(process.env.COUNTRY_WHITELIST as string);

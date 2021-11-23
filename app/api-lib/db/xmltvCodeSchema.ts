@@ -1,4 +1,4 @@
-import { CodeModel, CodeBaseModel } from 'xmltv';
+import { CodeModel, CodeBaseModel } from '@/types/xmltv';
 import Mongoose, { Schema } from 'mongoose';
 import { MongoCollection } from './mongo';
 
@@ -13,7 +13,9 @@ const XMLTVCodeSchema = new Schema(
   { collection: MongoCollection.XMLTVCode }
 );
 
-export const XMLTVCodeModel = Mongoose.models['XMLTVCodeModel']
+export const XMLTVCodeModel: Mongoose.Model<CodeModel> = Mongoose.models[
+  'XMLTVCodeModel'
+]
   ? Mongoose.model('XMLTVCodeModel')
   : Mongoose.model<CodeModel>('XMLTVCodeModel', XMLTVCodeSchema);
 
@@ -27,7 +29,9 @@ const XMLTVCodesSchema = new Schema(
   { collection: MongoCollection.XMLTVCodes }
 );
 
-export const XMLTVCodesModel = Mongoose.models['XMLTVCCodesModel']
+export const XMLTVCodesModel: Mongoose.Model<CodeBaseModel> = Mongoose.models[
+  'XMLTVCCodesModel'
+]
   ? Mongoose.model('XMLTVCCodesModel')
   : Mongoose.model<CodeBaseModel>('XMLTVCCodesModel', XMLTVCodesSchema);
 

@@ -1,7 +1,7 @@
 module.exports = {
   reactStrictMode: true,
   swcMinify: false,
-  env: {   
+  env: {
     COUNTRY_WHITELIST: '["ca", "us", "uk", "unpopulated"]',
     MONGO_DB_CONNECTION_STRING: 'mongodb://iptv-app-mongo:27017/iptv',
     // ## Setup jet-logger ##
@@ -11,7 +11,7 @@ module.exports = {
     JET_LOGGER_FORMAT: 'LINE',
 
     // # External Files / URLs
-    M3U_FILENAME: './data/mapping/default.m3u',
+    M3U_FILENAME: './data/mapping/default.@/types/m3u',
     M3U_URL: 'https://speed.cd/tv/193662/eOBycPCXjM/Default',
     CODES_JSON_URL: 'https://iptv-org.github.io/epg/codes.json',
     CONFIRMED_MAPPINGS_FILE: './data/mapping/confirmed.json',
@@ -28,7 +28,7 @@ module.exports = {
     domains: [
       'cdn.tvpassport.com',
       'zap2it.tmsimg.com',
-      'www.mncvision.id',
+      'inet-static.mw.elion.ee',
       'content.osn.com',
       'www.ipko.com',
       'cdn.mitvstatic.com',
@@ -37,7 +37,9 @@ module.exports = {
       'otv-us-web.s3-us-west-2.amazonaws.com',
       'www.sms.cz',
       'fanc.tmsimg.com',
-      'ottepg3.nexttv.ht.hr',
+      'www.mncvision.id',
+      'mts.rs',
+      'ottepg6.nexttv.ht.hr',
       'images.ctfassets.net',
       'thenewsforum.ca',
       'programacion-tv.elpais.com',
@@ -51,14 +53,15 @@ module.exports = {
       'i.imgur.com',
       'bellotelo.com',
       's3.i3ns.net',
+      'mtel.ba',
       'ottepg1.nexttv.ht.hr',
       'ocdn.eu',
       'avatars.mds.yandex.net',
+      'www.magticom.ge',
       'imagesdishtvd2h.whatsonindia.com',
       'static.cinemagia.ro',
       'live-delta.ottnow.stoneroos.com',
       'www.cosmote.gr',
-      'img.redbull.com',
       'assets.lamuscle.com',
       'comteco.com.bo',
       'dmxg5wxfqgb4u.cloudfront.net',

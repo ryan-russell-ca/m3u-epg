@@ -16,7 +16,8 @@ import {
   ChannelInfoModel,
   ChannelInfoFilters,
   ChannelInfoMapping,
-} from 'm3u';
+} from '@/types/m3u';
+import { CodeMatch } from '@/types/xmltv';
 
 const M3U_URL = process.env.M3U_URL as string;
 const M3U_FILENAME = process.env.M3U_FILENAME as string;
@@ -241,12 +242,12 @@ class M3U extends BaseFile<BaseDocument> {
   private createM3U = async (uniqueOnly: boolean): Promise<BaseDocument> => {
     Logger.info('[createM3U]: Creating M3U playlist...');
 
-    const m3uFileString = await this.getJson();
-    const m3uFileJson = parseJson(m3uFileString);
+    const @/types/m3uFileString = await this.getJson();
+    const @/types/m3uFileJson = parseJson(@/types/m3uFileString);
 
     const filtered = (uniqueOnly
-      ? filterRegion(filterUnique(m3uFileJson))
-      : m3uFileJson);
+      ? filterRegion(filterUnique(@/types/m3uFileJson))
+      : @/types/m3uFileJson);
 
     Logger.info('[createM3U]: Matching confirmed channels...');
 

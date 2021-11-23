@@ -1,6 +1,6 @@
 import Mongoose, { Schema } from 'mongoose';
 import { MongoCollection } from './mongo';
-import { ChannelModel, ProgrammeModel, BaseModel } from 'xmltv';
+import { ChannelModel, ProgrammeModel, BaseModel } from '@/types/xmltv';
 
 const XMLTVChannelSchema = new Schema(
   {
@@ -13,7 +13,7 @@ const XMLTVChannelSchema = new Schema(
   { collection: MongoCollection.XMLTVChannel }
 );
 
-export const XMLTVChannelModel = Mongoose.models['XMLTVChannelModel']
+export const XMLTVChannelModel: Mongoose.Model<ChannelModel> = Mongoose.models['XMLTVChannelModel']
   ? Mongoose.model('XMLTVChannelModel')
   : Mongoose.model<ChannelModel>('XMLTVChannelModel', XMLTVChannelSchema);
 
@@ -37,7 +37,7 @@ XMLTVProgrammeSchema.index(
   }
 );
 
-export const XMLTVProgrammeModel = Mongoose.models['XMLTVProgrammeModel']
+export const XMLTVProgrammeModel: Mongoose.Model<ProgrammeModel> = Mongoose.models['XMLTVProgrammeModel']
   ? Mongoose.model('XMLTVProgrammeModel')
   : Mongoose.model<ProgrammeModel>('XMLTVProgrammeModel', XMLTVProgrammeSchema);
 
@@ -57,6 +57,6 @@ const XMLTVSchema = new Schema(
   { collection: MongoCollection.XMLTV }
 );
 
-export const XMLTVModel = Mongoose.models['XMLTVModel']
+export const XMLTVModel: Mongoose.Model<BaseModel> = Mongoose.models['XMLTVModel']
   ? Mongoose.model('XMLTVModel')
   : Mongoose.model<BaseModel>('XMLTVModel', XMLTVSchema);

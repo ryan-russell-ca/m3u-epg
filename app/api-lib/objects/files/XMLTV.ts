@@ -12,7 +12,7 @@ import {
 } from '@/api-lib/db/xmltvSchema';
 import MongoConnector from '@/api-lib/db/mongo';
 import BaseFile from './BaseFile';
-import { Base, BaseDocument, ChannelModel, ProgrammeModel } from 'xmltv';
+import { Base, BaseDocument, ChannelModel, ProgrammeModel } from '@/types/xmltv';
 
 const XMLTV_EXPIRATION_MILLI =
   parseInt(process.env.XMLTV_EXPIRATION_SECONDS as string) * 1000;

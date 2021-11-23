@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 import XMLTV from './XMLTV';
-import { ChannelModel, ProgrammeModel } from 'xmltv';
 
 export const XML_PARSE_OPTIONS = {
   ignoreAttributes: false,

@@ -1,6 +1,6 @@
 import Mongoose, { Schema } from 'mongoose';
 import { MongoCollection } from './mongo';
-import { UserModel as UserModelType, TokenModel as TokenModelType } from 'user';
+import { UserModel as UserModelType, TokenModel as TokenModelType } from '@/types/user';
 
 const userSchema = new Schema(
   {
@@ -13,7 +13,7 @@ const userSchema = new Schema(
   { collection: MongoCollection.User }
 );
 
-export const UserModel = Mongoose.models['UserModel']
+export const UserModel: Mongoose.Model<UserModelType> = Mongoose.models['UserModel']
   ? Mongoose.model('UserModel')
   : Mongoose.model<UserModelType>('UserModel', userSchema);
 
@@ -26,6 +26,6 @@ const TokenSchema = new Schema(
   { collection: MongoCollection.Token }
 );
 
-export const TokenModel = Mongoose.models['TokenModel']
+export const TokenModel: Mongoose.Model<TokenModelType> = Mongoose.models['TokenModel']
   ? Mongoose.model('TokenModel')
   : Mongoose.model<TokenModelType>('TokenModel', TokenSchema);

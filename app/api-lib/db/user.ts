@@ -1,8 +1,9 @@
 import bcrypt from 'bcryptjs';
 import normalizeEmail from 'validator/lib/normalizeEmail';
 import { UserModel } from '@/api-lib/db/userSchema';
+import { UserModel as UserModelType } from '@/types/user';
 
-export const findUserWithEmailAndPassword = async (email, password) => {
+export const findUserWithEmailAndPassword = async (email: string, password: string) => {
   email = normalizeEmail(email);
   const user = await UserModel.findOne({ email });
   if (user && (await bcrypt.compare(password, user.password))) {
@@ -11,78 +12,27 @@ export const findUserWithEmailAndPassword = async (email, password) => {
   return null;
 };
 
-export const findUserForAuth = async (id) => {
+export const findUserForAuth = async (id: string) => {
   return UserModel.findOne({ id }, { projection: { password: 0 } }).then(
     (user) => user || null
   );
 };
 
-export const findUserById = async (id) => {
-  return UserModel.findOne({ id }, { projection: dbProjectionUsers() }).then(
-    (user) => user || null
-  );
-};
-
-export const findUserByUsername = async (username) => {
+export const findUserByUsername = async (username: string) => {
   return UserModel.findOne(
     { username },
     { projection: dbProjectionUsers() }
   ).then((user) => user || null);
 };
 
-export const findUserByEmail = async (email) => {
-  email = normalizeEmail(email);
-  return UserModel.findOne({ email }, { projection: dbProjectionUsers() }).then(
-    (user) => user || null
-  );
-};
-
-export const updateUserById = async (id, data) => {
-  return UserModel.findOneAndUpdate(
+export const updateUserById = async (id: string, data: Partial<UserModelType>) => {
+  const updatedUser = await UserModel.findOneAndUpdate(
     { id },
     { $set: data },
     { returnDocument: 'after', projection: { password: 0 } }
-  ).then(({ value }) => value);
-};
-
-export const insertUser = async ({
-  email,
-  originalPassword,
-  name,
-  profilePicture,
-}) => {
-  const user = {
-    emailVerified: false,
-    profilePicture,
-    email,
-    name,
-  };
-  const password = await bcrypt.hash(originalPassword, 10);
-  const inserted = await UserModel.insertMany({ ...user, password });
-
-  if (inserted) {
-    user.id = inserted.id;
-  }
-  return user;
-};
-
-export const updateUserPasswordByOldPassword = async (
-  id,
-  oldPassword,
-  newPassword
-) => {
-  const user = await UserModel.findOne({ id });
-  if (!user) return false;
-  const matched = await bcrypt.compare(oldPassword, user.password);
-  if (!matched) return false;
-  const password = await bcrypt.hash(newPassword, 10);
-  await UserModel.updateOne({ id }, { $set: { password } });
-  return true;
-};
-
-export const UNSAFE_updateUserPassword = async (id, newPassword) => {
-  const password = await bcrypt.hash(newPassword, 10);
-  await UserModel.updateOne({ id }, { $set: { password } });
+  );
+  
+  return updatedUser;
 };
 
 export function dbProjectionUsers(prefix = '') {

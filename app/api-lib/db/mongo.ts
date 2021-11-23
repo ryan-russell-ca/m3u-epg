@@ -7,12 +7,12 @@ const MONGO_DB_CONNECTION_STRING = process.env
 export enum MongoCollection {
   PlaylistChannel = 'playlistChannel',
   Playlist = 'playlist',
-  XMLTVCode = 'xmltvCode',
-  XMLTVCodes = 'xmltvCodes',
-  XMLTVChannel = 'xmltvChannel',
-  XMLTVProgramme = 'xmltvProgramme',
-  XMLTV = 'xmltv',
-  User = 'user',
+  XMLTVCode = '@/types/xmltvCode',
+  XMLTVCodes = '@/types/xmltvCodes',
+  XMLTVChannel = '@/types/xmltvChannel',
+  XMLTVProgramme = '@/types/xmltvProgramme',
+  XMLTV = '@/types/xmltv',
+  User = '@/types/user',
   Token = 'token',
 }
 

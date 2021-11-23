@@ -3,8 +3,8 @@ import fs from 'fs/promises';
 import https from 'https';
 import URL from 'url';
 import Logger from '@/api-lib/modules/Logger';
-import { xmlDate, xmlDateStrings } from 'xml';
-import { ChannelInfoModel } from 'm3u';
+import { xmlDate, xmlDateStrings } from '@/types/xml';
+import { ChannelInfoModel } from '@/types/m3u';
 
 interface Match<T> {
   groups?: T;
@@ -136,8 +136,8 @@ const M3U_INFO_REGEX =
 
 const M3U_TVGID_REGEX = /(?<tvgId>[A-Z0-9]{4,4}) TV/;
 
-export const parseJson = (m3uFileString: string) => {
-  const split = m3uFileString.split('\n');
+export const parseJson = (@/types/m3uFileString: string) => {
+  const split = @/types/m3uFileString.split('\n');
 
   const channels = split.reduce<ChannelInfoModel[]>((acc, line) => {
     if (acc.length > 0 && line[0] && line[0] !== '#') {

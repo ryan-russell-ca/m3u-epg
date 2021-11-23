@@ -1,4 +1,4 @@
-import Logger from "@/api-lib/modules/Logger";
+import Logger from '@/api-lib/modules/Logger';
 
 export const ncOpts = {
   onError(err, _req, res) {
