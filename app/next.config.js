@@ -71,6 +71,9 @@ module.exports = {
       'www.programme-tv.net',
       'cdn-std-1.sibasa.netdna-cdn.com',
       'bronx.news12.com',
+      'raw.githubusercontent.com',
+      'www.rev.bs',
+      'www.freepnglogos.com',
     ],
   },
   webpack: (config, { isServer }) => {

@@ -4,12 +4,10 @@ import { Request } from 'express';
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 
-passport.serializeUser((user: User.UserModel, done) => {
-  done(null, user);
-});
+passport.serializeUser<Express.User>((user, done) => done(null, user));
 
-passport.deserializeUser((_req: IncomingMessage, id: string, done) => {
-  findUserForAuth(id).then(
+passport.deserializeUser<Express.User, IncomingMessage>((_req, user, done) => {
+  findUserForAuth(user as string).then(
     (user) => done(null, user),
     (err) => done(err)
   );

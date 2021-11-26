@@ -2,6 +2,9 @@ import MongoStore from 'connect-mongo';
 import nextSession from 'next-session';
 import { promisifyStore } from 'next-session/lib/compat';
 import Mongo from '@/api-lib/db/mongo';
+import { NextApiRequest, NextApiResponse } from 'next';
+import { Middleware } from 'next-connect';
+import Logger from '@/api-lib/modules/Logger';
 
 const mongoStore = MongoStore.create({
   clientPromise: Mongo.database(),
@@ -20,12 +23,16 @@ const getSession = nextSession({
   touchAfter: 1 * 7 * 24 * 60 * 60, // 1 week
 });
 
-const session = async (req, res, next) => {
+const session: Middleware<NextApiRequest, NextApiResponse> = async (
+  req,
+  res,
+  next
+) => {
   try {
     await getSession(req, res);
     next();
   } catch (e) {
-    console.error(e);
+    Logger.err(e);
   }
 };
 

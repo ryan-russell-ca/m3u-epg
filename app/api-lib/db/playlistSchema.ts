@@ -1,17 +1,60 @@
-import { BaseModel, ChannelInfoModel } from '@/types/m3u';
+import {
+  BaseModel,
+  ChannelInfoModel,
+  ChannelGroupModel,
+  ChannelCountryModel,
+} from '@/types/m3u';
 import Mongoose, { Schema } from 'mongoose';
 import { MongoCollection } from './mongo';
 
 const COUNTRY_WHITELIST = JSON.parse(process.env.COUNTRY_WHITELIST as string);
 
+const PlaylistChannelGroupSchema = new Schema(
+  {
+    name: { type: String, required: true, unique: true },
+  },
+  { collection: MongoCollection.PlaylistChannelGroup }
+);
+
+export const PlaylistChannelGroupModel: Mongoose.Model<ChannelGroupModel> =
+  Mongoose.models['PlaylistChannelGroupModel']
+    ? Mongoose.model('PlaylistChannelGroupModel')
+    : Mongoose.model<ChannelGroupModel>(
+        'PlaylistChannelGroupModel',
+        PlaylistChannelGroupSchema
+      );
+
+const PlaylistChannelCountrySchema = new Schema(
+  {
+    name: { type: String, required: true },
+    shortName: {
+      type: String,
+      enum: COUNTRY_WHITELIST,
+      required: true,
+      unique: true,
+    },
+  },
+  { collection: MongoCollection.PlaylistChannelCountry }
+);
+
+export const PlaylistChannelCountryModel: Mongoose.Model<ChannelCountryModel> =
+  Mongoose.models['PlaylistChannelCountryModel']
+    ? Mongoose.model('PlaylistChannelCountryModel')
+    : Mongoose.model<ChannelCountryModel>(
+        'PlaylistChannelCountryModel',
+        PlaylistChannelCountrySchema
+      );
+
 const PlaylistChannelSchema = new Schema(
   {
-    group: { type: String, required: true },
+    group: {
+      type: [{ type: Schema.Types.ObjectId, ref: 'PlaylistChannelGroupModel' }],
+      required: true,
+    },
     name: { type: String, required: true },
     originalName: { type: String, required: true },
     country: {
-      type: String,
-      enum: COUNTRY_WHITELIST,
+      type: [{ type: Schema.Types.ObjectId, ref: 'PlaylistChannelCountryModel' }],
       required: true,
     },
     url: {
@@ -30,9 +73,13 @@ const PlaylistChannelSchema = new Schema(
   { collection: MongoCollection.PlaylistChannel }
 );
 
-export const PlaylistChannelModel: Mongoose.Model<ChannelInfoModel> = Mongoose.models['PlaylistChannelModel']
+export const PlaylistChannelModel: Mongoose.Model<ChannelInfoModel> = Mongoose
+  .models['PlaylistChannelModel']
   ? Mongoose.model('PlaylistChannelModel')
-  : Mongoose.model<ChannelInfoModel>('PlaylistChannelModel', PlaylistChannelSchema);
+  : Mongoose.model<ChannelInfoModel>(
+      'PlaylistChannelModel',
+      PlaylistChannelSchema
+    );
 
 const PlaylistSchema = new Schema(
   {
@@ -45,7 +92,9 @@ const PlaylistSchema = new Schema(
   { collection: MongoCollection.Playlist }
 );
 
-const PlaylistModel: Mongoose.Model<BaseModel> = Mongoose.models['PlaylistModel']
+const PlaylistModel: Mongoose.Model<BaseModel> = Mongoose.models[
+  'PlaylistModel'
+]
   ? Mongoose.model('PlaylistModel')
   : Mongoose.model<BaseModel>('PlaylistModel', PlaylistSchema);
 

@@ -1,15 +1,15 @@
 import { findUserByUsername } from '@/api-lib/db';
-import { database } from '@/api-lib/middlewares';
 import { User } from '@/page-components/User';
-import nc from 'next-connect';
+import { UserModel } from '@/types/user';
+import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 
-export default function UserPage({ user }) {
+const UserPage = ({ user }: { user: UserModel }) => {
   return (
     <>
       <Head>
         <title>
-          {user.name} (@{user.username})
+          {user.name}
         </title>
       </Head>
       <User user={user} />
@@ -17,17 +17,19 @@ export default function UserPage({ user }) {
   );
 }
 
-export async function getServerSideProps(context) {
-  await nc().use(database).run(context.req, context.res);
-
+export const getServerSideProps: GetServerSideProps = async (context) => {
   const user = await findUserByUsername(
-    context.params.username
+    context.params?.username as string
   );
+
   if (!user) {
     return {
       notFound: true,
     };
   }
+
   user._id = String(user._id);
   return { props: { user } };
 }
+
+export default UserPage;

@@ -3,9 +3,9 @@ import FuzzySet from 'fuzzyset.js';
 import Logger from '@/api-lib/modules/Logger';
 
 class Matcher {
-  private _names: CodeBaseSorted;
+  private _names: Record<string, CodeModel>;
   private _namesSet: FuzzySet;
-  private _ids: CodeBaseSorted;
+  private _ids: Record<string, CodeModel>;
   private _idsSet?: FuzzySet;
 
   constructor(codes: CodeModel[]) {
@@ -107,8 +107,8 @@ class Matcher {
 
   private createSets = (codes: CodeModel[]) => {
     return codes.reduce<{
-      id: CodeBaseSorted;
-      name: CodeBaseSorted;
+      id: Record<string, CodeModel>;
+      name: Record<string, CodeModel>;
     }>(
       (acc, code) => {
         if (!code.tvgId) {

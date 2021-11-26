@@ -8,7 +8,7 @@ import { CodeModel, CodeDocument } from '@/types/xmltv';
 class ChannelManager {
   private _loaded = false;
   private _xmlList = new XMLTVList();
-  private _@/types/m3uFile = new M3UFile();
+  private playlistFile = new M3UFile();
   private _iptvOrgCode = new IPTVOrgCode();
 
   public load = async (refresh = false): Promise<void> => {
@@ -20,9 +20,9 @@ class ChannelManager {
 
     const matcher = new Matcher(this._iptvOrgCode.codeList);
 
-    await this._@/types/m3uFile.load(matcher, refresh);
+    await this.playlistFile.load(matcher, refresh);
 
-    const tvgIds = this._@/types/m3uFile.tvgIds;
+    const tvgIds = this.playlistFile.tvgIds;
     const channelCodes = this._iptvOrgCode.getCodesByTvgIds(tvgIds);
 
     const xmlTvUrls = this.getXmlListUrls(channelCodes);
@@ -33,7 +33,7 @@ class ChannelManager {
   };
 
   public getM3U = () => {
-    return this._@/types/m3uFile.toString();
+    return this.playlistFile.toString();
   };
 
   public getXMLTV = () => {
@@ -41,17 +41,17 @@ class ChannelManager {
   };
 
   public getChannelJSON = (filters: ChannelInfoFilters) => {
-    return this._@/types/m3uFile.getChannelJSON(filters);
+    return this.playlistFile.getChannelJSON(filters);
   };
 
   public getUnmatchedChannels = () => {
-    return this._@/types/m3uFile
+    return this.playlistFile
       .getChannels()
       .filter((channel) => !channel.confirmed && !channel.tvgId);
   };
 
   public getMatch = async (filter: { name?: string; id?: string }) => {
-    return this._@/types/m3uFile.getSingleChannelMatch(filter);
+    return this.playlistFile.getSingleChannelMatch(filter);
   };
 
   public get isLoaded() {

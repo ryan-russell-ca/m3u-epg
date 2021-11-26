@@ -35,10 +35,6 @@ export type CodeBaseDocument = Document<
 > &
   CodeBaseModel;
 
-export interface CodeBaseSorted {
-  [key: string]: CodeModel;
-}
-
 export interface CodeMatch {
   score: number;
   match: string;

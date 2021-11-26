@@ -1,11 +1,10 @@
-$image-size: 75px;
+$image-size: 30px;
 
 .card {
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
   flex-wrap: nowrap;
-  background-color: #fff;
   border-radius: 10px;
   overflow: hidden;
   width: 100%;
@@ -13,7 +12,6 @@ $image-size: 75px;
   align-items: center;
   justify-content: flex-start;
   gap: 20px;
-  background-color: #fff;
 
   .card-header {
     position: relative;

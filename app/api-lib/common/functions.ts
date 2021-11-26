@@ -5,6 +5,7 @@ import URL from 'url';
 import Logger from '@/api-lib/modules/Logger';
 import { xmlDate, xmlDateStrings } from '@/types/xml';
 import { ChannelInfoModel } from '@/types/m3u';
+import readline from 'readline';
 
 interface Match<T> {
   groups?: T;
@@ -71,11 +72,11 @@ export const parseChannelName = (name: string) =>
   name.split(':').pop()?.replace(/ */, '').toLowerCase() || '';
 
 export const parseCountryFromChannelName = (name: string) => {
-  const countryMatches = name.match(/^ *?(?<country>.*){2,2} *?:.*$/g);
+  const countryMatches = name.match(/^ *?((?<country>.*)) *?:.*$/);
   const country = countryMatches?.groups?.country;
-
+  
   if (country) {
-    return country.trim().toLowerCase();
+    return country.toLowerCase();
   }
 
   return 'unpopulated';
@@ -134,10 +135,8 @@ export const filterProgrammeByDate = (programme: { '@_start': string }) => {
 const M3U_INFO_REGEX =
   /^#EXTINF:.?(?<extInf>\d) *group-title="(?<group>.*?)" *tvg-id="(?<tvgId>.*?)" *tvg-logo="(?<logo>.*?)" *,(?<name>.*)/;
 
-const M3U_TVGID_REGEX = /(?<tvgId>[A-Z0-9]{4,4}) TV/;
-
-export const parseJson = (@/types/m3uFileString: string) => {
-  const split = @/types/m3uFileString.split('\n');
+export const parseJson = (playlistFileStr: string) => {
+  const split = playlistFileStr.split('\n')
 
   const channels = split.reduce<ChannelInfoModel[]>((acc, line) => {
     if (acc.length > 0 && line[0] && line[0] !== '#') {
@@ -157,12 +156,8 @@ export const parseJson = (@/types/m3uFileString: string) => {
 
     const { group, tvgId, logo, name } = matches.groups;
 
-    const match = name.match(M3U_TVGID_REGEX) as Match<{
-      tvgId: string;
-    }> | null;
-
-    const parsedIds = parseIdFromChannelName(name);
-
+    const parsedId = parseIdFromChannelName(name);
+    
     acc.push({
       group: group || null,
       tvgId: tvgId || null,
@@ -171,7 +166,7 @@ export const parseJson = (@/types/m3uFileString: string) => {
       country: parseCountryFromChannelName(name),
       originalName: name || line,
       parsedName: parseChannelName(name),
-      parsedIds: parsedIds ? [parsedIds] : [],
+      parsedIds: parsedId ? [parsedId] : [],
       url: '',
       confirmed: false,
     });
@@ -223,4 +218,10 @@ export const filterUnique = (channels: ChannelInfoModel[]) => {
 
 export const filterRegion = (channels: ChannelInfoModel[]) => {
   return channels.filter((channel) => !channel.region);
+};
+
+export const counterLog = (message: string) => {
+  readline.moveCursor(process.stdout, 0, -1);
+  readline.clearLine(process.stdout, 1);
+  Logger.info(message);
 };

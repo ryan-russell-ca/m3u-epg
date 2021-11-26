@@ -4,8 +4,7 @@ import { UserModel } from '@/api-lib/db/userSchema';
 import { UserModel as UserModelType } from '@/types/user';
 
 export const findUserWithEmailAndPassword = async (email: string, password: string) => {
-  email = normalizeEmail(email);
-  const user = await UserModel.findOne({ email });
+  const user = await UserModel.findOne({ email: normalizeEmail(email) as string });
   if (user && (await bcrypt.compare(password, user.password))) {
     return { ...user, password: undefined }; // filtered out password
   }
@@ -19,10 +18,12 @@ export const findUserForAuth = async (id: string) => {
 };
 
 export const findUserByUsername = async (username: string) => {
-  return UserModel.findOne(
+  const user = await UserModel.findOne(
     { username },
     { projection: dbProjectionUsers() }
-  ).then((user) => user || null);
+  );
+
+  return user || null;
 };
 
 export const updateUserById = async (id: string, data: Partial<UserModelType>) => {

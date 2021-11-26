@@ -50,12 +50,35 @@ export interface ChannelInfoMapping {
   [url: string]: ChannelInfoModel;
 }
 
+export interface ChannelGroupModel {
+  name: string;
+}
+
+export interface ChannelCountryModel {
+  name: string;
+  shortName: string;
+}
+
 export interface NameChannelInfo {
   region?: string;
   nameCode?: string;
   name?: string;
   definition?: string;
 }
+
+export type ChannelGroupDocument = Document<
+  ObjectId,
+  Record<string, unknown>,
+  ChannelGroupModel
+> &
+  ChannelGroupModel;
+
+export type ChannelCountryDocument = Document<
+  ObjectId,
+  Record<string, unknown>,
+  ChannelCountryModel
+> &
+  ChannelCountryModel;
 
 export type ChannelInfoDocument = Document<
   ObjectId,

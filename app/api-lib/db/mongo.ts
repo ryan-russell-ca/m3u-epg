@@ -5,14 +5,16 @@ const MONGO_DB_CONNECTION_STRING = process.env
   .MONGO_DB_CONNECTION_STRING as string;
 
 export enum MongoCollection {
+  PlaylistChannelCountry = 'playlistChannelCountry',
+  PlaylistChannelGroup = 'playlistChannelGroup',
   PlaylistChannel = 'playlistChannel',
   Playlist = 'playlist',
-  XMLTVCode = '@/types/xmltvCode',
-  XMLTVCodes = '@/types/xmltvCodes',
-  XMLTVChannel = '@/types/xmltvChannel',
-  XMLTVProgramme = '@/types/xmltvProgramme',
-  XMLTV = '@/types/xmltv',
-  User = '@/types/user',
+  XMLTVCode = 'xmltvCode',
+  XMLTVCodes = 'xmltvCodes',
+  XMLTVChannel = 'xmltvChannel',
+  XMLTVProgramme = 'xmltvProgramme',
+  XMLTV = 'xmltv',
+  User = 'user',
   Token = 'token',
 }
 
