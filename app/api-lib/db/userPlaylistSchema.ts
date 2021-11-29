@@ -1,38 +1,28 @@
-import { ChannelGroupDocument } from '@/types/m3u';
 import { UserPlaylistModel as UserPlaylistModelType } from '@/types/user';
 import Mongoose, { Schema } from 'mongoose';
-import { MongoCollectionNames, MongoCollectionModelNames } from './mongo';
+import { MongoCollection } from './mongo';
+import { PlaylistChannelModel } from './playlistSchema';
+import { UserModel } from './userSchema';
 
 const UserPlaylistSchema = new Schema(
   {
     date: { type: Date, default: () => Date.now() },
     user: {
-      type: Schema.Types.ObjectId,
-      ref: MongoCollectionModelNames.UserModel,
+      type: { type: Schema.Types.ObjectId, ref: UserModel },
       required: true,
     },
-    channels: [
-      {
-        details: {
-          type: Schema.Types.ObjectId,
-          ref: MongoCollectionModelNames.PlaylistChannelModel,
-          required: true,
-          unique: true,
-        },
-        order: Number,
-      },
-    ],
+    channels: {
+      type: [{ type: Schema.Types.ObjectId, ref: PlaylistChannelModel }],
+      required: true,
+      unique: true,
+    },
   },
-  { collection: MongoCollectionNames.UserPlaylist }
+  { collection: MongoCollection.UserPlaylist }
 );
 
-export const UserPlaylistModel: Mongoose.Model<
-  UserPlaylistModelType<ChannelGroupDocument>
-> = Mongoose.models[MongoCollectionModelNames.UserPlaylistModel]
-  ? Mongoose.model(MongoCollectionModelNames.UserPlaylistModel)
-  : Mongoose.model<UserPlaylistModelType<ChannelGroupDocument>>(
-      MongoCollectionModelNames.UserPlaylistModel,
-      UserPlaylistSchema
-    );
+export const UserPlaylistModel: Mongoose.Model<UserPlaylistModelType> = Mongoose
+  .models['UserPlaylistModel']
+  ? Mongoose.model('UserPlaylistModel')
+  : Mongoose.model<UserPlaylistModelType>('UserPlaylistModel', UserPlaylistSchema);
 
 export default UserPlaylistModel;
