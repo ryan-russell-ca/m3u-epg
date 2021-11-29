@@ -1,5 +1,6 @@
-import { XMLParser, XMLBuilder, XMLValidator } from 'fast-xml-parser';
+import { XMLParser, XMLValidator } from 'fast-xml-parser';
 import {
+  document2Xml,
   filterProgrammeByDate,
   getFromUrl,
   getJson,
@@ -141,12 +142,7 @@ class XMLTV extends BaseFile<BaseDocument> {
     }));
 
     if (asXml) {
-      const channelBuilder = new XMLBuilder({
-        ...this._parseOptions,
-        arrayNodeName: 'channel',
-      });
-
-      return channelBuilder.build(channel);
+      return document2Xml(channel, 'channel', this._parseOptions);
     }
 
     return channel;
@@ -158,31 +154,29 @@ class XMLTV extends BaseFile<BaseDocument> {
     }
 
     const programme = this._model.xmlTv.programme.map((p) => {
-      const category = p.category.toJSON();
+      const pp = p.toJSON();
       
       return {
-        '@_start': p['@_start'],
-        '@_stop': p['@_stop'],
-        '@_channel': p['@_channel'],
-        category,
+        '@_start': pp['@_start'],
+        '@_stop': pp['@_stop'],
+        '@_channel': pp['@_channel'],
+        category: {
+          '#text': pp.category?.['#text'] || '',
+          '@_lang': pp.category?.['@_lang'] || '',
+        },
         desc: {
-          '#text': p.desc['#text'],
-          '@_lang': p.desc['@_lang'],
+          '#text': pp.desc?.['#text'] || '',
+          '@_lang': pp.desc?.['@_lang'] || '',
         },
         title: {
-          '#text': p.title['#text'],
-          '@_lang': p.title['@_lang'],
+          '#text': pp.title?.['#text'] || '',
+          '@_lang': pp.title?.['@_lang'] || '',
         },
       };
     });
 
     if (asXml) {
-      const programmeBuilder = new XMLBuilder({
-        ...this._parseOptions,
-        arrayNodeName: 'programme',
-      });
-
-      return programmeBuilder.build(programme);
+      return document2Xml(programme, 'programme', this._parseOptions);
     }
 
     return programme;
@@ -291,6 +285,7 @@ class XMLTV extends BaseFile<BaseDocument> {
     programmes: ProgrammeModel[],
     filterIds: string[]
   ) => {
+    console.log(channels);
     return {
       channel: channels.filter((channel) =>
         filterIds.includes(channel['@_id'])
@@ -399,7 +394,7 @@ class XMLTV extends BaseFile<BaseDocument> {
   private createXmlTv = async (
     url: string,
     filterIds?: string[]
-  ): Promise<BaseDocument> => {
+  ): Promise<BaseDocument | undefined> => {
     Logger.info('[XMLTV.createXmlTv]: Creating...');
 
     const xml = await this.getJson(url);
@@ -410,9 +405,13 @@ class XMLTV extends BaseFile<BaseDocument> {
     if (validation === true) {
       const json = xmlParser.parse(xml).tv;
 
+      if (!json.channel) {
+        return;
+      }
+
       const { channel, programme } = filterIds
         ? this.filterModelIds(
-            json.channel || [],
+            Array.isArray(json.channel) ? json.channel : [json.channel],
             json.programme || [],
             filterIds
           )
@@ -450,7 +449,8 @@ class XMLTV extends BaseFile<BaseDocument> {
       }
 
       this._valid = false;
-      return null;
+
+      return;
     }
 
     throw validation;

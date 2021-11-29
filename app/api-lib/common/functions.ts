@@ -6,6 +6,8 @@ import Logger from '@/api-lib/modules/Logger';
 import { xmlDate, xmlDateStrings } from '@/types/xml';
 import { ChannelInfoModel } from '@/types/m3u';
 import readline from 'readline';
+import { XMLBuilder, XmlBuilderOptions } from 'fast-xml-parser';
+import { Document } from 'mongoose';
 
 interface Match<T> {
   groups?: T;
@@ -224,4 +226,17 @@ export const counterLog = (message: string) => {
   readline.moveCursor(process.stdout, 0, -1);
   readline.clearLine(process.stdout, 1);
   Logger.info(message);
+};
+
+export const document2Xml = (
+  documents: Record<string, unknown>[],
+  tagName: string,
+  parseOptions: Partial<XmlBuilderOptions>
+) => {
+  const channelBuilder = new XMLBuilder({
+    ...parseOptions,
+    arrayNodeName: tagName,
+  });
+
+  return channelBuilder.build(documents);
 };

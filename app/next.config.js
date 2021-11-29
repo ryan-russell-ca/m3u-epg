@@ -74,6 +74,7 @@ module.exports = {
       'raw.githubusercontent.com',
       'www.rev.bs',
       'www.freepnglogos.com',
+      'images.now-tv.com',
     ],
   },
   webpack: (config, { isServer }) => {

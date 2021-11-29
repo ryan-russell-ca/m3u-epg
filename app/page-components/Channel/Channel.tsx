@@ -9,6 +9,8 @@ import { ChannelInfoModel } from '@/types/m3u';
 import { useChannels } from '@/lib/user';
 import { GetChannelsPayload } from '@/types/api';
 import withLoader from '@/components/HOC/Loading';
+import { Input } from '@/components/Input';
+import { fetcher } from '@/lib/fetch';
 
 const setParams = (uri: string, page: number, size: number, search: string) => {
   const url = new URL('https://localhost' + uri);
@@ -32,8 +34,14 @@ const getParams = (url: string) => {
 
 const Channel = ({
   data: { channels, totalItems, page, size, search },
+  isLoading,
+  onLoadingStart,
+onLoadingComplete,
 }: {
   data: GetChannelsPayload;
+  isLoading: boolean;
+  onLoadingStart: () => void;
+  onLoadingComplete: () => void;
 }) => {
   const { data, mutate } = useChannels();
   const router = useRouter();
@@ -58,7 +66,23 @@ const Channel = ({
   const toggleChannel = useCallback(
     async (channel: ChannelInfoModel) => {
       try {
-        toast.success(`You have added channel ${channel.name}`);
+        try {
+          onLoadingStart();
+          await fetcher('/api/user/playlist', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              channels: [channel],
+            }),
+          });
+          mutate({ channels: [...channels, channel] }, false);
+          toast.success(`You have added channel ${channel.name}`);
+        } catch (e) {
+          toast.error(`${channel.name} could not be added`);
+        } finally {
+          onLoadingComplete();
+        }
+
         await mutate(
           {
             channels: [...userChannels, channel],
@@ -90,12 +114,18 @@ const Channel = ({
         previousLinkClassName={styles['container-pagination-link']}
       />
 
+      <Input
+        label="Filter Channels"
+        htmlType="input"
+        ariaLabel="Filter Channels"
+      />
+
       <div className={styles['container']}>
         {channels.map((channel, i) => (
           <div
             key={`tvgId-${i}`}
             className={clsx(styles['container-item'], {
-              [styles['selected']]: isSelected(channel),
+              [styles['container-item-selected']]: isSelected(channel),
             })}
           >
             <ChannelCard toggleChannel={toggleChannel} channel={channel} />

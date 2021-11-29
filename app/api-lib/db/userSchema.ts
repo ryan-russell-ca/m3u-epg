@@ -19,7 +19,7 @@ export const UserModel: Mongoose.Model<UserModelType> = Mongoose.models['UserMod
 
 const TokenSchema = new Schema(
   {
-    creatorId: { type: Schema.Types.ObjectId, ref: 'UserModel' },
+    creatorId: { type: Schema.Types.ObjectId, ref: UserModel },
     type: { type: String, required: true },
     expireAt: { type: Date, required: true },
   },

@@ -8,6 +8,7 @@ export enum MongoCollection {
   PlaylistChannelCountry = 'playlistChannelCountry',
   PlaylistChannelGroup = 'playlistChannelGroup',
   PlaylistChannel = 'playlistChannel',
+  UserPlaylist = 'userPlaylist',
   Playlist = 'playlist',
   XMLTVCode = 'xmltvCode',
   XMLTVCodes = 'xmltvCodes',

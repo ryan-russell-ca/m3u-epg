@@ -6,7 +6,7 @@ export function useCurrentUser() {
 }
 
 export function useChannels() {
-  return useSWR('/api/user/channel', fetcher);
+  return useSWR('/api/user/playlist', fetcher);
 }
 
 export function useUser(id: string) {

@@ -23,7 +23,7 @@ const XMLTVCodesSchema = new Schema(
   {
     date: { type: Date, default: () => Date.now() },
     codes: {
-      type: [{ type: Schema.Types.ObjectId, ref: 'XMLTVCodeModel' }],
+      type: [{ type: Schema.Types.ObjectId, ref: XMLTVCodeModel }],
     },
   },
   { collection: MongoCollection.XMLTVCodes }

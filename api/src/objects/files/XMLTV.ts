@@ -218,7 +218,7 @@ class XMLTV extends BaseFile<BaseDocument> {
     channels: ChannelModel[],
     programmes: ProgrammeModel[],
     filterIds: string[]
-  ) => {
+  ) => {    
     return {
       channel: channels.filter((channel) =>
         filterIds.includes(channel['@_id'])

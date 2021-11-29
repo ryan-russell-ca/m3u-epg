@@ -48,13 +48,13 @@ export const PlaylistChannelCountryModel: Mongoose.Model<ChannelCountryModel> =
 const PlaylistChannelSchema = new Schema(
   {
     group: {
-      type: [{ type: Schema.Types.ObjectId, ref: 'PlaylistChannelGroupModel' }],
+      type: [{ type: Schema.Types.ObjectId, ref: PlaylistChannelGroupModel }],
       required: true,
     },
     name: { type: String, required: true },
     originalName: { type: String, required: true },
     country: {
-      type: [{ type: Schema.Types.ObjectId, ref: 'PlaylistChannelCountryModel' }],
+      type: [{ type: Schema.Types.ObjectId, ref: PlaylistChannelCountryModel }],
       required: true,
     },
     url: {
@@ -85,7 +85,7 @@ const PlaylistSchema = new Schema(
   {
     date: { type: Date, default: () => Date.now() },
     channels: {
-      type: [{ type: Schema.Types.ObjectId, ref: 'PlaylistChannelModel' }],
+      type: [{ type: Schema.Types.ObjectId, ref: PlaylistChannelModel }],
       required: true,
     },
   },

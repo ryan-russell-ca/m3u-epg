@@ -1,4 +1,5 @@
 import { Document, ObjectId } from 'mongoose';
+import { ChannelInfoModel } from '../m3u';
 
 export interface UserModel {
   id: string;
@@ -7,6 +8,12 @@ export interface UserModel {
   email: string;
   name: string;
   password: string;
+}
+
+export interface UserPlaylistModel {
+  date: Date;
+  user: UserModel;
+  channels: ChannelInfoModel[];
 }
 
 export interface TokenModel {
@@ -22,6 +29,13 @@ export type UserDocument = Document<
   UserModel
 > &
   UserModel;
+
+  export type UserPlaylistDocument = Document<
+    ObjectId,
+    Record<string, unknown>,
+    UserPlaylistModel
+  > &
+    UserPlaylistModel;
 
 export type TokenDocument = Document<
   ObjectId,

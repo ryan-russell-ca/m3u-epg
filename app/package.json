@@ -34,6 +34,8 @@
     "react-dom": "17.0.2",
     "react-hot-toast": "^2.1.1",
     "react-paginate": "^8.0.1",
+    "react-sortable-hoc": "^2.0.0",
+    "react-virtualized": "^9.22.3",
     "slug": "^5.1.0",
     "string-similarity": "^4.0.4",
     "swr": "^1.0.1",
