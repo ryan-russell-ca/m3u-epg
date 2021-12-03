@@ -1,4 +1,4 @@
-import MongoConnector, { MongoCollection } from '@/shared/database/Mongo';
+import MongoConnector, { MongoCollectionNames } from '@/shared/database/Mongo';
 import XMLTVList from '@/objects/files/XMLTVList';
 import { FILTER_IDS, VALID_EPG_TEXT } from 'spec/fixtures/validEPGText';
 
@@ -8,8 +8,8 @@ describe('XMLTVList Tests', () => {
   beforeAll(async () => {
     // Reset DB collections
     await MongoConnector.emptyCollections([
-      MongoCollection.XMLTvCode,
-      MongoCollection.XMLTvCodes,
+      MongoCollectionNames.XMLTvCode,
+      MongoCollectionNames.XMLTvCodes,
     ]);
 
     xmlTvList = new XMLTVList();

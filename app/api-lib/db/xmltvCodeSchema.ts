@@ -1,6 +1,6 @@
 import { CodeModel, CodeBaseModel } from '@/types/xmltv';
 import Mongoose, { Schema } from 'mongoose';
-import { MongoCollection } from './mongo';
+import { MongoCollectionNames, MongoCollectionModelNames } from './mongo';
 
 const XMLTVCodeSchema = new Schema(
   {
@@ -10,29 +10,34 @@ const XMLTVCodeSchema = new Schema(
     country: String,
     guides: [String],
   },
-  { collection: MongoCollection.XMLTVCode }
+  { collection: MongoCollectionNames.XMLTVCode }
 );
 
 export const XMLTVCodeModel: Mongoose.Model<CodeModel> = Mongoose.models[
-  'XMLTVCodeModel'
+  MongoCollectionModelNames.XMLTVCodeModel
 ]
-  ? Mongoose.model('XMLTVCodeModel')
-  : Mongoose.model<CodeModel>('XMLTVCodeModel', XMLTVCodeSchema);
+  ? Mongoose.model(MongoCollectionModelNames.XMLTVCodeModel)
+  : Mongoose.model<CodeModel>(MongoCollectionModelNames.XMLTVCodeModel, XMLTVCodeSchema);
 
 const XMLTVCodesSchema = new Schema(
   {
     date: { type: Date, default: () => Date.now() },
     codes: {
-      type: [{ type: Schema.Types.ObjectId, ref: XMLTVCodeModel }],
+      type: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: MongoCollectionModelNames.XMLTVCodeModel,
+        },
+      ],
     },
   },
-  { collection: MongoCollection.XMLTVCodes }
+  { collection: MongoCollectionNames.XMLTVCodes }
 );
 
 export const XMLTVCodesModel: Mongoose.Model<CodeBaseModel> = Mongoose.models[
-  'XMLTVCCodesModel'
+  MongoCollectionModelNames.XMLTVCCodesModel
 ]
-  ? Mongoose.model('XMLTVCCodesModel')
-  : Mongoose.model<CodeBaseModel>('XMLTVCCodesModel', XMLTVCodesSchema);
+  ? Mongoose.model(MongoCollectionModelNames.XMLTVCCodesModel)
+  : Mongoose.model<CodeBaseModel>(MongoCollectionModelNames.XMLTVCCodesModel, XMLTVCodesSchema);
 
 export default XMLTVCodesModel;

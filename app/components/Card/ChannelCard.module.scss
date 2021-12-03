@@ -1,4 +1,4 @@
-$image-size: 30px;
+@import './../../assets/variables.scss';
 
 .card {
   display: flex;
@@ -15,8 +15,8 @@ $image-size: 30px;
 
   .card-header {
     position: relative;
-    flex: 0 0 $image-size;
-    height: $image-size;
+    flex: 0 0 $channel-card-height;
+    height: $channel-card-height;
   }
 
   .card-body {

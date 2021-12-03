@@ -1,4 +1,4 @@
-import MongoConnector, { MongoCollection } from '@/shared/database/Mongo';
+import MongoConnector, { MongoCollectionNames } from '@/shared/database/Mongo';
 import IPTVOrgCode from '@/objects/files/IPTVOrgCode';
 import * as SharedFunctions from '@shared/functions';
 
@@ -17,8 +17,8 @@ describe('IPTVOrgCode Tests', () => {
   beforeAll(async () => {
     // Reset DB collections
     await MongoConnector.emptyCollections([
-      MongoCollection.XMLTvCode,
-      MongoCollection.XMLTvCodes,
+      MongoCollectionNames.XMLTvCode,
+      MongoCollectionNames.XMLTvCodes,
     ]);
 
     jasmine.clock().install();

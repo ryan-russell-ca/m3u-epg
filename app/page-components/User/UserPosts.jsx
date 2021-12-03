@@ -1,6 +1,5 @@
 import { Button } from '@/components/Button';
 import { Container, Spacer } from '@/components/Layout';
-import Wrapper from '@/components/Layout/Wrapper';
 import { Post } from '@/components/Post';
 import { Text } from '@/components/Text';
 import { usePostPages } from '@/lib/post';
@@ -18,7 +17,7 @@ const UserPosts = ({ user }) => {
   return (
     <div className={styles.root}>
       <Spacer axis="vertical" size={1} />
-      <Wrapper>
+      <>
         {posts.map((post) => (
           <Link
             key={post._id}
@@ -43,7 +42,7 @@ const UserPosts = ({ user }) => {
             </Button>
           )}
         </Container>
-      </Wrapper>
+      </>
     </div>
   );
 };

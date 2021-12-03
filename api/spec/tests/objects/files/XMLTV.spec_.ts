@@ -1,5 +1,5 @@
 import xmlParser from 'fast-xml-parser';
-import MongoConnector, { MongoCollection } from '@/shared/database/Mongo';
+import MongoConnector, { MongoCollectionNames } from '@/shared/database/Mongo';
 import XMLTV from '@/objects/files/XMLTV';
 import { XML_PARSE_OPTIONS } from '@/objects/files/XMLTVList';
 import * as SharedFunctions from '@shared/functions';
@@ -29,9 +29,9 @@ describe('XMLTV Tests', () => {
   beforeAll(async () => {
     // Reset DB collections
     await MongoConnector.emptyCollections([
-      MongoCollection.XMLTv,
-      MongoCollection.XMLTvChannel,
-      MongoCollection.XMLTvProgramme,
+      MongoCollectionNames.XMLTv,
+      MongoCollectionNames.XMLTvChannel,
+      MongoCollectionNames.XMLTvProgramme,
     ]);
 
     jasmine.clock().install();

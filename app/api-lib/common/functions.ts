@@ -4,10 +4,10 @@ import https from 'https';
 import URL from 'url';
 import Logger from '@/api-lib/modules/Logger';
 import { xmlDate, xmlDateStrings } from '@/types/xml';
-import { ChannelInfoModel } from '@/types/m3u';
+import { ChannelInfoModel, ChannelOrderModel } from '@/types/m3u';
 import readline from 'readline';
 import { XMLBuilder, XmlBuilderOptions } from 'fast-xml-parser';
-import { Document } from 'mongoose';
+import { ChannelDocument, ProgrammeDocument } from '@/types/xmltv';
 
 interface Match<T> {
   groups?: T;
@@ -76,7 +76,7 @@ export const parseChannelName = (name: string) =>
 export const parseCountryFromChannelName = (name: string) => {
   const countryMatches = name.match(/^ *?((?<country>.*)) *?:.*$/);
   const country = countryMatches?.groups?.country;
-  
+
   if (country) {
     return country.toLowerCase();
   }
@@ -138,7 +138,7 @@ const M3U_INFO_REGEX =
   /^#EXTINF:.?(?<extInf>\d) *group-title="(?<group>.*?)" *tvg-id="(?<tvgId>.*?)" *tvg-logo="(?<logo>.*?)" *,(?<name>.*)/;
 
 export const parseJson = (playlistFileStr: string) => {
-  const split = playlistFileStr.split('\n')
+  const split = playlistFileStr.split('\n');
 
   const channels = split.reduce<ChannelInfoModel[]>((acc, line) => {
     if (acc.length > 0 && line[0] && line[0] !== '#') {
@@ -159,7 +159,7 @@ export const parseJson = (playlistFileStr: string) => {
     const { group, tvgId, logo, name } = matches.groups;
 
     const parsedId = parseIdFromChannelName(name);
-    
+
     acc.push({
       group: group || null,
       tvgId: tvgId || null,
@@ -239,4 +239,45 @@ export const document2Xml = (
   });
 
   return channelBuilder.build(documents);
+};
+
+export const orderMap = ({ details }: ChannelOrderModel, i: number) => ({
+  details,
+  order: i + 1,
+});
+
+const escapeAmp = (str: string) => {
+  return str.replace(/ & /g, '&amp;');
+};
+
+export const mapProgramme = (programme: ProgrammeDocument) => {
+  const pp = programme.toJSON();
+
+  return {
+    '@_start': pp['@_start'],
+    '@_stop': pp['@_stop'],
+    '@_channel': pp['@_channel'],
+    category: {
+      '#text': escapeAmp(pp.category?.['#text'] || ''),
+      '@_lang': pp.category?.['@_lang'] || '',
+    },
+    desc: {
+      '#text': escapeAmp(pp.desc?.['#text'] || ''),
+      '@_lang': pp.desc?.['@_lang'] || '',
+    },
+    title: {
+      '#text': escapeAmp(pp.title?.['#text'] || ''),
+      '@_lang': pp.title?.['@_lang'] || '',
+    },
+  };
+};
+
+export const mapChannel = (channel: ChannelDocument) => {
+  return {
+    '@_id': channel['@_id'],
+    'display-name': channel['display-name'],
+    icon: {
+      '@_src': channel.icon['@_src'],
+    },
+  };
 };

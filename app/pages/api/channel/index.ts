@@ -5,9 +5,9 @@ const routes = async (req: NextApiRequest, res: NextApiResponse) => {
   const page = parseInt(req.query.page as string) || 0;
   const size = parseInt(req.query.size as string) || 100;
   const search = req.query.search as string;
-
+  
   const channels = await PlaylistChannelModel.find(
-    search ? { name: new RegExp(search) } : {},
+    search ? { name: new RegExp(search, 'gi') } : {},
     {},
     { limit: size, skip: page * size }
   );

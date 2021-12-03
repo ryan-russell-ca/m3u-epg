@@ -1,28 +1,36 @@
 import { UserPlaylistModel as UserPlaylistModelType } from '@/types/user';
 import Mongoose, { Schema } from 'mongoose';
-import { MongoCollection } from './mongo';
-import { PlaylistChannelModel } from './playlistSchema';
-import { UserModel } from './userSchema';
+import { MongoCollectionNames, MongoCollectionModelNames } from './mongo';
 
 const UserPlaylistSchema = new Schema(
   {
     date: { type: Date, default: () => Date.now() },
     user: {
-      type: { type: Schema.Types.ObjectId, ref: UserModel },
+      type: Schema.Types.ObjectId,
+      ref: MongoCollectionModelNames.UserModel,
       required: true,
     },
-    channels: {
-      type: [{ type: Schema.Types.ObjectId, ref: PlaylistChannelModel }],
-      required: true,
-      unique: true,
-    },
+    channels: [
+      {
+        details: {
+          type: Schema.Types.ObjectId,
+          ref: MongoCollectionModelNames.PlaylistChannelModel,
+          required: true,
+          unique: true,
+        },
+        order: Number,
+      },
+    ],
   },
-  { collection: MongoCollection.UserPlaylist }
+  { collection: MongoCollectionNames.UserPlaylist }
 );
 
 export const UserPlaylistModel: Mongoose.Model<UserPlaylistModelType> = Mongoose
-  .models['UserPlaylistModel']
-  ? Mongoose.model('UserPlaylistModel')
-  : Mongoose.model<UserPlaylistModelType>('UserPlaylistModel', UserPlaylistSchema);
+  .models[MongoCollectionModelNames.UserPlaylistModel]
+  ? Mongoose.model(MongoCollectionModelNames.UserPlaylistModel)
+  : Mongoose.model<UserPlaylistModelType>(
+      MongoCollectionModelNames.UserPlaylistModel,
+      UserPlaylistSchema
+    );
 
 export default UserPlaylistModel;

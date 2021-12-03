@@ -46,6 +46,11 @@ export interface ChannelInfoModel extends NameChannelInfo {
   confidence?: number;
 }
 
+export interface ChannelOrderModel {
+  details: ChannelInfoModel;
+  order?: number;
+}
+
 export interface ChannelInfoMapping {
   [url: string]: ChannelInfoModel;
 }

@@ -3,7 +3,6 @@ import { forwardRef, ForwardRefRenderFunction } from 'react';
 import styles from './Input.module.scss';
 
 type InputType = {
-  label: string;
   htmlType: string;
   autoComplete?: string;
   ariaLabel: string;
@@ -11,11 +10,12 @@ type InputType = {
   className?: string;
   size?: string;
   required?: boolean;
+  defaultValue?: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
 const InputRenderer: ForwardRefRenderFunction<HTMLInputElement, InputType> = (
   {
-    label,
     placeholder,
     className,
     htmlType,
@@ -23,23 +23,24 @@ const InputRenderer: ForwardRefRenderFunction<HTMLInputElement, InputType> = (
     size,
     ariaLabel,
     required,
+    defaultValue,
+    onChange,
   },
   ref
 ) => {
   return (
-    <div className={clsx(styles.root, className)}>
-      <label>
-        {label && <div className={styles.label}>{label}</div>}
-        <input
-          type={htmlType}
-          autoComplete={autoComplete}
-          placeholder={placeholder}
-          ref={ref}
-          className={clsx(styles.input, size && styles[size])}
-          aria-label={ariaLabel}
-          required={required}
-        />
-      </label>
+    <div className={clsx(styles['input-container'], className)}>
+      <input
+        type={htmlType}
+        autoComplete={autoComplete}
+        placeholder={placeholder}
+        ref={ref}
+        className={clsx(styles.input, size && styles[size])}
+        aria-label={ariaLabel}
+        required={required}
+        onChange={onChange}
+        defaultValue={defaultValue}
+      />
     </div>
   );
 };

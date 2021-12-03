@@ -7,10 +7,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import Container from './Container';
-import styles from './Nav.module.css';
+import div from './div';
+import styles from './Nav.module.scss';
 import Spacer from './Spacer';
-import Wrapper from './Wrapper';
 
 const UserMenu = ({ user, mutate }) => {
   const menuRef = useRef();
@@ -67,7 +66,7 @@ const UserMenu = ({ user, mutate }) => {
         ref={menuRef}
         role="menu"
         aria-hidden={visible}
-        className={styles.popover}
+        className={styles['container-nav-popover']}
       >
         {visible && (
           <div className={styles.menu}>
@@ -78,11 +77,11 @@ const UserMenu = ({ user, mutate }) => {
               <a className={styles.item}>Settngs</a>
             </Link>
             <div className={styles.item} style={{ cursor: 'auto' }}>
-              <Container alignItems="center">
+              <div alignItems="center">
                 <span>Theme</span>
                 <Spacer size={0.5} axis="horizontal" />
                 <ThemeSwitcher />
-              </Container>
+              </div>
             </div>
             <button onClick={onSignOut} className={styles.item}>
               Sign out
@@ -98,44 +97,38 @@ const Nav = () => {
   const { data: { user } = {}, mutate } = useCurrentUser();
 
   return (
-    <nav className={styles.nav}>
-      <Wrapper className={styles.wrapper}>
-        <Container
-          className={styles.content}
-          alignItems="center"
-          justifyContent="space-between"
-        >
-          <Link href="/">
-            <a className={styles.logo}>IPTV</a>
-          </Link>
-          <Container>
-            {user ? (
-              <>
-                <UserMenu user={user} mutate={mutate} />
-              </>
-            ) : (
-              <>
-                <Link passHref href="/login">
-                  <ButtonLink
-                    size="small"
-                    type="success"
-                    variant="ghost"
-                    color="link"
-                  >
-                    Log in
-                  </ButtonLink>
-                </Link>
-                <Spacer axis="horizontal" size={0.25} />
-                <Link passHref href="/sign-up">
-                  <Button size="small" type="success">
-                    Sign Up
-                  </Button>
-                </Link>
-              </>
-            )}
-          </Container>
-        </Container>
-      </Wrapper>
+    <nav className={styles['container-nav']}>
+      <div className={styles['container-nav-content']}>
+        <Link href="/">
+          <a className={styles.logo}>IPTV</a>
+        </Link>
+        <div>
+          {user ? (
+            <>
+              <UserMenu user={user} mutate={mutate} />
+            </>
+          ) : (
+            <>
+              <Link passHref href="/login">
+                <ButtonLink
+                  size="small"
+                  type="success"
+                  variant="ghost"
+                  color="link"
+                >
+                  Log in
+                </ButtonLink>
+              </Link>
+              <Spacer axis="horizontal" size={0.25} />
+              <Link passHref href="/sign-up">
+                <Button size="small" type="success">
+                  Sign Up
+                </Button>
+              </Link>
+            </>
+          )}
+        </div>
+      </div>
     </nav>
   );
 };

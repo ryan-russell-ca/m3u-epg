@@ -4,7 +4,7 @@ import Mongoose from 'mongoose';
 const MONGO_DB_CONNECTION_STRING = process.env
   .MONGO_DB_CONNECTION_STRING as string;
 
-export enum MongoCollection {
+export enum MongoCollectionNames {
   PlaylistChannelCountry = 'playlistChannelCountry',
   PlaylistChannelGroup = 'playlistChannelGroup',
   PlaylistChannel = 'playlistChannel',
@@ -17,6 +17,21 @@ export enum MongoCollection {
   XMLTV = 'xmltv',
   User = 'user',
   Token = 'token',
+}
+
+export enum MongoCollectionModelNames {
+  PlaylistChannelGroupModel = 'PlaylistChannelGroupModel',
+  PlaylistChannelCountryModel = 'PlaylistChannelCountryModel',
+  PlaylistChannelModel = 'PlaylistChannelModel',
+  PlaylistModel = 'PlaylistModel',
+  UserPlaylistModel = 'UserPlaylistModel',
+  UserModel = 'UserModel',
+  TokenModel = 'TokenModel',
+  XMLTVCodeModel = 'XMLTVCodeModel',
+  XMLTVCCodesModel = 'XMLTVCCodesModel',
+  XMLTVProgrammeModel = 'XMLTVProgrammeModel',
+  XMLTVChannelModel = 'XMLTVChannelModel',
+  XMLTVModel = 'XMLTVModel',
 }
 
 class MongoConnector {

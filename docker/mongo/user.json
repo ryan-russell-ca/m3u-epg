@@ -1,0 +1,19 @@
+[{
+  "_id": {
+    "$oid": "619dacdd29ffe269a5fea16f"
+  },
+  "email": "ryan@ryanrussell.ca",
+  "emailVerified": "true",
+  "name": "Ryan Russell",
+  "password": "$2a$10$gErZVf.FO4uVCuW8HOPH2u59zkEOuCn3Eodq.jHI1X4XkfjaFmd5y",
+  "profilePicture": "/user.png"
+},{
+  "_id": {
+    "$oid": "619dacdd29ffe269a5fea170"
+  },
+  "email": "perryrussell@live.ca",
+  "emailVerified": "true",
+  "name": "Perry Russell",
+  "password": "$2a$10$Ni90EJTq2lkN0LfHzG8jneTOP0q2WqVrkJcPfRFjhKbY9.YsLXbAO",
+  "profilePicture": "/user.png"
+}]

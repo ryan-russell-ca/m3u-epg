@@ -1,6 +1,6 @@
 import Mongoose, { Schema } from 'mongoose';
-import { MongoCollection } from './mongo';
 import { ChannelModel, ProgrammeModel, BaseModel } from '@/types/xmltv';
+import { MongoCollectionNames, MongoCollectionModelNames } from './mongo';
 
 const XMLTVChannelSchema = new Schema(
   {
@@ -10,12 +10,17 @@ const XMLTVChannelSchema = new Schema(
       '@_src': String,
     },
   },
-  { collection: MongoCollection.XMLTVChannel }
+  { collection: MongoCollectionNames.XMLTVChannel }
 );
 
-export const XMLTVChannelModel: Mongoose.Model<ChannelModel> = Mongoose.models['XMLTVChannelModel']
-  ? Mongoose.model('XMLTVChannelModel')
-  : Mongoose.model<ChannelModel>('XMLTVChannelModel', XMLTVChannelSchema);
+export const XMLTVChannelModel: Mongoose.Model<ChannelModel> = Mongoose.models[
+  MongoCollectionModelNames.XMLTVChannelModel
+]
+  ? Mongoose.model(MongoCollectionModelNames.XMLTVChannelModel)
+  : Mongoose.model<ChannelModel>(
+      MongoCollectionModelNames.XMLTVChannelModel,
+      XMLTVChannelSchema
+    );
 
 const XMLTVProgrammeSchema = new Schema(
   {
@@ -26,7 +31,7 @@ const XMLTVProgrammeSchema = new Schema(
     desc: { '#text': String, '@_lang': String },
     category: { '#text': String, '@_lang': String },
   },
-  { collection: MongoCollection.XMLTVProgramme }
+  { collection: MongoCollectionNames.XMLTVProgramme }
 );
 
 XMLTVProgrammeSchema.index(
@@ -37,9 +42,13 @@ XMLTVProgrammeSchema.index(
   }
 );
 
-export const XMLTVProgrammeModel: Mongoose.Model<ProgrammeModel> = Mongoose.models['XMLTVProgrammeModel']
-  ? Mongoose.model('XMLTVProgrammeModel')
-  : Mongoose.model<ProgrammeModel>('XMLTVProgrammeModel', XMLTVProgrammeSchema);
+export const XMLTVProgrammeModel: Mongoose.Model<ProgrammeModel> = Mongoose
+  .models[MongoCollectionModelNames.XMLTVProgrammeModel]
+  ? Mongoose.model(MongoCollectionModelNames.XMLTVProgrammeModel)
+  : Mongoose.model<ProgrammeModel>(
+      MongoCollectionModelNames.XMLTVProgrammeModel,
+      XMLTVProgrammeSchema
+    );
 
 const XMLTVSchema = new Schema(
   {
@@ -47,16 +56,31 @@ const XMLTVSchema = new Schema(
     url: { type: String, required: true, unique: true },
     xmlTv: {
       channel: {
-        type: [{ type: Schema.Types.ObjectId, ref: XMLTVChannelModel }],
+        type: [
+          {
+            type: Schema.Types.ObjectId,
+            ref: MongoCollectionModelNames.XMLTVChannelModel,
+          },
+        ],
       },
       programme: {
-        type: [{ type: Schema.Types.ObjectId, ref: XMLTVProgrammeModel }],
+        type: [
+          {
+            type: Schema.Types.ObjectId,
+            ref: MongoCollectionModelNames.XMLTVProgrammeModel,
+          },
+        ],
       },
     },
   },
-  { collection: MongoCollection.XMLTV }
+  { collection: MongoCollectionNames.XMLTV }
 );
 
-export const XMLTVModel: Mongoose.Model<BaseModel> = Mongoose.models['XMLTVModel']
-  ? Mongoose.model('XMLTVModel')
-  : Mongoose.model<BaseModel>('XMLTVModel', XMLTVSchema);
+export const XMLTVModel: Mongoose.Model<BaseModel> = Mongoose.models[
+  MongoCollectionModelNames.XMLTVModel
+]
+  ? Mongoose.model(MongoCollectionModelNames.XMLTVModel)
+  : Mongoose.model<BaseModel>(
+      MongoCollectionModelNames.XMLTVModel,
+      XMLTVSchema
+    );

@@ -12,8 +12,6 @@
 }
 
 @mixin hoverable-selected {
-  cursor: not-allowed;
-  pointer-events: none;
   background-color: darken($selected-background-color, 5);
   border: 1px solid darken($selected-background-color, 25);
 

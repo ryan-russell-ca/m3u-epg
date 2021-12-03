@@ -1,14 +1,16 @@
 import { fetcher } from '@/lib/fetch';
+import { ChannelOrderModel } from '@/types/m3u';
+import { UserModel } from '@/types/user';
 import useSWR from 'swr';
 
 export function useCurrentUser() {
-  return useSWR('/api/user', fetcher);
+  return useSWR<{ user: UserModel }>('/api/user', fetcher);
 }
 
 export function useChannels() {
-  return useSWR('/api/user/playlist', fetcher);
+  return useSWR<{ channels: ChannelOrderModel[] }>('/api/user/playlist', fetcher);
 }
 
 export function useUser(id: string) {
-  return useSWR(`/api/users/${id}`, fetcher);
+  return useSWR<{ user: UserModel }>(`/api/users/${id}`, fetcher);
 }

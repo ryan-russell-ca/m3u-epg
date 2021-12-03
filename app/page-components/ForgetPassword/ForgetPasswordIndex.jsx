@@ -1,7 +1,7 @@
 import { Button } from '@/components/Button';
 import { ButtonLink } from '@/components/Button/Button';
 import { Input } from '@/components/Input';
-import { Spacer, Wrapper } from '@/components/Layout';
+import { Spacer } from '@/components/Layout';
 import { Text } from '@/components/Text';
 import { fetcher } from '@/lib/fetch';
 import Link from 'next/link';
@@ -34,7 +34,6 @@ const ForgetPasswordIndex = () => {
   }, []);
 
   return (
-    <Wrapper className={styles.root}>
       <div className={styles.main}>
         {status === 'success' ? (
           <>
@@ -85,7 +84,6 @@ const ForgetPasswordIndex = () => {
           </ButtonLink>
         </Link>
       </div>
-    </Wrapper>
   );
 };
 

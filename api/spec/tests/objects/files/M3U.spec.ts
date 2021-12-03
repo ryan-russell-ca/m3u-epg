@@ -1,4 +1,4 @@
-import MongoConnector, { MongoCollection } from '@/shared/database/Mongo';
+import MongoConnector, { MongoCollectionNames } from '@/shared/database/Mongo';
 import M3U from '@/objects/files/M3U';
 import Matcher from '@/objects/helpers/Matcher';
 import * as SharedFunctions from '@shared/functions';
@@ -16,8 +16,8 @@ describe('M3U Tests', () => {
   beforeAll(async () => {
     // Reset DB collections
     await MongoConnector.emptyCollections([
-      MongoCollection.Playlist,
-      MongoCollection.PlaylistChannel,
+      MongoCollectionNames.Playlist,
+      MongoCollectionNames.PlaylistChannel,
     ]);
 
     jasmine.clock().install();

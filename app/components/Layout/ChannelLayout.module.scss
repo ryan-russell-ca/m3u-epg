@@ -1,0 +1,17 @@
+.channel-container {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+
+  .channel-container-menu {
+    flex: 0 1 400px;
+    height: 100%;
+    background-color: rgb(255, 255, 255);
+  }
+
+  .channel-container-content {
+    flex: 0 1 100%;
+    height: 100%;
+  }
+}

@@ -1,5 +1,5 @@
 import { Document, ObjectId } from 'mongoose';
-import { ChannelInfoModel } from '../m3u';
+import { ChannelInfoModel, ChannelOrderModel } from '../m3u';
 
 export interface UserModel {
   id: string;
@@ -13,7 +13,7 @@ export interface UserModel {
 export interface UserPlaylistModel {
   date: Date;
   user: UserModel;
-  channels: ChannelInfoModel[];
+  channels: ChannelOrderModel[];
 }
 
 export interface TokenModel {

@@ -1,0 +1,43 @@
+[{
+  "_id": {
+    "$oid": "619d931f11605f0c34a8d281"
+  },
+  "name": "Canada",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "619d931f11605f0c34a8d285"
+  },
+  "name": "United States",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "619d931f11605f0c34a8d2e2"
+  },
+  "name": "United Kingdom",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "619d931f11605f0c34a8d38c"
+  },
+  "name": "NFL",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "619d931f11605f0c34a8d393"
+  },
+  "name": "NBA League Pass",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "619d932011605f0c34a8d3e3"
+  },
+  "name": "NHL",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "619d932011605f0c34a8d3f3"
+  },
+  "name": "PPV",
+  "__v": 0
+}]

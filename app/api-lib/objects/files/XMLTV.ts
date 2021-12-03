@@ -4,6 +4,8 @@ import {
   filterProgrammeByDate,
   getFromUrl,
   getJson,
+  mapChannel,
+  mapProgramme,
 } from '@/api-lib/common/functions';
 import Logger from '@/api-lib/modules/Logger';
 import {
@@ -133,13 +135,7 @@ class XMLTV extends BaseFile<BaseDocument> {
       throw new Error('[XMLTV.getChannel]: XMLTV JSON is empty');
     }
 
-    const channel = this._model.xmlTv.channel.map((c) => ({
-      '@_id': c['@_id'],
-      'display-name': c['display-name'],
-      icon: {
-        '@_src': c.icon['@_src'],
-      },
-    }));
+    const channel = this._model.xmlTv.channel.map(mapChannel);
 
     if (asXml) {
       return document2Xml(channel, 'channel', this._parseOptions);
@@ -153,27 +149,7 @@ class XMLTV extends BaseFile<BaseDocument> {
       throw new Error('[XMLTV.getProgramme]: XMLTV JSON is empty');
     }
 
-    const programme = this._model.xmlTv.programme.map((p) => {
-      const pp = p.toJSON();
-      
-      return {
-        '@_start': pp['@_start'],
-        '@_stop': pp['@_stop'],
-        '@_channel': pp['@_channel'],
-        category: {
-          '#text': pp.category?.['#text'] || '',
-          '@_lang': pp.category?.['@_lang'] || '',
-        },
-        desc: {
-          '#text': pp.desc?.['#text'] || '',
-          '@_lang': pp.desc?.['@_lang'] || '',
-        },
-        title: {
-          '#text': pp.title?.['#text'] || '',
-          '@_lang': pp.title?.['@_lang'] || '',
-        },
-      };
-    });
+    const programme = this._model.xmlTv.programme.map(mapProgramme);
 
     if (asXml) {
       return document2Xml(programme, 'programme', this._parseOptions);
@@ -285,7 +261,6 @@ class XMLTV extends BaseFile<BaseDocument> {
     programmes: ProgrammeModel[],
     filterIds: string[]
   ) => {
-    console.log(channels);
     return {
       channel: channels.filter((channel) =>
         filterIds.includes(channel['@_id'])

@@ -1,7 +1,7 @@
 import { Button } from '@/components/Button';
 import { ButtonLink } from '@/components/Button/Button';
 import { Input } from '@/components/Input';
-import { Spacer, Wrapper } from '@/components/Layout';
+import { Spacer } from '@/components/Layout';
 import { fetcher } from '@/lib/fetch';
 import Link from 'next/link';
 import { useCallback, useRef, useState } from 'react';
@@ -99,11 +99,7 @@ const BadLink = () => {
 };
 
 const ForgetPasswordToken = ({ valid, token }) => {
-  return (
-    <Wrapper className={styles.root}>
-      {valid ? <NewPassword token={token} /> : <BadLink />}
-    </Wrapper>
-  );
+  return <>{valid ? <NewPassword token={token} /> : <BadLink />}</>;
 };
 
 export default ForgetPasswordToken;

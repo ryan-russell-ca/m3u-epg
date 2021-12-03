@@ -1,7 +1,7 @@
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
-import { Container, Wrapper } from '@/components/Layout';
+import { Container } from '@/components/Layout';
 import { LoadingDots } from '@/components/LoadingDots';
 import { Text, TextLink } from '@/components/Text';
 import { fetcher } from '@/lib/fetch';
@@ -64,7 +64,6 @@ const Poster = () => {
   const loading = !data && !error;
 
   return (
-    <Wrapper>
       <div className={styles.root}>
         <h3 className={styles.heading}>Share your thoughts</h3>
         {loading ? (
@@ -83,7 +82,6 @@ const Poster = () => {
           </Text>
         )}
       </div>
-    </Wrapper>
   );
 };
 

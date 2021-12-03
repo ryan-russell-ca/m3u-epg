@@ -1,7 +1,7 @@
 import { Button } from '@/components/Button';
 import { ButtonLink } from '@/components/Button/Button';
 import { Input } from '@/components/Input';
-import { Spacer, Wrapper } from '@/components/Layout';
+import { Spacer } from '@/components/Layout';
 import { TextLink } from '@/components/Text';
 import { fetcher } from '@/lib/fetch';
 import { useCurrentUser } from '@/lib/user';
@@ -50,7 +50,7 @@ const Login = () => {
   );
 
   return (
-    <Wrapper className={styles.root}>
+    <>
       <div className={styles.main}>
         <h1 className={styles.title}>Login to App</h1>
         <form onSubmit={onSubmit}>
@@ -98,7 +98,7 @@ const Login = () => {
           </TextLink>
         </Link>
       </div>
-    </Wrapper>
+    </>
   );
 };
 

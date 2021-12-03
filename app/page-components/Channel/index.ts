@@ -1,1 +1,2 @@
-export { default as Channel } from './Channel';
+export { default as ChannelGrid } from './ChannelGrid';
+export { default as ChannelSidebar } from './ChannelSidebar';

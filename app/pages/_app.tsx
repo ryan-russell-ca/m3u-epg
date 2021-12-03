@@ -1,9 +1,16 @@
 import '@/assets/base.scss';
 import { Layout } from '@/components/Layout';
 import { ThemeProvider } from 'next-themes';
+import React from 'react';
 import { Toaster } from 'react-hot-toast';
 
-const App = ({ Component, pageProps }) => {
+const App = ({
+  Component,
+  pageProps,
+}: {
+  Component: React.ComponentType;
+  pageProps: React.PropsWithChildren<HTMLElement>;
+}) => {
   return (
     <ThemeProvider>
       <Layout>
@@ -12,6 +19,6 @@ const App = ({ Component, pageProps }) => {
       </Layout>
     </ThemeProvider>
   );
-}
+};
 
 export default App;

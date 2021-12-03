@@ -2,7 +2,6 @@ import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { Input, Textarea } from '@/components/Input';
 import { Container, Spacer } from '@/components/Layout';
-import Wrapper from '@/components/Layout/Wrapper';
 import { fetcher } from '@/lib/fetch';
 import { useCurrentUser } from '@/lib/user';
 import { useRouter } from 'next/router';
@@ -205,7 +204,7 @@ export const Settings = () => {
     }
   }, [router, data, error]);
   return (
-    <Wrapper className={styles.wrapper}>
+    <>
       <Spacer size={2} axis="vertical" />
       {data?.user ? (
         <>
@@ -214,6 +213,6 @@ export const Settings = () => {
           <Auth user={data.user} />
         </>
       ) : null}
-    </Wrapper>
+    </>
   );
 };

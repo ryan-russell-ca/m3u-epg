@@ -6,7 +6,8 @@ import {
   filterRegion,
   counterLog,
 } from '@/api-lib/common/functions';
-import PlaylistModel, {
+import {
+  PlaylistModel,
   PlaylistChannelCountryModel,
   PlaylistChannelGroupModel,
   PlaylistChannelModel,
