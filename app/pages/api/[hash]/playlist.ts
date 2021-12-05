@@ -1,8 +1,7 @@
-
 import UserPlaylistModel from '@/api-lib/db/userPlaylistSchema';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Types } from 'mongoose';
-import { ChannelOrderModel } from '@/types/m3u';
+import { ChannelGroupDocument, ChannelOrderModel } from '@/types/m3u';
 
 const epg = async (req: NextApiRequest, res: NextApiResponse) => {
   const hash = req.query.hash as string;
@@ -14,21 +13,29 @@ const epg = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const playlist = await UserPlaylistModel.findOne({
     user: new Types.ObjectId(hash),
-  }).populate('channels.details');
+  }).populate({
+    path: 'channels.details',
+    populate: { path: 'group' },
+  });
 
   if (!playlist?.channels) {
     return res.status(404).end();
   }
-
+  
   const data = [
     '#EXTM3U ',
-    ...playlist.channels
-      .map(({ details, order }: ChannelOrderModel) => {
+    ...playlist.channels.map(
+      ({ details, order }: ChannelOrderModel<ChannelGroupDocument>) => {
         return [
-          `#EXTINF: -1 tvg-chno="${order}" group-title="${details.group}" tvg-id="${details.tvgId}" tvg-logo="${details.logo}", ${details.name}`,
-          details.url,
+          `#EXTINF: -1 tvg-chno="${order}" group-title="${
+            details.group?.name
+          }" tvg-name="${details.name}" tvg-id="${details.tvgId}"${
+            details.logo ? ` tvg-logo="${details.logo}"` : ''
+          }, ${details.name}`,
+          `http://${req.headers.host}/api/stream/${details.id}`,
         ].join('\n');
-      }),
+      }
+    ),
   ].join('\n');
 
   res.setHeader('Content-Type', 'text/plain');

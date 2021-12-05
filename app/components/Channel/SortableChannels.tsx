@@ -20,6 +20,7 @@ const ClickableChannels = ({
     <List
       values={channels}
       onChange={onSort}
+      lockVertically={true}
       renderList={({ children, props }) => (
         <div className={styles['sortable-channels-container']} {...props}>
           {children}

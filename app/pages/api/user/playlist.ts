@@ -68,7 +68,7 @@ handler.put(
         {
           user: req.user,
           channels: orderChannels(
-            [...(playlist?.channels || []), ...channels] || channels
+            [...(playlist?.channels || []), ...channels]
           ),
         },
         { upsert: true }

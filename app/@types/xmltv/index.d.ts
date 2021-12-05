@@ -49,9 +49,9 @@ export interface ChannelModel {
   };
 }
 
-export interface ProgrammeModel {
-  '@_start': string;
-  '@_stop': string;
+export interface ProgrammeModel<P> {
+  '@_start': P;
+  '@_stop': P;
   '@_channel': string;
   title: { '#text': string; '@_lang': string };
   desc?: { '#text': string; '@_lang': string };
@@ -63,7 +63,7 @@ export interface Base {
   url: string;
   xmlTv: {
     channel: ChannelModel[];
-    programme: ProgrammeModel[];
+    programme: ProgrammeModel<Date>[];
   };
 }
 
@@ -77,9 +77,9 @@ export type ChannelDocument = Document<
 export type ProgrammeDocument = Document<
   ObjectId,
   Record<string, unknown>,
-  ProgrammeModel
+  ProgrammeModel<Date>
 > &
-  ProgrammeModel;
+  ProgrammeModel<Date>;
 
 export interface BaseModel {
   date?: Date;

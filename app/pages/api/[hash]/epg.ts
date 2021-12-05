@@ -16,7 +16,7 @@ const epg = async (req: NextApiRequest, res: NextApiResponse) => {
     res.status(401).end();
     return;
   }
-
+  
   const playlist = await UserPlaylistModel.findOne({
     user: new Types.ObjectId(hash),
   }).populate('channels.details');
@@ -43,6 +43,7 @@ const epg = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const programme = await XMLTVProgrammeModel.find({
     '@_channel': playlistChannelTvgIds,
+    '@_stop': { $gt: new Date() }
   });
 
   const data = `

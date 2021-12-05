@@ -16,7 +16,7 @@ export interface Matcher {
   match: (options: MatchOptions) => CodeMatch[] | [number, string][];
 }
 
-export interface BaseModel {
+export interface PlaylistModel {
   date?: Date;
   channels: (ChannelInfoModel | ChannelInfoDocument)[];
 }
@@ -31,8 +31,9 @@ export interface ChannelInfoFilters {
   definition?: string;
 }
 
-export interface ChannelInfoModel extends NameChannelInfo {
-  group: string | null;
+export interface ChannelInfoModel<P = string> extends NameChannelInfo {
+  id?: string;
+  group: P | null;
   tvgId: string | null;
   logo: string | null;
   name: string;
@@ -46,8 +47,8 @@ export interface ChannelInfoModel extends NameChannelInfo {
   confidence?: number;
 }
 
-export interface ChannelOrderModel {
-  details: ChannelInfoModel;
+export interface ChannelOrderModel<P = string> {
+  details: ChannelInfoModel<P>;
   order?: number;
 }
 
@@ -57,6 +58,7 @@ export interface ChannelInfoMapping {
 
 export interface ChannelGroupModel {
   name: string;
+  slug: string;
 }
 
 export interface ChannelCountryModel {
@@ -95,6 +97,6 @@ export type ChannelInfoDocument = Document<
 export type BaseDocument = Document<
   ObjectId,
   Record<string, unknown>,
-  BaseModel
+  PlaylistModel
 > &
-  BaseModel;
+  PlaylistModel;

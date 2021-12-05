@@ -176,7 +176,7 @@ class M3U extends BaseFile<BaseDocument> {
       }
 
       const model = await PlaylistModel.findOne(
-        {},
+        { url: M3U_URL },
         {},
         { sort: { date: -1 } }
       ).populate('channels');
@@ -205,61 +205,58 @@ class M3U extends BaseFile<BaseDocument> {
   private insertChannels = async (channels: ChannelInfoModel[]) => {
     Logger.info('[M3U.insertChannels]: Mapping M3U channel files');
 
-    const countries = (await PlaylistChannelCountryModel.find()).reduce<
-      Record<string, ChannelCountryModel>
-    >((acc, country) => {
-      acc[country.shortName] = country;
-      return acc;
-    }, {});
+    try {
+      const countries = (await PlaylistChannelCountryModel.find()).reduce<
+        Record<string, ChannelCountryModel>
+      >((acc, country) => {
+        acc[country.shortName] = country;
+        return acc;
+      }, {});
 
-    const groups = (
-      await PlaylistChannelGroupModel.find().select(['_id', 'name'])
-    ).reduce<Record<string, ChannelGroupModel>>((acc, group) => {
-      acc[group.name] = group;
-      return acc;
-    }, {});
+      const groups = (
+        await PlaylistChannelGroupModel.find().select(['_id', 'name'])
+      ).reduce<Record<string, ChannelGroupModel>>((acc, group) => {
+        acc[group.name] = group;
+        return acc;
+      }, {});
 
-    const operations = await Promise.all(
-      channels.map(async (ch) => ({
-        updateOne: {
-          filter: { url: ch.url },
-          update: {
-            $set: {
-              group:
-                groups[ch.group || ''] ||
-                (ch.group &&
-                  (await PlaylistChannelGroupModel.findOneAndUpdate(
-                    { name: ch.group },
-                    { name: ch.group },
-                    {
-                      upsert: true,
-                    }
-                  ))),
-              name: ch.name,
-              originalName: ch.originalName,
-              country: countries[ch.country || ''],
-              url: ch.url,
-              parsedName: ch.parsedName,
-              parsedIds: ch.parsedIds,
-              logo: ch.logo,
-              tvgId: ch.tvgId,
-              definition: ch.definition,
-              confirmed: ch.confirmed,
-              confidence: ch.confidence,
+      const operations = await Promise.all(
+        channels.map(async (ch) => {
+          return {
+            updateOne: {
+              filter: { url: ch.url },
+              update: {
+                $set: {
+                  group: groups[ch.group || ''],
+                  name: ch.name,
+                  originalName: ch.originalName,
+                  country: countries[ch.country || ''],
+                  url: ch.url,
+                  parsedName: ch.parsedName,
+                  parsedIds: ch.parsedIds,
+                  logo: ch.logo,
+                  tvgId: ch.tvgId,
+                  definition: ch.definition,
+                  confirmed: ch.confirmed,
+                  confidence: ch.confidence,
+                },
+              },
+              upsert: true,
             },
-          },
-          upsert: true,
-        },
-      }))
-    );
+          };
+        })
+      );
 
-    Logger.info('[M3U.insertChannels]: Saving M3U channel files');
+      Logger.info('[M3U.insertChannels]: Saving M3U channel files');
 
-    const { insertedIds, upsertedIds } = await PlaylistChannelModel.bulkWrite(
-      operations
-    );
+      await PlaylistChannelModel.bulkWrite(operations);
 
-    return [...Object.values(insertedIds), ...Object.values(upsertedIds)];
+      return await PlaylistChannelModel.find({
+        url: channels.map(({ url }) => url),
+      });
+    } catch (err) {
+      Logger.err(err);
+    }
   };
 
   private createM3U = async (uniqueOnly: boolean): Promise<BaseDocument> => {
@@ -278,41 +275,48 @@ class M3U extends BaseFile<BaseDocument> {
 
     this._expired = false;
 
-    Logger.info('[M3U.createM3U]: Matching unconfirmed channels...');
-
     Logger.info(`[M3U.createM3U]: Matching channels starting...`);
+
+    const channelModelUrls = (await PlaylistChannelModel.find({
+      url: filtered.map(({ url }) => url),
+    })).map((ch: ChannelInfoModel) => ch.url);
 
     const numChannels = filtered.length;
 
-    const channels = filtered.map((channel: ChannelInfoModel, i: number) => {
-      counterLog(`[M3U.createM3U]: Matching channel ${i + 1}/${numChannels}`);
+    const channels = filtered
+      .filter(({ url }) => !channelModelUrls.includes(url))
+      .map((channel: ChannelInfoModel, i: number) => {
+        counterLog(`[M3U.createM3U]: Matching channel ${i + 1}/${numChannels}`);
 
-      const attributes = (confirmedMappings[channel.url] || {
-        ...channel,
-        ...this.getMatch(channel),
-      }) as ChannelInfoModel & { displayName: string };
+        const attributes = (confirmedMappings[channel.url] || {
+          ...channel,
+          ...this.getMatch(channel),
+        }) as ChannelInfoModel & { displayName: string };
 
-      return {
-        group: attributes.group,
-        name: attributes.displayName || attributes.name,
-        originalName: attributes.originalName,
-        country: attributes.country,
-        url: attributes.url || 'no_url',
-        parsedName: attributes.parsedName,
-        parsedIds: attributes.parsedIds,
-        logo: attributes.logo,
-        tvgId: attributes.tvgId,
-        definition: attributes.definition,
-        confirmed: attributes.confirmed,
-        confidence: attributes.confidence,
-      };
-    });
+        return {
+          group: attributes.group,
+          name: attributes.displayName || attributes.name,
+          originalName: attributes.originalName,
+          country: attributes.country,
+          url: attributes.url || 'no_url',
+          parsedName: attributes.parsedName,
+          parsedIds: attributes.parsedIds,
+          logo: attributes.logo,
+          tvgId: attributes.tvgId,
+          definition: attributes.definition,
+          confirmed: attributes.confirmed,
+          confidence: attributes.confidence,
+        };
+      });
 
-    const ids = await this.insertChannels(channels);
+    await this.insertChannels(channels);
 
     return (
       await PlaylistModel.create({
-        channels: ids,
+        url: M3U_URL,
+        channels: await PlaylistChannelModel.find({
+          url: filtered.map(({ url }) => url),
+        }),
       })
     ).populate('channels');
   };

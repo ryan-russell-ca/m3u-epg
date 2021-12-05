@@ -11,7 +11,7 @@ module.exports = {
     JET_LOGGER_FORMAT: 'LINE',
 
     // # External Files / URLs
-    M3U_FILENAME: './data/mapping/default.@/types/m3u',
+    M3U_FILENAME: './data/mapping/default.m3u',
     M3U_URL: 'https://speed.cd/tv/193662/eOBycPCXjM/Default',
     CODES_JSON_URL: 'https://iptv-org.github.io/epg/codes.json',
     CONFIRMED_MAPPINGS_FILE: './data/mapping/confirmed.json',
@@ -75,6 +75,7 @@ module.exports = {
       'www.rev.bs',
       'www.freepnglogos.com',
       'images.now-tv.com',
+      'ottepg3.nexttv.ht.hr',
     ],
   },
   webpack: (config, { isServer }) => {

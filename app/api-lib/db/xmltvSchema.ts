@@ -24,8 +24,8 @@ export const XMLTVChannelModel: Mongoose.Model<ChannelModel> = Mongoose.models[
 
 const XMLTVProgrammeSchema = new Schema(
   {
-    '@_start': String,
-    '@_stop': String,
+    '@_start': Date,
+    '@_stop': Date,
     '@_channel': String,
     title: { '#text': String, '@_lang': String },
     desc: { '#text': String, '@_lang': String },
@@ -42,10 +42,10 @@ XMLTVProgrammeSchema.index(
   }
 );
 
-export const XMLTVProgrammeModel: Mongoose.Model<ProgrammeModel> = Mongoose
+export const XMLTVProgrammeModel: Mongoose.Model<ProgrammeModel<Date>> = Mongoose
   .models[MongoCollectionModelNames.XMLTVProgrammeModel]
   ? Mongoose.model(MongoCollectionModelNames.XMLTVProgrammeModel)
-  : Mongoose.model<ProgrammeModel>(
+  : Mongoose.model<ProgrammeModel<Date>>(
       MongoCollectionModelNames.XMLTVProgrammeModel,
       XMLTVProgrammeSchema
     );

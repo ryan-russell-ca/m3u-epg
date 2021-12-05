@@ -38,6 +38,18 @@ class MongoConnector {
   private _connection = Mongoose;
 
   constructor() {
+    const instance = this.constructor.instance;
+
+    if (instance) {
+      if (!this.connected) {
+        this.connect();
+      }
+
+      return instance;
+    }
+
+    this.constructor.instance = this;
+
     this._connection.connection.on(
       'error',
       console.error.bind(console, 'MongoDB connection error:')
@@ -51,7 +63,9 @@ class MongoConnector {
       Logger.info('MongoDB disconnected')
     );
 
-    this.connect();
+    if (!this.connected) {
+      this.connect();
+    }
   }
 
   public database = async () => {
@@ -93,7 +107,7 @@ class MongoConnector {
   };
 
   public get connected() {
-    return this._connection.connection.readyState === 1;
+    return !Mongoose.connection.readyState;
   }
 }
 

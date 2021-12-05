@@ -10,10 +10,10 @@ export interface UserModel {
   password: string;
 }
 
-export interface UserPlaylistModel {
+export interface UserPlaylistModel<P = string> {
   date: Date;
   user: UserModel;
-  channels: ChannelOrderModel[];
+  channels: ChannelOrderModel<P>[];
 }
 
 export interface TokenModel {

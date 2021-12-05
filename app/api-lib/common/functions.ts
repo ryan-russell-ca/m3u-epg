@@ -37,6 +37,33 @@ export const parseXmlDate = (dateStr: string): xmlDate => {
   };
 };
 
+export const xmlDateToDate = ({
+  year,
+  month,
+  day,
+  hour,
+  minute,
+  second,
+}: xmlDate) => {
+  return new Date(Date.UTC(year, month, day, hour, minute, second));
+};
+
+const padDateNumber = (n: number) => {
+  return n.toString().padStart(2, '0');
+};
+
+export const dateToXmlDate = (date: Date) => {
+  return (
+    date.getFullYear() +
+    padDateNumber(date.getMonth() + 1) +
+    padDateNumber(date.getDate()) +
+    padDateNumber(date.getHours()) +
+    padDateNumber(date.getMinutes()) +
+    padDateNumber(date.getSeconds()) +
+    ' +0000'
+  );
+};
+
 export const getFromUrl = async (url: string): Promise<string> => {
   const promise: Promise<string> = new Promise((resolve, reject) => {
     let json = '';
@@ -247,15 +274,15 @@ export const orderMap = ({ details }: ChannelOrderModel, i: number) => ({
 });
 
 const escapeAmp = (str: string) => {
-  return str.replace(/ & /g, '&amp;');
+  return str.replace(/&(?![a-z]*;)/g, '&amp;');
 };
 
 export const mapProgramme = (programme: ProgrammeDocument) => {
   const pp = programme.toJSON();
 
   return {
-    '@_start': pp['@_start'],
-    '@_stop': pp['@_stop'],
+    '@_start': dateToXmlDate(pp['@_start'] as Date),
+    '@_stop': dateToXmlDate(pp['@_stop'] as Date),
     '@_channel': pp['@_channel'],
     category: {
       '#text': escapeAmp(pp.category?.['#text'] || ''),
@@ -280,4 +307,20 @@ export const mapChannel = (channel: ChannelDocument) => {
       '@_src': channel.icon['@_src'],
     },
   };
+};
+
+export const redirectToLogin = () => ({
+  redirect: {
+    destination: `/login`,
+    permanent: false,
+  },
+});
+
+export const getServerSidePropsFetch = (isServer: boolean) => {
+  if (isServer) {
+    return async (uri = '') => await fetch(`http://iptv-app:3000/api${uri}`);
+  }
+
+  return async (uri = '') =>
+    await fetch(`http://${location.hostname}:${location.port}/api${uri}`);
 };

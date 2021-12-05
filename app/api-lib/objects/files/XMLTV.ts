@@ -6,6 +6,8 @@ import {
   getJson,
   mapChannel,
   mapProgramme,
+  parseXmlDate,
+  xmlDateToDate,
 } from '@/api-lib/common/functions';
 import Logger from '@/api-lib/modules/Logger';
 import {
@@ -15,7 +17,12 @@ import {
 } from '@/api-lib/db/xmltvSchema';
 import MongoConnector from '@/api-lib/db/mongo';
 import BaseFile from './BaseFile';
-import { Base, BaseDocument, ChannelModel, ProgrammeModel } from '@/types/xmltv';
+import {
+  Base,
+  BaseDocument,
+  ChannelModel,
+  ProgrammeModel,
+} from '@/types/xmltv';
 
 const XMLTV_EXPIRATION_MILLI =
   parseInt(process.env.XMLTV_EXPIRATION_SECONDS as string) * 1000;
@@ -92,7 +99,7 @@ class XMLTV extends BaseFile<BaseDocument> {
     tvgId: string
   ): {
     channel: ChannelModel;
-    programme: ProgrammeModel[];
+    programme: ProgrammeModel<Date>[];
   } | null => {
     try {
       if (!this._model) {
@@ -144,7 +151,7 @@ class XMLTV extends BaseFile<BaseDocument> {
     return channel;
   };
 
-  public getProgramme = (asXml = false): ProgrammeModel[] => {
+  public getProgramme = (asXml = false): ProgrammeModel<Date>[] => {
     if (!this._model) {
       throw new Error('[XMLTV.getProgramme]: XMLTV JSON is empty');
     }
@@ -244,7 +251,7 @@ class XMLTV extends BaseFile<BaseDocument> {
     }
   };
 
-  private filterProgammesByTime = (programmes: ProgrammeModel[]) => {
+  private filterProgammesByTime = (programmes: ProgrammeModel<Date>[]) => {
     const filteredProgrammes = programmes.filter(filterProgrammeByDate);
 
     if (!filteredProgrammes.length) {
@@ -258,7 +265,7 @@ class XMLTV extends BaseFile<BaseDocument> {
 
   private filterModelIds = (
     channels: ChannelModel[],
-    programmes: ProgrammeModel[],
+    programmes: ProgrammeModel<Date>[],
     filterIds: string[]
   ) => {
     return {
@@ -311,30 +318,43 @@ class XMLTV extends BaseFile<BaseDocument> {
     }).select('_id');
   };
 
-  private saveProgrammes = async (programmes: ProgrammeModel[]) => {
-    const operations = programmes.map((pr) => ({
-      updateOne: {
-        filter: { '@_channel': pr['@_channel'], '@_start': pr['@_start'] },
-        update: {
-          $set: {
-            '@_start': pr['@_start'],
-            '@_stop': pr['@_stop'],
-            '@_channel': pr['@_channel'],
-            title: pr.title,
-            desc: pr.desc,
-            category: pr.category,
+  private saveProgrammes = async (programmes: ProgrammeModel<string>[]): Promise<ProgrammeModel<Date>[]> => {
+    const mappedProgrammes = programmes.map((pr) => {
+      const startDate = xmlDateToDate(parseXmlDate(pr['@_start']));
+      const stopDate = xmlDateToDate(parseXmlDate(pr['@_stop']));
+
+      return {
+        ...pr,
+        '@_start': startDate,
+        '@_stop': stopDate,
+      };
+    });
+
+    const operations = mappedProgrammes.map((pr) => {
+      return {
+        updateOne: {
+          filter: { '@_channel': pr['@_channel'], '@_start': pr['@_start'] },
+          update: {
+            $set: {
+              '@_start': pr['@_start'],
+              '@_stop': pr['@_stop'],
+              '@_channel': pr['@_channel'],
+              title: pr.title,
+              desc: pr.desc,
+              category: pr.category,
+            },
           },
+          upsert: true,
         },
-        upsert: true,
-      },
-    }));
+      };
+    });
 
     Logger.info('[XMLTV.save]: Saving XMLTV programme files');
 
     await XMLTVProgrammeModel.bulkWrite(operations);
 
     return await XMLTVProgrammeModel.find({
-      $or: programmes.map((pr) => ({
+      $or: mappedProgrammes.map((pr) => ({
         '@_channel': pr['@_channel'],
         '@_start': pr['@_start'],
       })),
@@ -398,7 +418,7 @@ class XMLTV extends BaseFile<BaseDocument> {
       );
 
       const filteredProgramme = this.filterProgammesByTime(
-        (programme as ProgrammeModel[]).filter(
+        (programme as ProgrammeModel<Date>[]).filter(
           (p, i, programmes) =>
             i ===
             programmes.findIndex(

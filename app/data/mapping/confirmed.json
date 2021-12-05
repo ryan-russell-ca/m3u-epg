@@ -1098,12 +1098,12 @@
     "confirmed": true,
     "country": "us",
     "group": "United States",
-    "logo": "null",
+    "logo": null,
     "name": "A&E",
     "originalName": "US: A&E HD",
     "parsedIds": [],
     "parsedName": "a&e hd",
-    "tvgId": "null",
+    "tvgId": null,
     "confidence": 0
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/800001187": {
@@ -1155,7 +1155,7 @@
     "originalName": "CA: BBC Earth HD",
     "parsedIds": [],
     "parsedName": "bbc earth hd",
-    "tvgId": "null",
+    "tvgId": null,
     "confidence": 0
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/8000012573": {
@@ -1185,7 +1185,7 @@
       "CTV2"
     ],
     "parsedName": "ctv2 barrie",
-    "tvgId": "null",
+    "tvgId": null,
     "confidence": 0
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/8000013159": {
@@ -1284,7 +1284,7 @@
     "originalName": "CA: CTV Halifax",
     "parsedIds": [],
     "parsedName": "ctv halifax",
-    "tvgId": "null",
+    "tvgId": "CJCH.ca",
     "confidence": 0
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/8000013166": {
@@ -2826,12 +2826,12 @@
     "confirmed": true,
     "country": "unpopulated",
     "group": "Canada",
-    "logo": "null",
+    "logo": null,
     "name": "TLN",
     "originalName": "CA: TLN",
     "parsedIds": [],
     "parsedName": "tln",
-    "tvgId": "null",
+    "tvgId": null,
     "confidence": 0
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/8000015839": {
@@ -2844,7 +2844,7 @@
     "originalName": "CA: The News Forum",
     "parsedIds": [],
     "parsedName": "the news forum",
-    "tvgId": "null",
+    "tvgId": null,
     "confidence": 0
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/80000196": {
@@ -3139,12 +3139,12 @@
     "confirmed": true,
     "country": "unpopulated",
     "group": "Canada",
-    "logo": "null",
+    "logo": null,
     "name": "Rogers TV Ottawa",
     "originalName": "CA Rogers TV (Ottawa) (R)",
     "parsedIds": [],
     "parsedName": "ca rogers tv (ottawa) (r)",
-    "tvgId": "null",
+    "tvgId": null,
     "confidence": 0
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/79992130063": {
@@ -3157,7 +3157,7 @@
     "originalName": "CA CBC Kids (R)",
     "parsedIds": [],
     "parsedName": "ca cbc kids (r)",
-    "tvgId": "null",
+    "tvgId": null,
     "confidence": 0
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/79992130071": {
@@ -3165,12 +3165,12 @@
     "confirmed": true,
     "country": "unpopulated",
     "group": "Canada",
-    "logo": "null",
+    "logo": null,
     "name": "Rogers TV Barrie",
     "originalName": "CA Rogers TV Barrie (R)",
     "parsedIds": [],
     "parsedName": "ca rogers tv barrie (r)",
-    "tvgId": "null",
+    "tvgId": null,
     "confidence": 0
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/8000012574": {
@@ -3178,12 +3178,12 @@
     "confirmed": true,
     "country": "unpopulated",
     "group": "PPV",
-    "logo": "null",
+    "logo": null,
     "name": "UFC Fight Pass",
     "originalName": "UFC Fight Pass 24/7",
     "parsedIds": [],
     "parsedName": "ufc fight pass 24/7",
-    "tvgId": "null",
+    "tvgId": null,
     "confidence": 0
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/79992114790": {
@@ -3217,12 +3217,12 @@
     "confirmed": true,
     "country": "unpopulated",
     "group": "Canada",
-    "logo": "null",
+    "logo": null,
     "name": "Rogers TV London",
     "originalName": "CA Rogers TV London HD (R)",
     "parsedIds": [],
     "parsedName": "ca rogers tv london hd (r)",
-    "tvgId": "null",
+    "tvgId": null,
     "confidence": 0
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/79992130066": {
@@ -3230,12 +3230,12 @@
     "confirmed": true,
     "country": "unpopulated",
     "group": "Canada",
-    "logo": "null",
+    "logo": null,
     "name": "Rogers TV St. Thomas/Strathroy",
     "originalName": "CA Rogers TV St. Thomas/Strathroy (R)",
     "parsedIds": [],
     "parsedName": "ca rogers tv st. thomas/strathroy (r)",
-    "tvgId": "null",
+    "tvgId": null,
     "confidence": 0
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/79992130067": {
@@ -3261,7 +3261,7 @@
     "originalName": "UK: DW FHD",
     "parsedIds": [],
     "parsedName": "dw fhd",
-    "tvgId": "null",
+    "tvgId": null,
     "confidence": 0
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/666166022": {
@@ -3287,7 +3287,7 @@
     "originalName": "UK: Rugby World TV HD",
     "parsedIds": [],
     "parsedName": "rugby world tv hd",
-    "tvgId": "null",
+    "tvgId": null,
     "confidence": 0
   },
   "https://vipvikingz.com/900193662/eOBycPCXjM/66641016": {
@@ -3703,5 +3703,35 @@
     "parsedIds": [],
     "parsedName": "nhl center icegame 14",
     "tvgId": null
+  },
+  "https://vipvikingz.com/900193662/eOBycPCXjM/666761": {
+  "url": "https://vipvikingz.com/900193662/eOBycPCXjM/666761",
+  "confidence": 0.631578947368421,
+  "confirmed": true,
+  "group": "United States",
+  "logo": "https://zap2it.tmsimg.com/h4/NowShowing/14771/s14771_h4_ba.png",
+  "name": "History East",
+  "originalName": "US: History FHD",
+  "parsedIds": [],
+  "parsedName": "history fhd",
+  "tvgId": "HistoryEast.us"
+  },
+  "https://vipvikingz.com/900193662/eOBycPCXjM/666460": {
+    "url": "https://vipvikingz.com/900193662/eOBycPCXjM/666460",
+    "confidence": 0.6666666666666666,
+    "confirmed": false,
+    "country": [{
+      "$oid": "619d8f1829ffe269a5fea15c"
+    }],
+    "definition": "FHD",
+    "group": [{
+      "$oid": "61aa7bdb5232314fc081214c"
+    }],
+    "logo": "https://zap2it.tmsimg.com/h3/NowShowing/10918/s10918_h3_aa.png",
+    "name": "Lifetime East",
+    "originalName": "CA: Lifetime FHD",
+    "parsedIds": [],
+    "parsedName": "lifetime fhd",
+    "tvgId": "LifetimeEast.us"
   }
 }

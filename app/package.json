@@ -40,6 +40,7 @@
     "slug": "^5.1.0",
     "string-similarity": "^4.0.4",
     "swr": "^1.0.1",
+    "url-exist": "^3.0.0",
     "validator": "^13.7.0"
   },
   "devDependencies": {

@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useEffect, useRef } from 'react';
-import { arrayMoveImmutable } from 'array-move';
 import { fetcher } from '@/lib/fetch';
 import { useChannels, useCurrentUser as useUser } from '@/lib/user';
 import { ChannelInfoModel, ChannelOrderModel } from '@/types/m3u';
@@ -63,7 +62,7 @@ export const UserProvider: React.FunctionComponent<React.ReactNode> = ({
     useChannels();
 
   const channelsDictionary = useRef<ChannelDictionary>({});
-  const sortedChannels = channels.sort(sortOrder);
+  const sortedChannels = (channels || []).sort(sortOrder);
 
   useEffect(() => {
     if (!Object.keys(channelsDictionary.current).length && channels?.length) {
@@ -86,8 +85,7 @@ export const UserProvider: React.FunctionComponent<React.ReactNode> = ({
     await mutateChannels(
       {
         channels: Object.values(channelsDictionary.current).sort(sortOrder),
-      },
-      false
+      }
     );
   };
 
@@ -105,19 +103,12 @@ export const UserProvider: React.FunctionComponent<React.ReactNode> = ({
     await mutateChannels(
       {
         channels: Object.values(channelsDictionary.current).sort(sortOrder),
-      },
-      false
+      }
     );
   };
 
   const orderChannels = async (oldIndex: number, newIndex: number) => {
     await putOrderChannels(oldIndex, newIndex);
-
-    channelsDictionary.current = reduceChannels(arrayMoveImmutable(
-      Object.values(channelsDictionary.current),
-      oldIndex,
-      newIndex
-    ));
 
     await mutateChannels(
       {

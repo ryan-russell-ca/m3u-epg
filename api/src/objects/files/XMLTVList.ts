@@ -1,6 +1,6 @@
 import { j2xParser } from 'fast-xml-parser';
 import XMLTV from './XMLTV';
-import { ChannelModel, ProgrammeModel } from 'xmltv';
+import { ChannelModel, ProgrammeModel<Date> } from 'xmltv';
 
 export const XML_PARSE_OPTIONS = {
   ignoreAttributes: false,
@@ -64,7 +64,7 @@ class XMLTVList {
 
     return Object.values(xmlTvs).reduce<{
       channel: ChannelModel[];
-      programme: ProgrammeModel[];
+      programme: ProgrammeModel<Date>[];
     }>(
       (acc, xmlTv) => {
         acc.channel = acc.channel.concat(xmlTv.getChannel());

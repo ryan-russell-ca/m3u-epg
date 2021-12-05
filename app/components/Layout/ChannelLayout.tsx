@@ -1,9 +1,13 @@
 import { SideMenu } from '@/page-components/Menu';
+import { GetChannelGroupsPayload } from '@/types/api';
 import Head from 'next/head';
 import React from 'react';
 import styles from './ChannelLayout.module.scss';
 
-const Layout: React.FunctionComponent = ({ children }) => {
+const Layout: React.FunctionComponent<{ groups: GetChannelGroupsPayload }> = ({
+  children,
+  groups,
+}) => {
   return (
     <>
       <Head>
@@ -20,7 +24,7 @@ const Layout: React.FunctionComponent = ({ children }) => {
       </Head>
       <div className={styles['channel-container']}>
         <div className={styles['channel-container-menu']}>
-          <SideMenu />
+          <SideMenu groups={groups} />
         </div>
         <div className={styles['channel-container-content']}>{children}</div>
       </div>

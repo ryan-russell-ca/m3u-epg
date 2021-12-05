@@ -222,11 +222,7 @@ class M3U extends BaseFile<BaseDocument> {
 
     Logger.info('[insertChannels]: Saving M3U channel files');
 
-    const { insertedIds, upsertedIds } = await M3UChannelModel.bulkWrite(
-      operations
-    );
-
-    return [...Object.values(insertedIds), ...Object.values(upsertedIds)];
+    return await M3UChannelModel.bulkWrite(operations);
   };
 
   private save = async () => {
@@ -256,41 +252,48 @@ class M3U extends BaseFile<BaseDocument> {
 
     this._expired = false;
 
-    Logger.info('[createM3U]: Matching unconfirmed channels...');
-
     Logger.info(`[createM3U]: Matching channels starting...`);
+
+    const channelModels = await M3UChannelModel.find({
+      url: filtered.map(({ url }) => url),
+    })
+    
+    const channelModelUrls = channelModels.map((ch: ChannelInfoModel) => ch.url);
+    
     const numChannels = filtered.length;
-    const channels = filtered.map((channel, i) => {
-      readline.moveCursor(process.stdout, 0, -1);
-      readline.clearLine(process.stdout, 1);
-      Logger.info(`[createM3U]: Matching channel ${i + 1}/${numChannels}`);
+    const channels = filtered
+      .filter(({ url }) => !channelModelUrls.includes(url))
+      .map((channel, i) => {
+        readline.moveCursor(process.stdout, 0, -1);
+        readline.clearLine(process.stdout, 1);
+        Logger.info(`[createM3U]: Matching channel ${i + 1}/${numChannels}`);
 
-      const attributes = (confirmedMappings[channel.url] || {
-        ...channel,
-        ...this.getMatch(channel),
-      }) as ChannelInfoModel & { displayName: string };
+        const attributes = (confirmedMappings[channel.url] || {
+          ...channel,
+          ...this.getMatch(channel),
+        }) as ChannelInfoModel & { displayName: string };
 
-      return {
-        group: attributes.group,
-        name: attributes.displayName || attributes.name,
-        originalName: attributes.originalName,
-        country: attributes.country,
-        url: attributes.url,
-        parsedName: attributes.parsedName,
-        parsedIds: attributes.parsedIds,
-        logo: attributes.logo,
-        tvgId: attributes.tvgId,
-        definition: attributes.definition,
-        confirmed: attributes.confirmed,
-        confidence: attributes.confidence,
-      };
-    });
+        return {
+          group: attributes.group,
+          name: attributes.displayName || attributes.name,
+          originalName: attributes.originalName,
+          country: attributes.country,
+          url: attributes.url,
+          parsedName: attributes.parsedName,
+          parsedIds: attributes.parsedIds,
+          logo: attributes.logo,
+          tvgId: attributes.tvgId,
+          definition: attributes.definition,
+          confirmed: attributes.confirmed,
+          confidence: attributes.confidence,
+        };
+      });
 
-    const ids = await this.insertChannels(channels);
-
+    await this.insertChannels(channels);
+      
     return (
       await M3UModel.create({
-        channels: ids,
+        channels: await M3UChannelModel.find({ url: channels.map(({ url }) => url) }),
       })
     ).populate('channels');
   };

@@ -34,8 +34,8 @@ XMLTVProgrammeSchema.index(
   },
 );
 
-export const XMLTVProgrammeModel = Mongoose.model<ProgrammeModel>(
-  'XMLTVProgrammeModel',
+export const XMLTVProgrammeModel<Date> = Mongoose.model<ProgrammeModel<Date>>(
+  'XMLTVProgrammeModel<Date>',
   XMLTVProgrammeSchema
 );
 
@@ -48,7 +48,7 @@ const XMLTVSchema = new Schema(
         type: [{ type: Schema.Types.ObjectId, ref: 'XMLTVChannelModel' }],
       },
       programme: {
-        type: [{ type: Schema.Types.ObjectId, ref: 'XMLTVProgrammeModel' }],
+        type: [{ type: Schema.Types.ObjectId, ref: 'XMLTVProgrammeModel<Date>' }],
       },
     },
   },

@@ -3,49 +3,53 @@ import { GetServerSideProps } from 'next';
 import { ChannelGrid } from '@/page-components/Channel';
 import { ChannelLayout, Container } from '@/components/Layout';
 import { findUserByUsername } from '@/api-lib/db';
-import { GetChannelsPayload } from '@/types/api';
+import { GetChannelGroupsPayload, GetChannelsPayload } from '@/types/api';
 import { UserProvider } from '@/page-components/User/UserProvider';
+import {
+  getServerSidePropsFetch,
+  redirectToLogin,
+} from '@/api-lib/common/functions';
 
-const Home = ({ data }: { data: GetChannelsPayload }) => (
+const Iptv = ({
+  channels,
+  groups,
+}: {
+  channels: GetChannelsPayload;
+  groups: GetChannelGroupsPayload;
+}) => (
   <UserProvider>
-    <ChannelLayout>
+    <ChannelLayout groups={groups}>
       <Container>
-        <ChannelGrid channels={data} />
+        <ChannelGrid channels={channels} />
       </Container>
     </ChannelLayout>
   </UserProvider>
 );
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const user = await findUserByUsername(ctx.params?.username as string);
+export const getServerSideProps: GetServerSideProps = async ({
+  req,
+  params,
+  query,
+}) => {
+  const user = await findUserByUsername(params?.username as string);
 
   if (!user) {
-    return {
-      redirect: {
-        destination: `/login`,
-        permanent: false,
-      },
-    };
+    return redirectToLogin();
   }
 
-  const isServer = !!ctx.req;
-  const page = parseInt(ctx.query.page as string) || 1;
-  const size = parseInt(ctx.query.size as string) || 100;
-  const search = ctx.query.search as string || '';
-  const uri = `channel?page=${page - 1}&size=${size}&search=${search}`;
+  const group = (query.group as string) || '';
+  const page = (parseInt(query.page as string) || 1) - 1;
+  const size = parseInt(query.size as string) || 100;
+  const search = (query.search as string) || '';
+  const uri = `/channel?page=${page}&size=${size}&search=${search}&group=${group}`;
 
-  if (isServer) {
-    const res = await fetch(`http://iptv-app:3000/api/${uri}`);
-    const data = await res.json();
-    return { props: { data } };
-  }
+  const get = getServerSidePropsFetch(!!req);
+  const channelResponse = await get(uri);
+  const channels = await channelResponse.json();
+  const groupResponse = await get('/groups');
+  const groups = await groupResponse.json();
 
-  const res = await fetch(
-    `http://${location.hostname}:${location.port}/api/${uri}`
-  );
-  const data = await res.json();
-
-  return { props: { data } };
+  return { props: { channels, groups } };
 };
 
-export default Home;
+export default Iptv;
