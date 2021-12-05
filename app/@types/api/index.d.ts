@@ -1,4 +1,4 @@
-import { ChannelInfoModel, ChannelOrderModel } from '../m3u';
+import { ChannelGroupModel, ChannelInfoModel, ChannelOrderModel } from '../m3u';
 
 export interface GetChannelsPayload {
   channels: ChannelInfoModel[];
@@ -9,7 +9,15 @@ export interface GetChannelsPayload {
 }
 
 export interface GetPlaylistChannelsPayload {
-  channels: ChannelOrderModel[];
+  groups: ChannelOrderModel[];
+  page: number;
+  size: number;
+  search: string;
+  totalItems: number;
+}
+
+export interface GetChannelGroupsPayload {
+  groups: ChannelGroupModel[];
   page: number;
   size: number;
   search: string;

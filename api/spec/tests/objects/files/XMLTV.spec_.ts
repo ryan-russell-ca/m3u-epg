@@ -10,7 +10,7 @@ const XMLTV_STATIC_DATA_FILE = process.env.XMLTV_STATIC_DATA_FILE as string;
 const XMLTV_EXPIRATION_MILLI =
   parseInt(process.env.XMLTV_EXPIRATION_SECONDS as string) * 1000;
 
-const getProgrammeDate = (programme: ProgrammeModel) => {
+const getProgrammeDate = (programme: ProgrammeModel<Date>) => {
   const { year, month, day, hour, minute, second } = parseXmlDate(
     programme['@_start']
   );
@@ -22,7 +22,7 @@ describe('XMLTV Tests', () => {
   let xmlTv: XMLTV;
   let xmlTvJson: {
     channel: ChannelModel[];
-    programme: ProgrammeModel[];
+    programme: ProgrammeModel<Date>[];
   };
   let getJsonSpy: jasmine.Spy<(url: string) => Promise<string>>;
 
@@ -94,7 +94,7 @@ describe('XMLTV Tests', () => {
       const filtered = indicies.reduce<
         {
           channel: ChannelModel;
-          programme: ProgrammeModel[];
+          programme: ProgrammeModel<Date>[];
         }[]
       >((acc, i) => {
         const channel = xmlTvsChannelList[i];
