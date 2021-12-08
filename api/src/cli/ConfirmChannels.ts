@@ -67,10 +67,6 @@ const entry = async () => {
 };
 
 const viewChannels = async (confirmed?: boolean) => {
-  if (!MongoConnector.connected) {
-    await MongoConnector.connect();
-  }
-
   const channels: ChannelInfoDocument[] = await M3UChannelModel.find(
     confirmed !== undefined ? { confirmed } : {}
   );
@@ -110,10 +106,6 @@ const viewChannels = async (confirmed?: boolean) => {
 };
 
 const confirmChannels = async (direction?: number): Promise<void> => {
-  if (!MongoConnector.connected) {
-    await MongoConnector.connect();
-  }
-
   const channels: ChannelInfoDocument[] = await M3UChannelModel.find(
     { confirmed: false, tvgId: !direction ? null : undefined },
     null,

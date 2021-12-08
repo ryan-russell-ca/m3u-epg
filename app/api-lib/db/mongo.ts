@@ -35,8 +35,6 @@ export enum MongoCollectionModelNames {
 }
 
 class MongoConnector {
-  private _connection = Mongoose;
-
   constructor() {
     const instance = this.constructor.instance;
 
@@ -50,17 +48,21 @@ class MongoConnector {
 
     this.constructor.instance = this;
 
-    this._connection.connection.on(
+    Mongoose.connection.on(
       'error',
       console.error.bind(console, 'MongoDB connection error:')
     );
 
-    this._connection.connection.on('connected', () =>
-      Logger.info('MongoDB connected')
+    Mongoose.connection.on('connected', () =>
+      Logger.info('[MongoConnector.on(connected)] MongoDB connected')
     );
 
-    this._connection.connection.on('disconencted', () =>
-      Logger.info('MongoDB disconnected')
+    Mongoose.connection.on('connection', () =>
+      Logger.info('[MongoConnector.on(connection)]: Connecting to MongoDB...')
+    );
+
+    Mongoose.connection.on('disconnected', () =>
+      Logger.info('[MongoConnector.on(disconencted)] MongoDB disconnected')
     );
 
     if (!this.connected) {
@@ -73,13 +75,11 @@ class MongoConnector {
       await this.connect();
     }
 
-    return this._connection.connection.getClient();
+    return Mongoose.connection.getClient();
   };
 
   public connect = async () => {
-    Logger.info('[MongoConnector.connect]: Connecting to MongoDB...');
-
-    await this._connection.connect(MONGO_DB_CONNECTION_STRING);
+    await Mongoose.connect(MONGO_DB_CONNECTION_STRING);
 
     return true;
   };
@@ -89,9 +89,7 @@ class MongoConnector {
       await this.connect();
     }
 
-    return await this._connection.connection
-      .collection(collectionName)
-      .deleteMany({});
+    return await Mongoose.connection.collection(collectionName).deleteMany({});
   };
 
   public emptyCollections = async (collectionNames: string[]) => {
@@ -107,7 +105,7 @@ class MongoConnector {
   };
 
   public get connected() {
-    return !Mongoose.connection.readyState;
+    return Mongoose.connection.readyState;
   }
 }
 

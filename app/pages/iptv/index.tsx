@@ -13,14 +13,16 @@ import {
 const Iptv = ({
   channels,
   groups,
+  group,
 }: {
   channels: GetChannelsPayload;
   groups: GetChannelGroupsPayload;
+  group: string;
 }) => (
   <UserProvider>
-    <ChannelLayout groups={groups}>
+    <ChannelLayout groups={groups} group={group}>
       <Container>
-        <ChannelGrid channels={channels} />
+        <ChannelGrid channels={channels} group={group} />
       </Container>
     </ChannelLayout>
   </UserProvider>
@@ -37,7 +39,7 @@ export const getServerSideProps: GetServerSideProps = async ({
     return redirectToLogin();
   }
 
-  const group = (query.group as string) || '';
+  const group = (params?.group as string) || '';
   const page = (parseInt(query.page as string) || 1) - 1;
   const size = parseInt(query.size as string) || 100;
   const search = (query.search as string) || '';
@@ -49,7 +51,7 @@ export const getServerSideProps: GetServerSideProps = async ({
   const groupResponse = await get('/groups');
   const groups = await groupResponse.json();
 
-  return { props: { channels, groups } };
+  return { props: { channels, groups, group } };
 };
 
 export default Iptv;

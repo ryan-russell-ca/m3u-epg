@@ -4,9 +4,10 @@ import Head from 'next/head';
 import React from 'react';
 import styles from './ChannelLayout.module.scss';
 
-const Layout: React.FunctionComponent<{ groups: GetChannelGroupsPayload }> = ({
+const Layout: React.FunctionComponent<{ groups: GetChannelGroupsPayload, group: string }> = ({
   children,
   groups,
+  group,
 }) => {
   return (
     <>
@@ -24,7 +25,7 @@ const Layout: React.FunctionComponent<{ groups: GetChannelGroupsPayload }> = ({
       </Head>
       <div className={styles['channel-container']}>
         <div className={styles['channel-container-menu']}>
-          <SideMenu groups={groups} />
+          <SideMenu groupPayload={groups} group ={group} />
         </div>
         <div className={styles['channel-container-content']}>{children}</div>
       </div>

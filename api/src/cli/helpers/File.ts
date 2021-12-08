@@ -12,10 +12,6 @@ export const createBackupConfirmed = async () => {
     ChannelInfoDocument
   >;
 
-  if (!MongoConnector.connected) {
-    await MongoConnector.connect();
-  }
-
   const channels: ChannelInfoDocument[] = await M3UChannelModel.find({
     confirmed: true,
   });

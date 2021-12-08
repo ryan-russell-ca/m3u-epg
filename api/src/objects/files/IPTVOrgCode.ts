@@ -24,10 +24,6 @@ class IPTVOrgCode extends BaseFile<CodeBaseDocument> {
 
     Logger.info('[IPTVOrgCode.load]: Loading IPTVOrgCode...');
 
-    if (!MongoConnector.connected) {
-      await MongoConnector.connect();
-    }
-
     this._model = await this.getCodes(refresh);
 
     await this.save();

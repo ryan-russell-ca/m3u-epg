@@ -1,13 +1,18 @@
-import { UrlObject } from 'url';
 import clsx from 'clsx';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 import styles from './SideMenu.module.scss';
 import { GetChannelGroupsPayload } from '@/types/api';
+import { useRouter } from 'next/router';
 
-const renderItem = (href: string | UrlObject, name: string, current: string, key?: string) =>
-  href === current ? (
+const renderItem = (
+  href: string,
+  name: string,
+  active: boolean,
+  key?: string
+) => {
+  return active ? (
     <div
+      key={key}
       className={clsx(
         styles['side-menu-item'],
         styles['side-menu-item-selected']
@@ -17,28 +22,36 @@ const renderItem = (href: string | UrlObject, name: string, current: string, key
     </div>
   ) : (
     <Link href={href} key={key}>
-      <a className={styles['side-menu-item']}>
-        {name}
-      </a>
+      <a className={styles['side-menu-item']}>{name}</a>
     </Link>
   );
-const SideMenu = ({ groups }: { groups: GetChannelGroupsPayload }) => {
-  const router = useRouter();
+};
 
+const SideMenu = ({
+  groupPayload,
+  group,
+}: {
+  groupPayload: GetChannelGroupsPayload;
+  group: string;
+}) => {
+  const { groups } = groupPayload;
+  const router = useRouter();
+  
   return (
     <div className={styles['side-menu-container']}>
-      {renderItem('/iptv/playlist', 'Playlist', router.pathname)}
+      {renderItem(
+        '/iptv/playlist',
+        'Playlist',
+        '/iptv/playlist' === router.pathname
+      )}
       <div className={styles['side-menu-item-header']}>Browse Channels</div>
-      {renderItem('/iptv', 'All Channels', router.pathname)}
-      {groups.groups.map((group) =>
+      {renderItem('/iptv', 'All Channels', '/iptv' === router.pathname)}
+      {groups.map((gr) =>
         renderItem(
-          {
-            pathname: '/iptv/channels/[group]',
-            query: { group: group.slug },
-          },
-          group.name,
-          router.pathname,
-          group.slug,
+          `/iptv/channels/${gr.slug}`,
+          gr.name,
+          gr.slug === group,
+          gr.slug
         )
       )}
     </div>

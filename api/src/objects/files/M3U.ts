@@ -46,10 +46,6 @@ class M3U extends BaseFile<BaseDocument> {
 
     this._matcher = matcher;
 
-    if (!MongoConnector.connected) {
-      await MongoConnector.connect();
-    }
-
     this._model = await this.getM3U(uniqueOnly, refresh);
 
     await this.save();

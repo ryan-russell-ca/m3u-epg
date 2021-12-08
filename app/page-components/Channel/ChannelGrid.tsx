@@ -23,14 +23,24 @@ export const debounce = (
   };
 };
 
-const setParams = (uri: string, page: number, size: number, search: string) => {
-  const url = new URL('https://localhost' + uri);
+const setParams = (
+  uri: string,
+  page: number,
+  size: number,
+  search: string,
+  group?: string
+) => {
+  const url = new URL(window.origin + uri);
 
-  url.searchParams.set('page', page.toString());
-  url.searchParams.set('size', size.toString());
-  url.searchParams.set('search', search);
-
-  return url.pathname + url.search;
+  return {
+    href: url.href,
+    query: {
+      group,
+      page: page.toString(),
+      size: size.toString(),
+      search: search,
+    },
+  };
 };
 
 // const getParams = (url: string) => {
@@ -45,10 +55,12 @@ const setParams = (uri: string, page: number, size: number, search: string) => {
 
 const ChannelGrid = ({
   channels: { channels, totalItems, page, size, search },
+  group,
   onLoadingStart,
   onLoadingComplete,
 }: {
   channels: GetChannelsPayload;
+  group: string;
   onLoadingStart: () => void;
   onLoadingComplete: () => void;
 }) => {
@@ -67,15 +79,15 @@ const ChannelGrid = ({
   const handlePageClick = useCallback(
     ({ selected }) => {
       const page = selected + 1;
-      router.push(setParams(router.route, page, size, search));
+      router.push(setParams(router.route, page, size, search, group));
     },
-    [search, size, router]
+    [router, size, search, group]
   );
 
   const handleSearchChange = debounce(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       e.persist();
-      router.push(setParams(router.route, page, size, e.target.value));
+      router.push(setParams(router.route, page, size, e.target.value, group));
     },
     700
   );

@@ -80,10 +80,6 @@ class XMLTV extends BaseFile<BaseDocument> {
       return false;
     }
 
-    if (!MongoConnector.connected) {
-      await MongoConnector.connect();
-    }
-
     this._model = await this.getXMLTV(this._url, filterIds, refresh);
 
     if (!this._model) {
