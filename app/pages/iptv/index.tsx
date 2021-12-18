@@ -23,6 +23,7 @@ const Iptv = ({
     <ChannelLayout groups={groups} group={group}>
       <Container>
         <ChannelGrid channels={channels} group={group} />
+        <video autoPlay controls src="https://vipvikingz.com/900193662/eOBycPCXjM/666466" />
       </Container>
     </ChannelLayout>
   </UserProvider>
@@ -34,7 +35,8 @@ export const getServerSideProps: GetServerSideProps = async ({
   query,
 }) => {
   const user = await findUserByUsername(params?.username as string);
-
+  console.log(user);
+  
   if (!user) {
     return redirectToLogin();
   }

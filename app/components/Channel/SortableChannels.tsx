@@ -1,11 +1,12 @@
 import { List } from 'react-movable';
-import { ChannelOrderModel } from '@/types/m3u';
+import { ChannelInfoModel, ChannelOrderModel } from '@/types/m3u';
 import { ChannelCard } from '@/components/Card';
 import styles from './SortableChannels.module.scss';
 
 const ClickableChannels = ({
   channels,
   onSort,
+  onRemove,
 }: {
   channels: ChannelOrderModel[];
   onSort: ({
@@ -15,6 +16,7 @@ const ClickableChannels = ({
     oldIndex: number;
     newIndex: number;
   }) => void;
+  onRemove?: (channel: ChannelInfoModel) => void;
 }) => {
   return (
     <List
@@ -35,7 +37,7 @@ const ClickableChannels = ({
           <span className={styles['sortable-channels-item-order']}>
             {order || props.key}
           </span>
-          <ChannelCard channel={details} />
+          <ChannelCard onRemove={onRemove} channel={details} />
         </div>
       )}
     />

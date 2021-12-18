@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, useRef } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+} from 'react';
 import { fetcher } from '@/lib/fetch';
 import { useChannels, useCurrentUser as useUser } from '@/lib/user';
 import { ChannelInfoModel, ChannelOrderModel } from '@/types/m3u';
@@ -7,11 +13,12 @@ import { UserModel } from '@/types/user';
 type ChannelDictionary = Record<string, ChannelOrderModel>;
 
 const UserContext = createContext<{
-  userDetails: UserModel | undefined;
+  userDetails: UserModel | null | undefined;
   userChannels: ChannelOrderModel[] | undefined;
   addChannels: (...channels: ChannelInfoModel[]) => Promise<void>;
   removeChannels: (...channels: ChannelInfoModel[]) => Promise<void>;
   orderChannels: (oldIndex: number, newIndex: number) => Promise<void>;
+  signOut: () => Promise<void>;
 } | null>(null);
 
 const sortOrder = (a: ChannelOrderModel, b: ChannelOrderModel) => {
@@ -48,6 +55,12 @@ const putOrderChannels = async (oldIndex: number, newIndex: number) => {
   });
 };
 
+const deleteSession = async () => {
+  await fetcher('/api/auth', {
+    method: 'DELETE',
+  });
+};
+
 const reduceChannels = (channels: ChannelOrderModel[]) =>
   channels.reduce<ChannelDictionary>((acc, channel) => {
     acc[channel.details.url] = channel;
@@ -57,7 +70,7 @@ const reduceChannels = (channels: ChannelOrderModel[]) =>
 export const UserProvider: React.FunctionComponent<React.ReactNode> = ({
   children,
 }) => {
-  const { data: { user } = {} } = useUser();
+  const { data: { user } = {}, mutate: mutateUser } = useUser();
   const { data: { channels } = { channels: [] }, mutate: mutateChannels } =
     useChannels();
 
@@ -70,52 +83,60 @@ export const UserProvider: React.FunctionComponent<React.ReactNode> = ({
     }
   }, [channels]);
 
-  const addChannels = async (...addChannels: ChannelInfoModel[]) => {
-    const channelsMapped = addChannels.map((channel) => ({
-      details: channel,
-    }));
+  const addChannels = useCallback(
+    async (...addChannels: ChannelInfoModel[]) => {
+      const channelsMapped = addChannels.map((channel) => ({
+        details: channel,
+      }));
 
-    channelsDictionary.current = {
-      ...channelsDictionary.current,
-      ...reduceChannels(channelsMapped),
-    };
+      channelsDictionary.current = {
+        ...channelsDictionary.current,
+        ...reduceChannels(channelsMapped),
+      };
 
-    await putChannels(channelsMapped, 'add');
+      await putChannels(channelsMapped, 'add');
 
-    await mutateChannels(
-      {
+      await mutateChannels({
         channels: Object.values(channelsDictionary.current).sort(sortOrder),
-      }
-    );
-  };
+      });
+    },
+    [mutateChannels]
+  );
 
-  const removeChannels = async (...removeChannels: ChannelInfoModel[]) => {
-    removeChannels.forEach((channel) => {
-      delete channelsDictionary.current[channel.url];
-    });
+  const removeChannels = useCallback(
+    async (...removeChannels: ChannelInfoModel[]) => {
+      removeChannels.forEach((channel) => {
+        delete channelsDictionary.current[channel.url];
+      });
 
-    const channelsMapped = removeChannels.map((channel) => ({
-      details: channel,
-    }));
+      const channelsMapped = removeChannels.map((channel) => ({
+        details: channel,
+      }));
 
-    await putChannels(channelsMapped, 'remove');
+      await putChannels(channelsMapped, 'remove');
 
-    await mutateChannels(
-      {
+      await mutateChannels({
         channels: Object.values(channelsDictionary.current).sort(sortOrder),
-      }
-    );
-  };
+      });
+    },
+    [mutateChannels]
+  );
 
-  const orderChannels = async (oldIndex: number, newIndex: number) => {
-    await putOrderChannels(oldIndex, newIndex);
+  const orderChannels = useCallback(
+    async (oldIndex: number, newIndex: number) => {
+      await putOrderChannels(oldIndex, newIndex);
 
-    await mutateChannels(
-      {
+      await mutateChannels({
         channels: Object.values(channelsDictionary.current).sort(sortOrder),
-      }
-    );
-  };
+      });
+    },
+    [mutateChannels]
+  );
+
+  const signOut = useCallback(async () => {
+    await deleteSession();
+    mutateUser({ user: null });
+  }, [mutateUser]);
 
   const values = {
     userDetails: user,
@@ -123,6 +144,7 @@ export const UserProvider: React.FunctionComponent<React.ReactNode> = ({
     addChannels,
     removeChannels,
     orderChannels,
+    signOut,
   };
 
   return <UserContext.Provider value={values}>{children}</UserContext.Provider>;

@@ -4,7 +4,7 @@ import { UserModel } from '@/types/user';
 import useSWR from 'swr';
 
 export function useCurrentUser() {
-  return useSWR<{ user: UserModel }>('/api/user', fetcher);
+  return useSWR<{ user: UserModel | null }>('/api/user', fetcher);
 }
 
 export function useChannels() {

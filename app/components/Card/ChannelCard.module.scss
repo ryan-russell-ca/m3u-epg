@@ -26,4 +26,45 @@
     justify-content: center;
     align-items: flex-start;
   }
+
+  .card-body-close {
+    position: relative;
+    width: $channel-card-height;
+    height: $channel-card-height;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+    background-color: transparent;
+    border: none;
+    margin: 0;
+
+    > div {
+      width: $channel-card-height - 10px;
+      height: $channel-card-height - 10px;
+      transition: 0.2s ease-in-out;
+      background-color: $primary-color;
+      border-radius: 50%;
+
+      > div {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 12px;
+        height: 2px;
+        border-radius: 2px;
+        background: #ffffff;
+        transform-origin: center;
+        transform: translate(-50%, -50%) rotate(45deg);
+
+        &:nth-child(2) {
+          transform: translate(-50%, -50%) rotate(-45deg);
+        }
+      }
+
+      &:hover {
+        transform: scale(1.2);
+      }
+    }
+  }
 }

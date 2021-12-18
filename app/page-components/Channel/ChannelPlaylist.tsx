@@ -3,7 +3,7 @@ import styles from './ChannelPlaylist.module.scss';
 import withLoader from '@/components/HOC/Loading';
 import { useCurrentUser } from '../User/UserProvider';
 import { SortableChannels } from '@/components/Channel';
-import { ChannelOrderModel } from '@/types/m3u';
+import { ChannelInfoModel, ChannelOrderModel } from '@/types/m3u';
 import toast from 'react-hot-toast';
 
 export const debounce = (
@@ -26,7 +26,7 @@ const ChannelPlaylist = ({
   onLoadingStart: () => void;
   onLoadingComplete: () => void;
 }) => {
-  const { userChannels, orderChannels } = useCurrentUser();
+  const { userChannels, orderChannels, removeChannels } = useCurrentUser();
 
   const handleSort = useCallback(
     async ({ oldIndex, newIndex }: { oldIndex: number; newIndex: number }) => {
@@ -44,29 +44,29 @@ const ChannelPlaylist = ({
     [onLoadingComplete, onLoadingStart, orderChannels]
   );
 
-  const { ordered, unordered } = (userChannels || []).reduce<{
-    ordered: ChannelOrderModel[];
-    unordered: ChannelOrderModel[];
-  }>(
-    (acc, channel) => {
-      if (channel.order) {
-        acc.ordered.push(channel);
-      } else {
-        acc.unordered.push(channel);
-      }
+  const handleRemove = useCallback(
+    async (channel: ChannelInfoModel) => {
+      try {
+        onLoadingStart();
 
-      return acc;
+        await removeChannels(channel);
+        toast.success(`You have removed channel ${channel.name}`);
+      } catch (e) {
+        toast.error(`${channel.name} could not be added`);
+      } finally {
+        onLoadingComplete();
+      }
     },
-    {
-      ordered: [],
-      unordered: [],
-    }
+    [onLoadingComplete, onLoadingStart, removeChannels]
   );
 
   return (
     <div className={styles['channels-container']}>
-      <SortableChannels channels={ordered} onSort={handleSort} />
-      <SortableChannels channels={unordered} onSort={handleSort} />
+      <SortableChannels
+        onRemove={handleRemove}
+        channels={userChannels || []}
+        onSort={handleSort}
+      />
     </div>
   );
 };

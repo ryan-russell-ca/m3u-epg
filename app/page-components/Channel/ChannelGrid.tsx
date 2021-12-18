@@ -43,16 +43,6 @@ const setParams = (
   };
 };
 
-// const getParams = (url: string) => {
-//   const _url = new URL('https://localhost' + url);
-
-//   return {
-//     page: parseInt(_url.searchParams.get('page') || '1'),
-//     size: parseInt(_url.searchParams.get('size') || '20'),
-//     search: _url.searchParams.get('search') || '',
-//   };
-// };
-
 const ChannelGrid = ({
   channels: { channels, totalItems, page, size, search },
   group,
@@ -170,4 +160,6 @@ const ChannelGrid = ({
   );
 };
 
-export default withLoader<{ channels: GetChannelsPayload }>(ChannelGrid);
+export default withLoader<{ channels: GetChannelsPayload; group: string }>(
+  ChannelGrid
+);
