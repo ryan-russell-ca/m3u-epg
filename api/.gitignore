@@ -1,6 +1,4 @@
 node_modules
-data/static
-data/xmltv
-data/mapping
+data
 pre-start
 dist
